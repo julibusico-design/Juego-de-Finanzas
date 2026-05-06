@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>¿Llegás a fin de mes?</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0C0C10;--bg2:#14141A;--bg3:#1C1C24;--bg4:#22222C;
+  --verde:#22C55E;--verde-d:#166534;--verde-bg:rgba(34,197,94,.12);
+  --rojo:#EF4444;--rojo-bg:rgba(239,68,68,.12);
+  --amarillo:#F59E0B;--amarillo-bg:rgba(245,158,11,.12);
+  --azul:#60A5FA;--azul-bg:rgba(96,165,250,.12);
+  --texto:#EFEFEF;--muted:#666;--border:#252530;--border2:#32323E;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--texto);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;overflow-x:hidden}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.on{display:flex}
+
+/* PORTADA */
+#s-inicio{align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center;gap:1.25rem}
+.titulo-main{font-size:clamp(2.2rem,11vw,3.8rem);font-weight:800;line-height:1.05;letter-spacing:-1.5px}
+.titulo-main em{font-style:normal;color:var(--verde)}
+.tagline{font-size:.72rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+.intro-txt{font-size:.9rem;color:#aaa;line-height:1.75;max-width:310px}
+.intro-txt b{color:var(--verde)}
+.hoja-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.1rem 1.25rem;width:100%;max-width:320px}
+.hoja-box h4{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:.85rem}
+.hoja-row{display:flex;justify-content:space-between;font-size:.78rem;padding:.3rem 0;border-bottom:1px dashed var(--border)}
+.hoja-row:last-child{border-bottom:none;font-weight:700;color:var(--texto);padding-top:.5rem}
+.hoja-row span:first-child{color:var(--muted)}
+.btn-main{background:var(--verde);color:#000;font-size:1rem;font-weight:700;letter-spacing:.05em;border:none;border-radius:12px;padding:1rem 2rem;cursor:pointer;width:100%;max-width:300px;transition:opacity .15s}
+.btn-main:active{opacity:.8}
+.btn-sec{background:transparent;color:var(--verde);font-size:.95rem;font-weight:600;border:2px solid var(--verde);border-radius:12px;padding:.85rem 2rem;cursor:pointer;width:100%;max-width:300px;transition:opacity .15s;margin-top:.5rem}
+.btn-sec:active{opacity:.7}
+
+/* HUD */
+.hud{background:var(--bg2);border-bottom:1px solid var(--border);padding:.75rem 1.25rem;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+.hud-ronda{font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+.hud-titulo{font-size:.9rem;font-weight:600;color:var(--texto)}
+.hud-edad{font-size:.75rem;font-weight:600;color:var(--amarillo)}
+.pips{display:flex;gap:3px;margin-left:auto;flex-wrap:wrap;max-width:120px;justify-content:flex-end}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.pip.done{background:var(--verde)}
+.pip.now{background:var(--amarillo)}
+
+/* BODY */
+.game-body{padding:1.25rem;flex:1;display:flex;flex-direction:column;gap:1rem;padding-bottom:3rem;max-width:500px;margin:0 auto;width:100%}
+
+/* CARD SITUACIÓN */
+.sit-card{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:1.25rem}
+.sit-tag{display:inline-block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;padding:.28rem .75rem;border-radius:20px;margin-bottom:.9rem}
+.tag-sit{background:rgba(168,85,247,.15);color:#D8B4FE}
+.tag-fut{background:var(--azul-bg);color:var(--azul)}
+.sit-emoji{font-size:2.4rem;display:block;margin-bottom:.75rem}
+.sit-titulo{font-size:1rem;font-weight:700;line-height:1.4;margin-bottom:.6rem}
+.sit-drama{font-size:.86rem;color:#bbb;line-height:1.7;border-left:3px solid rgba(168,85,247,.4);padding-left:.75rem;font-style:italic}
+.sit-pregunta{font-size:.92rem;font-weight:600;color:var(--texto);margin-top:.75rem}
+
+/* OPCIONES */
+.opts{display:flex;flex-direction:column;gap:.6rem}
+.opt{background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:.85rem 1rem;cursor:pointer;font-size:.86rem;color:var(--texto);text-align:left;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .12s,background .12s;-webkit-tap-highlight-color:transparent}
+.opt:active{transform:scale(.98)}
+.opt.elegida{border-color:var(--amarillo);background:var(--amarillo-bg)}
+.opt.bloqueada{pointer-events:none;opacity:.5}
+.opt-letra{font-weight:800;font-size:.95rem;color:var(--amarillo);min-width:20px;padding-top:1px}
+.opt-txt{flex:1;line-height:1.5}
+
+/* INSTRUCCIÓN */
+.instruccion{background:rgba(245,158,11,.1);border:1px dashed rgba(245,158,11,.4);border-radius:10px;padding:.8rem 1rem;font-size:.83rem;color:#FCD34D;line-height:1.6}
+.instruccion strong{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.3rem;color:#F59E0B}
+
+/* FUTURO */
+.futuro-card{border-radius:16px;padding:1.2rem;border:1px solid transparent}
+.fut-gan{background:var(--verde-bg);border-color:rgba(34,197,94,.3)}
+.fut-neu{background:var(--amarillo-bg);border-color:rgba(245,158,11,.3)}
+.fut-per{background:var(--rojo-bg);border-color:rgba(239,68,68,.3)}
+.fut-elegida{font-size:.7rem;color:var(--muted);margin-bottom:.5rem}
+.fut-elegida span{color:var(--amarillo);font-weight:700}
+.fut-historia{font-size:.87rem;color:#ddd;line-height:1.7;font-style:italic;margin-bottom:.85rem}
+.fut-pts{font-size:2rem;font-weight:800;letter-spacing:-1px;margin-bottom:.3rem}
+.fut-pts.pos{color:var(--verde)}
+.fut-pts.med{color:var(--amarillo)}
+.fut-pts.neg{color:var(--rojo)}
+.fut-motivo{font-size:.82rem;color:#aaa;line-height:1.65;background:rgba(255,255,255,.04);border-radius:8px;padding:.75rem;border-left:3px solid var(--azul)}
+
+/* SEPARADOR FASE */
+.fase-sep{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.5rem;text-align:center}
+.fase-sep-emoji{font-size:2.5rem;display:block;margin-bottom:.75rem}
+.fase-sep-titulo{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.fase-sep-desc{font-size:.86rem;color:#aaa;line-height:1.65}
+
+/* FINAL */
+#s-final{align-items:center;padding:2rem 1.5rem;gap:1rem;padding-bottom:3rem}
+.final-emoji{font-size:3.5rem;display:block;text-align:center}
+.final-titulo{font-size:1.6rem;font-weight:800;text-align:center;letter-spacing:-.5px}
+.final-sub{font-size:.88rem;color:#aaa;text-align:center;line-height:1.7;max-width:320px}
+.final-pts-total{font-size:3rem;font-weight:800;color:var(--verde);letter-spacing:-2px;text-align:center}
+.final-pts-sub{font-size:.75rem;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.1em;margin-top:-.3rem}
+.tabla{width:100%;max-width:360px;border-collapse:collapse}
+.tabla th{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.4rem .5rem;border-bottom:1px solid var(--border2);text-align:left}
+.tabla td{font-size:.82rem;padding:.42rem .5rem;border-bottom:1px solid var(--border);color:var(--texto)}
+.tabla tr:last-child td{border-bottom:none}
+.tabla .pts-td{font-weight:700;text-align:right}
+.pts-al{color:var(--verde)}
+.pts-med{color:var(--amarillo)}
+.pts-bj{color:var(--rojo)}
+.compartir-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:1rem 1.25rem;max-width:360px;width:100%;text-align:center}
+.compartir-box p{font-size:.85rem;color:#aaa;line-height:1.6}
+.compartir-box b{color:var(--texto)}
+</style>
+</head>
+<body>
+
+<!-- ══════ INICIO ══════ -->
+<div class="screen on" id="s-inicio">
+  <div class="titulo-main">¿Llegás a<br><em>fin de mes?</em></div>
+  <div class="tagline">el juego de las decisiones reales</div>
+  <p class="intro-txt">
+    Vas a vivir <b>15 situaciones</b> — desde los 18 hasta los 60 años.<br><br>
+    Primero elegís en todas. Después conocés tu puntaje.
+  </p>
+  <div class="hoja-box">
+    <h4>Preparate una hoja así</h4>
+    <div class="hoja-row"><span>Ronda 1</span><span>Opción ___ | Pts ___</span></div>
+    <div class="hoja-row"><span>Ronda 2</span><span>Opción ___ | Pts ___</span></div>
+    <div class="hoja-row"><span>Ronda 3</span><span>Opción ___ | Pts ___</span></div>
+    <div class="hoja-row"><span>...</span><span>...</span></div>
+    <div class="hoja-row"><span>TOTAL</span><span>_____ pts</span></div>
+  </div>
+  <button class="btn-main" onclick="ir('s-juego');iniciarJuego()">EMPEZAR A JUGAR</button>
+</div>
+
+<!-- ══════ JUEGO ══════ -->
+<div class="screen" id="s-juego">
+  <div class="hud">
+    <div>
+      <div class="hud-ronda" id="hud-ronda">Ronda 1 de 15</div>
+      <div class="hud-titulo" id="hud-titulo">El primer sueldo</div>
+      <div class="hud-edad" id="hud-edad">18 años</div>
+    </div>
+    <div class="pips" id="pips"></div>
+  </div>
+  <div class="game-body" id="game-body"></div>
+</div>
+
+<!-- ══════ FINAL ══════ -->
+<div class="screen" id="s-final">
+  <span class="final-emoji" id="fin-emoji">🏆</span>
+  <div class="final-titulo" id="fin-titulo"></div>
+  <p class="final-sub" id="fin-sub"></p>
+  <div class="final-pts-total" id="fin-pts"></div>
+  <div class="final-pts-sub">puntos totales</div>
+  <table class="tabla" id="fin-tabla"></table>
+  <div class="compartir-box">
+    <p>Mostrá tu puntaje a tu profe y compará con tus compañeros.<br><b>¿Quién tomó las mejores decisiones?</b></p>
+  </div>
+  <button class="btn-sec" onclick="reiniciar()">Jugar de nuevo</button>
+</div>
+
+<script>
+const RONDAS = [
+  {
+    edad:18, nombre:"El primer sueldo", emoji:"💵",
+    drama:"Cobraste tu primer sueldo: $1.500.000. Tu grupo de amigos ya tiene todo planeado — viaje a Bariloche en dos semanas, $800.000 por persona. Es el viaje que prometieron hacer desde el secundario. Si no vas ahora, después la vida los separa. Tenés gastos fijos de $800.000 este mes.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Vas al viaje. Pagás los fijos, ponés los $800.000 y llegás a cero. Estas cosas no se repiten."},
+      {l:"B",txt:"No vas. Es tu primer sueldo, necesitás base. Les explicás. Los amigos entienden — o no."},
+      {l:"C",txt:"Vas pero más ajustado: compartís cuarto, comés más barato. Gastás $500.000 y guardás el resto."},
+      {l:"D",txt:"Proponés esperar un mes más para que todos ahorren mejor. Igual algunos no pueden esperar."},
+    ],
+    futuros:{
+      A:{historia:"El viaje fue exactamente lo que prometía. El lunes llegaste a cero, pero ese mes conseguiste hacer horas extra. El problema real: estableciste un patrón. Primero el disfrute, después ver cómo cerrás.",pts:35,motivo:"Disfrutar no está mal. El problema es arrancar sin colchón: cualquier imprevisto en los meses siguientes te va a encontrar sin margen y vas a recurrir a deuda."},
+      B:{historia:"No fuiste. Incómodo. Guardaste $700.000. Ese colchón te salvó dos meses después cuando tuviste un gasto urgente. Pero la sensación de haberte perdido algo irrepetible te acompañó un tiempo.",pts:60,motivo:"La decisión financieramente más sólida no siempre es la más fácil de vivir. El costo real no fue la plata: fue perderte algo que no vuelve. Eso también tiene valor."},
+      C:{historia:"Fuiste igual pero más ajustado. No fue exactamente el viaje soñado. Guardaste $300.000. Tus amigos volvieron sin nada. Vos volviste con recuerdos y un pequeño colchón.",pts:75,motivo:"Encontrar el medio no es la opción tibia: a veces es la más creativa. Ir igual pero con límites claros es una habilidad que se va a repetir toda la vida."},
+      D:{historia:"Propusiste esperar. La mitad no pudo. El viaje se dividió. Terminaste no yendo de todas formas. Guardaste la plata, pero el resultado fue el mismo que si hubieras dicho no desde el principio — solo que más tarde.",pts:50,motivo:"Buscar consenso está bien, pero dilatar una decisión difícil a veces produce el mismo resultado que tomarla directamente, solo con más fricción."},
+    }
+  },
+  {
+    edad:20, nombre:"La oferta que vence hoy", emoji:"⏰",
+    drama:"Una marca que te encanta lanza una preventa con 60% de descuento. Solo hoy. Son $350.000 — ropa que normalmente costaría $875.000. Tenés el dinero disponible en la cuenta. No es plata que 'no tenés'.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Comprás todo. Es un descuento real y la ropa la ibas a comprar de todas formas."},
+      {l:"B",txt:"No comprás. Una oferta que 'vence hoy' es una trampa de urgencia. Si no lo necesitabas ayer, no lo comprás."},
+      {l:"C",txt:"Comprás solo dos prendas. Aprovechás parte del descuento sin gastar todo."},
+      {l:"D",txt:"Esperás 30 minutos antes de decidir para ver si el impulso baja."},
+    ],
+    futuros:{
+      A:{historia:"La ropa llegó. Era buena. La usaste. Pero ese mes gastaste $350.000 no presupuestados. Hiciste esto tres veces ese año. Al final del año tenías $1.050.000 menos en ahorros 'por descuentos'.",pts:30,motivo:"El descuento real existe. El problema es que las 'compras inteligentes' repetidas son la forma más cara de gastar. Cada vez que comprás algo que no necesitabas porque estaba barato, no ahorraste: gastaste."},
+      B:{historia:"No compraste. La urgencia se fue en 10 minutos. Ese mes cerraste con $350.000 más. Un mes después la misma marca tuvo otra oferta. Y otra. Siempre hay otra.",pts:80,motivo:"La urgencia artificial es la herramienta más efectiva del marketing de consumo. Reconocerla y no reaccionar es una habilidad financiera concreta, no solo disciplina."},
+      C:{historia:"Compraste dos cosas. Gastaste $180.000. Te sentiste bien con la decisión. Pero honestamente, sin la oferta no lo hubieras comprado esa semana.",pts:60,motivo:"El término medio funciona cuando es genuino. Pero si la respuesta honesta es 'no lo necesitaba', el mejor descuento del mundo sigue siendo gastar plata no planificada."},
+      D:{historia:"Esperaste 30 minutos. La urgencia bajó. No compraste. Descubriste algo: casi todo lo que comprás con urgencia, no lo hubieras comprado sin ella.",pts:85,motivo:"Esperar antes de comprar no es disciplina: es información. Te dice si realmente lo querías o si reaccionaste a la presión. Con esa información, cualquier decisión es más honesta."},
+    }
+  },
+  {
+    edad:22, nombre:"El trabajo bien pago y horrible", emoji:"😤",
+    drama:"Te ofrecen un trabajo que paga el doble de lo que ganás. El problema: ambiente tóxico, jefe reconocido por hacer llorar gente, 12 horas por día. Conocés a alguien que renunció a los 8 meses y dice que fue lo peor de su vida. Pero es el doble de plata.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Aceptás. Plata es plata. Si es muy malo, renunciás. Por lo menos probaste."},
+      {l:"B",txt:"Rechazás. No hay plata que valga destruirte la salud mental. El trabajo actual está bien."},
+      {l:"C",txt:"Pedís una reunión con el jefe antes de decidir. Querés ver vos mismo de qué se trata."},
+      {l:"D",txt:"Negociás: aceptás solo si te dan un contrato a 6 meses con opción de salida sin penalidad."},
+    ],
+    futuros:{
+      A:{historia:"Los primeros 3 meses fueron duros pero bancables. Al cuarto, insomnio. Al sexto, el médico dijo que el estrés te estaba afectando físicamente. Al octavo renunciaste. Habías ahorrado el doble pero gastaste en médicos y en cosas para compensar. El saldo fue mejor que antes, pero el costo fue real.",pts:40,motivo:"El ingreso extra existe. Pero los costos ocultos del trabajo tóxico — salud, vínculos, energía — son difíciles de calcular antes de vivirlos. Muchas veces el saldo es neutro o negativo."},
+      B:{historia:"Rechazaste. Un año después, la persona que aceptó ese trabajo tuvo una crisis y tomó licencia médica. Vos seguías en tu trabajo tranquilo, creciendo despacio, con energía para todo lo demás.",pts:70,motivo:"Rechazar plata por bienestar no es ser irresponsable: es tener en cuenta todos los costos, incluyendo los que no aparecen en el recibo de sueldo."},
+      C:{historia:"Fuiste a la reunión. El jefe no fue lo que esperabas — mejor. Aceptaste. Fue duro pero tolerable. Duró 11 meses. No fue perfecto pero tampoco el desastre que te habían contado. El salto económico fue real.",pts:65,motivo:"Ir a ver con tus propios ojos antes de decidir te da información que no tenías. Las referencias de otros no siempre se trasladan. Tomar decisiones con más data es siempre mejor."},
+      D:{historia:"Pediste el contrato a 6 meses con salida libre. La empresa no aceptó. Eso solo ya te dijo todo. Rechazaste. Fue la información más barata que conseguiste.",pts:90,motivo:"Una empresa que no acepta dar garantías mínimas en un ambiente ya reconocido como tóxico te está diciendo que sabe lo que tiene. Escuchar esa respuesta es inteligencia."},
+    }
+  },
+  {
+    edad:24, nombre:"El amigo con el proyecto", emoji:"🤝",
+    drama:"Tu mejor amigo — de toda la vida, confiás en él — te pide $600.000 prestados para arrancar un emprendimiento. Tiene plan, tiene clientes, solo le falta capital. Te dice que devuelve en 4 meses con 20% de interés. Vos tenés esa plata ahorrada.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Le prestás. Es tu mejor amigo, tiene un plan serio, y el 20% es mejor que cualquier plazo fijo."},
+      {l:"B",txt:"No le prestás. No mezclás plata con amistad, nunca. Le explicás y le ofrecés ayudarlo de otra forma."},
+      {l:"C",txt:"Se lo dás sin interés ni fecha fija — como un regalo real, no un préstamo."},
+      {l:"D",txt:"Le prestás $300.000 — la mitad — lo que podés perder sin que afecte tu vida ni la amistad."},
+    ],
+    futuros:{
+      A:{historia:"El emprendimiento arrancó bien pero a los 5 meses tuvo problemas de flujo. No pudo devolver en tiempo. Primero 'dame una semana más'. Al año la conversación se volvió tensa. La amistad sobrevivió, pero quedó una cicatriz.",pts:35,motivo:"El problema no fue la confianza ni el plan. Fue mezclar expectativas formales (interés, fecha) con un vínculo informal (amistad). Cuando algo sale mal, esa mezcla explota."},
+      B:{historia:"Tu amigo encontró el dinero de otra forma. El emprendimiento salió bien. La amistad quedó intacta. Años después, cuando vos necesitaste algo, él estuvo sin segundas.",pts:75,motivo:"Proteger una amistad de la tensión del dinero no es ser frío: es ser inteligente sobre lo que realmente vale. El dinero se consigue de muchos lados. Una amistad de toda la vida, no."},
+      C:{historia:"Le diste los $600.000 sin esperar nada. Él lo recibió como lo que era: un regalo. El emprendimiento tuvo vaivenes. No te devolvió porque nunca fue una deuda. La amistad quedó perfecta. El costo fue real pero lo elegiste conscientemente.",pts:60,motivo:"Si vas a dar plata a alguien cercano, que sea un regalo con conciencia, no un préstamo disfrazado. La claridad evita la tensión. El costo es real pero al menos fue una decisión honesta."},
+      D:{historia:"Le diste la mitad. Él consiguió el resto de otro lado. El emprendimiento arrancó. Cuando tuvo problemas, la deuda con vos era manejable y la devolvió. La amistad no tuvo presión porque el monto no era suficiente para crearla.",pts:85,motivo:"Dar lo que podés perder sin que duela es una regla de oro no solo para inversiones sino para préstamos a personas cercanas. No protege la plata: protege el vínculo."},
+    }
+  },
+  {
+    edad:26, nombre:"El auto que puede aguantar o no", emoji:"🚗",
+    drama:"Tu auto tiene 12 años y empezó a fallar. El mecánico dice que puede durar 2 años más con mantenimiento — o romperse la semana que viene. No hay certeza. Un 0km en cuotas: $350.000 por mes durante 48 meses. Un usado bueno: $2.000.000 de contado. Tenés $2.000.000 ahorrados.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Comprás el 0km en cuotas. 48 meses es mucho pero por primera vez tenés un auto confiable."},
+      {l:"B",txt:"Comprás el usado con los $2.000.000. Sin deuda, pero te quedás sin colchón."},
+      {l:"C",txt:"No comprás nada todavía. Seguís con el viejo, ahorrás $350.000 por mes y en 6 meses tenés más opciones."},
+      {l:"D",txt:"Comprás el usado pero negociás el precio. Con $1.600.000 dejás $400.000 de colchón."},
+    ],
+    futuros:{
+      A:{historia:"Tenés el 0km. Es hermoso. Pero durante 4 años, $350.000 de tu sueldo están comprometidos antes de cobrar. Cuando llegó una oportunidad de inversión al año y medio, no tenías margen.",pts:40,motivo:"Un auto nuevo en cuotas largas no es una compra: es una hipoteca chica. Durante 4 años tu flexibilidad financiera queda atada a esa decisión, pase lo que pase."},
+      B:{historia:"Compraste el usado. Quedaste a cero. Dos meses después el auto necesitó una reparación de $200.000. No tenías colchón. Usaste la tarjeta. Empezaste a rearmar el ahorro desde cero.",pts:45,motivo:"Gastar todos los ahorros en algo — aunque sea una buena compra — te deja sin red. El costo no fue el auto sino la vulnerabilidad de los meses siguientes."},
+      C:{historia:"Seguiste con el viejo. Se rompió a los 3 meses — justo antes de tener suficiente ahorrado. Tuviste que decidir bajo presión con menos opciones. Pero igual saliste mejor que si hubieras tomado deuda.",pts:55,motivo:"Esperar tiene riesgos reales. Pero incluso cuando el plan salió mal, la posición sin deuda te dio más margen que la alternativa con cuotas. No hay decisión perfecta, solo posiciones mejores o peores."},
+      D:{historia:"Negociaste. El dueño quería $2.000.000, aceptó $1.650.000. Compraste el auto, te quedaron $350.000 de colchón. Cuando a los dos meses hubo un gasto inesperado, lo cubriste sin deuda.",pts:85,motivo:"Negociar el precio de algo grande es la habilidad financiera más subestimada. Nadie te enseña que los precios son más movibles de lo que parecen."},
+    }
+  },
+  {
+    edad:28, nombre:"La tarjeta en rojo", emoji:"💳",
+    drama:"Acumulaste $1.200.000 de deuda en tarjeta. El mínimo mensual es $120.000. Si pagás solo el mínimo, en 3 años habrás pagado $1.800.000 y todavía vas a deber. Tenés $1.200.000 en una caja de ahorro que armaste como fondo de emergencia.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Usás todo el fondo para cancelar la deuda de una. Empezás limpio, sin intereses."},
+      {l:"B",txt:"Pagás el mínimo todos los meses. El fondo de emergencia no se toca — es para emergencias."},
+      {l:"C",txt:"Usás $800.000 del fondo, cancelás parte de la deuda y mantenés un colchón mínimo."},
+      {l:"D",txt:"Buscás refinanciar la deuda en un préstamo personal con menor tasa antes de hacer nada."},
+    ],
+    futuros:{
+      A:{historia:"Cancelaste todo. Quedaste sin fondo. Un mes después necesitaron $400.000 de golpe. Volviste a usar la tarjeta. Volviste al punto de partida, solo que más rápido.",pts:50,motivo:"Pagar deuda cara con el fondo es correcto cuando los intereses superan ampliamente el beneficio del fondo. Pero quedar a cero te expone a volver a endeudarte ante el primer imprevisto. El ciclo es real."},
+      B:{historia:"Seguiste pagando el mínimo. En 3 años pagaste $1.800.000 de una deuda de $1.200.000. 'Protegiste' el fondo pero te costó $600.000 extra en intereses. Plata que se fue sin que sintieras nada cada mes.",pts:20,motivo:"Pagar el mínimo de la tarjeta mientras tenés plata en caja de ahorro es uno de los peores errores financieros que existen. La tasa de la tarjeta destruye cualquier rendimiento del ahorro."},
+      C:{historia:"Usaste $800.000, quedaron $400.000 de colchón. Seguiste pagando el resto con el sueldo. En 5 meses cancelaste todo. El fondo lo volviste a armar en 4 meses. Saliste limpio y con colchón.",pts:85,motivo:"El equilibrio entre cancelar deuda cara y mantener algo de liquidez es la decisión óptima en la mayoría de los casos. No quedás sin red pero tampoco dejás correr los intereses."},
+      D:{historia:"Investigaste refinanciación. Encontraste un préstamo personal al 40% anual versus el 180% de la tarjeta. Refinanciaste. Ahorraste más de $700.000 en intereses. El fondo quedó intacto y la cuota era manejable.",pts:90,motivo:"Antes de pagar una deuda cara, vale la pena 20 minutos buscando si existe una forma más barata de tener esa misma deuda. La diferencia de tasa puede ser enorme y casi nadie la busca."},
+    }
+  },
+  {
+    edad:30, nombre:"Emprender o no emprender", emoji:"🚀",
+    drama:"Tenés una idea de negocio que trabajaste un año. Tenés clientes interesados, tenés el know-how. Solo falta renunciar al trabajo estable de $3.200.000 por mes. Tu pareja te apoya. Tus padres te piden que no lo hagas. Tenés $2.000.000 ahorrados.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Renunciás y arrancás. Si no es ahora, ¿cuándo? Con $2.000.000 tenés 6 meses de runway."},
+      {l:"B",txt:"No renunciás. Seguís con el trabajo y el emprendimiento en paralelo hasta que el negocio pague lo mismo que el sueldo."},
+      {l:"C",txt:"Negociás con tu empleador: reducción de horario a cambio de menos sueldo para tener tiempo de arrancar."},
+      {l:"D",txt:"Renunciás pero te ponés una regla: si en 12 meses no generás el 50% de tu sueldo anterior, buscás trabajo."},
+    ],
+    futuros:{
+      A:{historia:"Los primeros 3 meses bien. Al cuarto, los clientes interesados demoraron en cerrar. Al sexto, los $2.000.000 se estaban acabando. Tomaste decisiones de corto plazo que comprometieron la calidad del negocio. Sobreviviste, pero por muy poco.",pts:50,motivo:"Seis meses de runway parece mucho hasta que los vivís. Los negocios casi siempre tardan más en generar ingresos de lo esperado. El tiempo necesario suele ser el doble del calculado."},
+      B:{historia:"Arrancar en paralelo fue agotador. Trabajaste 14 horas por día durante 8 meses. Pero cuando renunciaste, el negocio ya facturaba. No arrancaste sin red: arrancaste con velocidad.",pts:80,motivo:"La validación antes de apostar todo es una de las estrategias más inteligentes. El costo es tiempo y energía. El beneficio es no apostar tu estabilidad a algo que todavía no probaste en el mercado real."},
+      C:{historia:"Tu empleador aceptó 6 horas por día a $2.000.000. En 9 meses el emprendimiento igualó el sueldo reducido. Renunciaste con certeza, no con esperanza.",pts:85,motivo:"La negociación para crear transiciones es subestimada. No siempre tenés que elegir entre todo y nada. A veces podés crear condiciones intermedias que reducen el riesgo real."},
+      D:{historia:"Renunciaste con la regla de los 12 meses. A los 9 meses no llegabas al 50% pero ibas en camino. Extendiste 3 meses más. Al mes 14 llegaste. La regla te dio foco y te sacó de la zona de comodidad falsa.",pts:70,motivo:"Ponerse reglas propias con consecuencias reales es poderoso. No porque siempre funcione perfectamente, sino porque te obliga a mirar los números con honestidad en lugar de seguir 'esperando que se acomode'."},
+    }
+  },
+  {
+    edad:33, nombre:"La casa propia", emoji:"🏡",
+    drama:"Aparece la oportunidad de comprar un departamento. Cuesta $45.000 USD. Tenés $15.000 USD ahorrados. El banco te presta el resto: cuota de $800.000 por mes durante 20 años. Hoy pagás $600.000 de alquiler. La cuota es $200.000 más que el alquiler — pero en 20 años el depto es tuyo.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Tomás el crédito. Es solo $200.000 más por mes y en 20 años tenés algo concreto."},
+      {l:"B",txt:"No tomás el crédito. 20 años es demasiado compromiso. Seguís alquilando e invertís la diferencia."},
+      {l:"C",txt:"Tomás el crédito pero te comprometés a hacer pagos adicionales de capital para acortar el plazo."},
+      {l:"D",txt:"Esperás 2 años más, ahorrás para tener más entrada y reducir el crédito."},
+    ],
+    futuros:{
+      A:{historia:"Los primeros años bien. A los 5 años cambiaste de trabajo y durante 4 meses ganaste menos. Las cuotas siguieron. Refinanciaste, pagaste más intereses. A los 15 años habías pagado casi el doble del valor del departamento.",pts:55,motivo:"Un crédito hipotecario no es 'comprar' algo: es comprometerte a pagar casi el doble a lo largo de 20 años. No está mal, pero es importante entrar con los ojos abiertos sobre el costo real total."},
+      B:{historia:"Seguiste alquilando. Invertiste los $200.000 extra por mes durante 10 años. Al año 10, esa inversión valía más que el departamento. Pero no tenías un lugar tuyo. Esa sensación también tiene un costo que la planilla no captura.",pts:65,motivo:"Financieramente, alquilar e invertir la diferencia puede ser superior al crédito en muchos escenarios. Pero hay un valor no financiero en la propiedad que cada persona pondera distinto. No hay respuesta universal."},
+      C:{historia:"Tomaste el crédito y pusiste pagos extra cuando pudiste. En lugar de 20 años, lo cancelaste en 13. El ahorro en intereses fue enorme. El depto quedó tuyo 7 años antes de lo planeado.",pts:90,motivo:"Tomar un crédito largo no obliga a pagarlo en el plazo máximo. Cada peso adicional al capital reduce los intereses totales de forma desproporcionada. Es una de las estrategias más efectivas y menos conocidas."},
+      D:{historia:"Esperaste 2 años. Cuando fuiste a comprar, el precio había subido un 20% en dólares. El crédito que necesitabas era casi el mismo. Pero tu ahorro era mayor y la cuota mensual más manejable. Llegaste mejor parado, aunque el departamento costó más.",pts:75,motivo:"Esperar para tener más capital tiene un riesgo real: los precios pueden subir. A veces la espera mejora tu posición, a veces la empeora. No hay respuesta correcta — solo una gestión del riesgo más o menos consciente."},
+    }
+  },
+  {
+    edad:36, nombre:"Los sueldos se juntaron", emoji:"💑",
+    drama:"Vos y tu pareja juntan $7.000.000 por mes. Por primera vez tienen más de lo que necesitan. Los gastos fijos son $3.500.000. Hay $3.500.000 disponibles todos los meses. El problema: no tienen ningún sistema. Cada uno gasta lo que quiere y a fin de mes siempre falta más de lo que debería faltar.",
+    pregunta:"¿Cómo organizan la plata?",
+    opts:[
+      {l:"A",txt:"Cuenta conjunta para todo. Todo entra ahí, todo sale de ahí. Sin separaciones."},
+      {l:"B",txt:"Cada uno maneja su propio dinero. Dividen los gastos comunes al 50% y listo."},
+      {l:"C",txt:"Tres cuentas: una conjunta para gastos del hogar, y cada uno tiene la suya para gastos personales."},
+      {l:"D",txt:"Antes de decidir la estructura, acuerdan cuánto va a ahorro, cuánto a inversión, cuánto es libre."},
+    ],
+    futuros:{
+      A:{historia:"La cuenta conjunta fue cómoda al principio. Con el tiempo, los gastos personales se volvieron tema de conversación. Ninguno sabía cuánto gastaba en qué. Las discusiones sobre plata fueron más frecuentes que cuando cada uno manejaba la suya.",pts:45,motivo:"Mezclar todo sin estructura crea fricción. No porque la confianza no exista, sino porque sin reglas claras cualquier gasto del otro puede sentirse como un problema compartido."},
+      B:{historia:"50/50 funcionó hasta que los sueldos cambiaron. Uno ganaba más y el 50% se sentía desproporcionado. Renegociaron, hubo tensión. Lo que parecía simple no lo era cuando la vida cambió.",pts:50,motivo:"El 50/50 es justo cuando los ingresos son iguales. Cuando son distintos — o cambian — puede crear sensación de inequidad. Un sistema que no se adapta a los cambios necesita renegociación constante."},
+      C:{historia:"Las tres cuentas funcionaron. Autonomía sobre la plata personal y gastos del hogar separados. Menos conversaciones sobre 'por qué gastaste eso'. Más claridad en qué iba al ahorro y qué era libre.",pts:80,motivo:"La estructura que preserva autonomía individual y comparte los compromisos comunes es la más sostenible. No porque evite todas las discusiones, sino porque reduce las innecesarias."},
+      D:{historia:"Antes de decidir la cuenta, se sentaron y pusieron números: ahorro, inversión, hogar, gastos personales. El sistema que eligieron después importó menos que el acuerdo previo sobre los montos.",pts:90,motivo:"La discusión más importante sobre plata en pareja no es dónde va el dinero sino cuánto va a cada destino. Con ese acuerdo claro, cualquier estructura funciona. Sin él, ninguna alcanza."},
+    }
+  },
+  {
+    edad:39, nombre:"El trabajo de los sueños que paga menos", emoji:"✨",
+    drama:"Te llega una oferta en algo que genuinamente amás — el tipo de trabajo en el que perdés la noción del tiempo. El problema: paga $1.200.000 menos por mes que lo que ganás ahora. Tenés familia e hipoteca. El recorte es del 28% de tus ingresos.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Aceptás. La plata no lo es todo. Pasar 8 horas por día en algo que te mata también tiene un costo."},
+      {l:"B",txt:"Rechazás. No es el momento. Con hipoteca y familia, un recorte del 28% es demasiado riesgo."},
+      {l:"C",txt:"Negociás el sueldo antes de decidir. Pedís un número intermedio. Si no hay margen, recién ahí decidís."},
+      {l:"D",txt:"Aceptás pero primero identificás $1.200.000 de gastos que podés eliminar para que el impacto sea neutro."},
+    ],
+    futuros:{
+      A:{historia:"Los primeros meses, un alivio. Pero el recorte se sintió: salidas menos, vacaciones ajustadas, algún mes tenso. Con el tiempo, la energía que traías de un trabajo que amabas se contagió a todo lo demás. Ganabas menos pero vivías mejor. No hay forma de medir eso en una planilla.",pts:70,motivo:"El bienestar tiene un costo financiero real. La pregunta no es si ese costo existe — existe — sino si vale lo que te da a cambio. Eso solo vos lo podés calcular."},
+      B:{historia:"Rechazaste. El trabajo de siempre siguió. Pero esa oferta se quedó en la cabeza. Tres años después apareció algo similar con menos restricciones financieras. Y la tomaste. A veces 'no es el momento' es simplemente correcto.",pts:65,motivo:"Esperar el momento adecuado no siempre es miedo disfrazado. A veces es inteligencia real sobre las condiciones de vida. La misma decisión en distinto momento puede tener consecuencias muy distintas."},
+      C:{historia:"Pediste negociar. La empresa ofreció $700.000 menos en lugar de $1.200.000. Aceptaste. El recorte era manejable. Dos años después, con más experiencia en ese mundo, te ofrecieron un aumento que superó el sueldo anterior.",pts:85,motivo:"Negociar antes de aceptar o rechazar es siempre la primera jugada. Lo peor que pueden decir es que no. Y si dicen que no, recién ahí tomás la decisión real con toda la información disponible."},
+      D:{historia:"Aceptaste con el plan de recorte. Identificaste $1.200.000 de gastos que podías eliminar sin que afectara la calidad de vida real. Lo hiciste. El impacto fue casi neutro en los números. La ganancia en bienestar fue real.",pts:80,motivo:"Muchas veces el ingreso que creemos necesitar es más alto que el que realmente necesitamos. Antes de rechazar algo por plata, vale la pena mapear qué gastos son reales y cuáles son hábitos que se pueden cambiar."},
+    }
+  },
+  {
+    edad:42, nombre:"La crisis que no viste venir", emoji:"🌊",
+    drama:"La economía se cayó. Tus ingresos bajaron a la mitad de un mes para el otro — de $5.500.000 a $2.700.000. Los gastos fijos son $3.200.000. Tenés $3.000.000 en ahorros. Esto puede durar 6 meses o 18 — nadie lo sabe.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Usás los ahorros para mantener el ritmo de vida actual mientras dure. Si hay que ajustar, se ve después."},
+      {l:"B",txt:"Ajustás los gastos fijos de inmediato hasta llevarlos a $2.700.000 aunque sea muy incómodo."},
+      {l:"C",txt:"Buscás ingresos alternativos urgentes — lo que sea — para compensar la diferencia."},
+      {l:"D",txt:"Combinás: ajustás $500.000 de gastos y usás el ahorro para cubrir la diferencia mientras buscás ingresos extra."},
+    ],
+    futuros:{
+      A:{historia:"Los primeros 3 meses todo igual. Al cuarto, los $3.000.000 se estaban terminando. La crisis duró 14 meses. Al mes 6 ya no tenías colchón y tuviste que ajustar igual — pero ahora sin reservas ni margen.",pts:20,motivo:"Mantener el ritmo de vida con ahorros cuando los ingresos bajaron es la trampa más cómoda. El colchón existe para amortiguar — no para sostener el mismo estilo de vida indefinidamente."},
+      B:{historia:"Ajustaste de golpe. Fue durísimo los primeros meses. Pero a los 4 meses ya tenías un equilibrio real. Los ahorros quedaron casi intactos. Cuando la crisis pasó, arrancaste desde una posición sólida.",pts:75,motivo:"Ajustar rápido duele más al principio pero protege el capital acumulado. Cada mes que tardás en ajustar es un mes de ahorro que se va sin que después lo recuperes."},
+      C:{historia:"Saliste a buscar ingresos. Tardaste 2 meses en conseguir algo que compensara la mitad de la diferencia. No fue perfecto pero combinado con algún ajuste de gastos, evitaste tocar el grueso de los ahorros.",pts:70,motivo:"Buscar ingresos adicionales en una crisis es una respuesta activa versus la pasiva de solo gastar ahorros. El tiempo que tarda en funcionar es el costo real — pero el resultado protege el capital."},
+      D:{historia:"Combinaste ajuste y búsqueda de ingresos. En 3 meses el déficit se redujo a la mitad. Los ahorros bajaron pero no se destruyeron. Cuando la crisis pasó, tenías algo con qué rearmar.",pts:90,motivo:"En una crisis la mejor estrategia es siempre múltiple: reducir egresos Y buscar ingresos al mismo tiempo. Ninguna sola alcanza tan bien como las dos juntas."},
+    }
+  },
+  {
+    edad:45, nombre:"La inversión que no entendés del todo", emoji:"📈",
+    drama:"Un asesor financiero te recomienda mover el 60% de tus ahorros a un instrumento que da mayor rendimiento pero tiene más volatilidad. Tenés $4.000.000 ahorrados. Él dice que a 10 años es claramente mejor. Pero también dice que en el camino puede bajar un 30% en algún momento.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Seguís el consejo al pie de la letra. Él es el experto, para eso lo pagás."},
+      {l:"B",txt:"No movés nada. No entendés bien el instrumento y no invertís en lo que no comprendés."},
+      {l:"C",txt:"Movés el 30% — la mitad de lo que recomienda — para probar cómo reaccionás ante la volatilidad."},
+      {l:"D",txt:"Pedís que te explique el instrumento hasta que lo entiendas vos, y recién ahí decidís."},
+    ],
+    futuros:{
+      A:{historia:"A los 8 meses el instrumento bajó un 28%. En papel, perdiste $672.000. El asesor dijo que era normal. Era normal. Pero a la noche no podías dormir. Vendiste en el peor momento por la angustia. Cristalizaste la pérdida.",pts:35,motivo:"Seguir un consejo que no entendés funciona mientras todo sube. El problema aparece cuando baja — porque sin comprensión, la angustia gana a la lógica y vendés en el peor momento."},
+      B:{historia:"No moviste nada. Los $4.000.000 crecieron al ritmo de la inflación. El instrumento que rechazaste en 10 años rindió un 180% real. Perdiste el retorno por miedo a lo que no entendías.",pts:45,motivo:"No invertir en lo que no comprendés es una regla correcta — hasta que el costo de no invertir supera el costo del riesgo. La solución no era quedarse quieto: era aprender."},
+      C:{historia:"Moviste el 30%. Cuando bajó un 28%, perdiste en papel $336.000 — la mitad de lo que hubieras perdido con el 60%. Lo bancaste sin vender. Al año 5 esa porción había crecido un 90% real. Aprendiste el comportamiento del instrumento sin apostar todo.",pts:80,motivo:"Probar con la mitad es una forma de aprender con piel en el juego pero sin riesgo existencial. La experiencia de vivir la volatilidad sin destruirte es irremplazable."},
+      D:{historia:"Pediste que te lo explicara. Tardaste 3 reuniones en entender. Moviste el 60% desde la comprensión, no desde la confianza ciega. Cuando bajó el 30%, no vendiste. Sabías por qué pasaba. Al año 8 habías más que duplicado esa porción.",pts:90,motivo:"Invertir desde la comprensión es la diferencia entre un inversor que mantiene la estrategia bajo presión y uno que vende cuando duele. La paciencia tiene raíces en el entendimiento, no en la fe."},
+    }
+  },
+  {
+    edad:50, nombre:"La herencia inesperada", emoji:"📦",
+    drama:"Falleció un familiar y te dejó el equivalente a $5.000.000. Es plata que no contabas tener — y que llegó de una forma que no festejás. Tu pareja quiere invertirla toda. Vos sentís que algo de eso tiene que ir a algo que tenga sentido más allá del rendimiento.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"La invertís toda. El familiar hubiera querido que la plata trabajara."},
+      {l:"B",txt:"Destinás el 20% a algo con significado — una causa, un viaje familiar especial, algo que lo recuerde — e invertís el resto."},
+      {l:"C",txt:"La ponés toda en plazo fijo por un año. No tomás decisiones con plata que llegó así, no ahora."},
+      {l:"D",txt:"La dividís en tercios: un tercio a cancelar deudas pendientes, un tercio a inversión, un tercio libre."},
+    ],
+    futuros:{
+      A:{historia:"Invertiste todo. Fue la decisión financieramente más eficiente. Pero la incomodidad de no hacer nada con un dinero que llegó de esa forma te acompañó un tiempo. No hay forma de calcular ese costo.",pts:70,motivo:"La decisión financieramente óptima y la decisión emocionalmente correcta no siempre son la misma. Ignorar la segunda no la hace desaparecer."},
+      B:{historia:"Destinaste $1.000.000 a algo con significado — un viaje familiar al lugar que el familiar amaba. Invertiste el resto. El rendimiento fue un poco menor. La experiencia fue irremplazable. Diez años después, tus hijos todavía hablan de ese viaje.",pts:85,motivo:"El dinero tiene también una función simbólica y emocional. Ignorarla completamente en nombre de la optimización financiera es una forma de empobrecimiento que las planillas no miden."},
+      C:{historia:"Pusiste todo en plazo fijo. Un año después tomaste decisiones más tranquilas. La inflación te comió algo del valor real, pero llegaste a las decisiones grandes sin la presión del duelo reciente.",pts:65,motivo:"Esperar antes de tomar decisiones grandes con plata que llegó en un momento de carga emocional es una estrategia válida. El costo de oportunidad puede ser menor que el costo de decidir mal bajo presión."},
+      D:{historia:"Cancelaste deudas, invertiste un tercio, y el tercio libre lo usaste para cosas que la vida cotidiana siempre postergaba. El equilibrio fue arbitrario pero funcionó: no había una sola decisión que cargar con todo el peso simbólico.",pts:80,motivo:"Dividir una suma grande en destinos distintos reduce la presión de que cada decisión sea perfecta. A veces la diversificación no es solo financiera: es también emocional."},
+    }
+  },
+  {
+    edad:55, nombre:"Diez años antes de jubilarte", emoji:"⏳",
+    drama:"Tu contador te muestra los números: si seguís así, tu jubilación va a ser el 40% de tu sueldo actual. Ganás $6.000.000 hoy. En 10 años vas a cobrar $2.400.000. Tus gastos actuales son $4.200.000. Todavía hay tiempo — pero cada año que pasa, hay menos.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Seguís igual por ahora. Diez años es mucho tiempo, ya te vas a ocupar."},
+      {l:"B",txt:"Empezás hoy a ahorrar e invertir el 25% del sueldo con el foco puesto en la jubilación."},
+      {l:"C",txt:"Contratás un asesor para que te arme un plan concreto con lo que ya tenés acumulado."},
+      {l:"D",txt:"Empezás a construir una fuente de ingreso pasivo que no dependa del Estado ni de tu capacidad de trabajar."},
+    ],
+    futuros:{
+      A:{historia:"Diez años después, nada había cambiado. La jubilación fue $2.400.000. Tus gastos eran $5.000.000. El déficit era enorme. Diez años de advertencia desperdiciados.",pts:5,motivo:"Ignorar un problema financiero que sabés que viene no lo hace desaparecer. Lo hace más caro. Cada año que pasás sin actuar es un año menos de capitalización."},
+      B:{historia:"En 10 años ahorraste e invertiste $18.000.000 adicionales. Llegaste a la jubilación con un colchón real que la complementa. No te cambia la vida — te da opciones.",pts:75,motivo:"Ahorrar el 25% durante 10 años compra décadas de tranquilidad. El sacrificio mensual es menor que el beneficio de llegar preparado."},
+      C:{historia:"El asesor te mostró que con lo que ya tenías acumulado y una estrategia conservadora, podías vivir bien. Reorganizaste todo en 3 reuniones. Llegaste preparado sin necesidad de un esfuerzo heroico.",pts:85,motivo:"Un buen asesor en el momento justo puede cambiar completamente el panorama sin requerir sacrificio extremo. A veces el problema no es que falte plata sino que no hay estrategia."},
+      D:{historia:"Compraste un local pequeño que alquilás. A los 10 años te da $1.800.000 por mes. Sumado a la jubilación: $4.200.000. Llegás exacto — pero sin depender de una sola fuente.",pts:90,motivo:"El ingreso pasivo construido con tiempo es la diferencia entre jubilarse con opciones o jubilarse dependiendo del Estado. Cada año que empezás antes, el esfuerzo necesario es menor."},
+    }
+  },
+  {
+    edad:60, nombre:"Llegaste. Ahora ¿cómo vivís?", emoji:"🌅",
+    drama:"Te jubilaste. Cobrás $2.400.000 por mes. Tus gastos fijos son $3.800.000. El déficit es $1.400.000 por mes. Lo que hayas construido en las 14 rondas anteriores es todo lo que tenés para cubrirlo — o no.",
+    pregunta:"¿Qué decidís?",
+    opts:[
+      {l:"A",txt:"Usás los ahorros para cubrir la diferencia cada mes. Mientras alcancen, alcanzarán."},
+      {l:"B",txt:"Reducís el estilo de vida hasta ajustarlo exactamente a lo que cobrás. Sin tocar ahorros."},
+      {l:"C",txt:"Buscás una actividad part-time en algo que te guste — no para trabajar, sino para seguir generando."},
+      {l:"D",txt:"Combinás: reducís algunos gastos, generás algo de ingreso, y usás el ahorro solo para imprevistos."},
+    ],
+    futuros:{
+      A:{historia:"Los ahorros cubrieron la diferencia durante años. Pero sin reposición, cada mes el colchón se achica. A los 12 años la situación se complicó justo cuando la salud empezó a necesitar más.",pts:40,motivo:"Los ahorros son el colchón, no el ingreso. Gastarlos sin ninguna fuente que los reponga es una cuenta regresiva que siempre llega a cero."},
+      B:{historia:"Recortaste $1.400.000 de gastos. Fue duro al principio. Pero a los 6 meses ya era tu nueva normalidad. Los ahorros quedaron intactos para emergencias reales. Dormiste tranquilo.",pts:70,motivo:"Adaptar el estilo de vida a los ingresos reales es la decisión más sostenible. El ego que resiste ese ajuste cuesta más caro que el ajuste mismo."},
+      C:{historia:"Empezaste a dar clases, asesorías, o lo que sabías hacer — 3 horas por día. Generaste $900.000 más. El déficit se redujo a $500.000. El ahorro alcanzó para cubrirlo cómodamente. Y te sentiste activo y útil.",pts:80,motivo:"Mantenerse activo después de jubilarse tiene beneficios financieros y personales que se potencian mutuamente. No es seguir trabajando: es elegir seguir aportando."},
+      D:{historia:"Combinaste ajuste, ingreso y ahorro estratégico. Ninguna fuente sola alcanzaba, pero las tres juntas te dieron tranquilidad total. No dependías de que ninguna fallara sola.",pts:95,motivo:"La diversificación de ingresos en la jubilación es el resultado de 40 años de decisiones. No depender de una sola fuente es la libertad financiera real. Y se construye mucho antes de llegar a los 60."},
+    }
+  },
+];
+
+// ════════════════════════════
+// ESTADO
+// ════════════════════════════
+let fase = 'preguntas'; // 'preguntas' | 'futuros'
+let rondaActual = 0;
+let elecciones = []; // {letra, pts_base}
+let ptsTotales = 0;
+
+// ════════════════════════════
+// HELPERS
+// ════════════════════════════
+const $ = id => document.getElementById(id);
+function ir(s){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));
+  $(s).classList.add('on');
+  window.scrollTo(0,0);
+}
+function actualizarPips(){
+  const total = RONDAS.length;
+  $('pips').innerHTML = Array.from({length:total},(_,i)=>`<div class="pip ${i<rondaActual?'done':i===rondaActual?'now':''}"></div>`).join('');
+}
+function colorPts(p){ return p>=75?'pts-al':p>=45?'pts-med':'pts-bj'; }
+function azar(base){ return base + (Math.random()<.5?1:-1)*Math.floor(Math.random()*16); }
+
+// ════════════════════════════
+// INICIAR
+// ════════════════════════════
+function iniciarJuego(){
+  fase='preguntas'; rondaActual=0; elecciones=[]; ptsTotales=0;
+  actualizarPips();
+  mostrarPregunta();
+}
+
+// ════════════════════════════
+// FASE 1 — PREGUNTAS
+// ════════════════════════════
+function mostrarPregunta(){
+  const r = RONDAS[rondaActual];
+  $('hud-ronda').textContent = `Ronda ${rondaActual+1} de ${RONDAS.length}`;
+  $('hud-titulo').textContent = r.nombre;
+  $('hud-edad').textContent = `${r.edad} años`;
+  actualizarPips();
+
+  const body = $('game-body');
+  body.innerHTML = `
+    <div class="sit-card">
+      <span class="sit-tag tag-sit">Ronda ${rondaActual+1} — ${r.edad} años</span>
+      <span class="sit-emoji">${r.emoji}</span>
+      <div class="sit-titulo">${r.nombre}</div>
+      <div class="sit-drama">Pasó lo siguiente: ${r.drama}</div>
+      <div class="sit-pregunta">${r.pregunta}</div>
+    </div>
+    <div class="opts" id="opts-container">
+      ${r.opts.map((o,i)=>`
+        <button class="opt" id="opt-${i}" onclick="elegir('${o.l}',${i})">
+          <span class="opt-letra">${o.l}</span>
+          <span class="opt-txt">${o.txt}</span>
+        </button>`).join('')}
+    </div>
+    <div class="instruccion" id="instruccion-box" style="display:none">
+      <strong>Anotá en tu hoja</strong>
+      Ronda ${rondaActual+1} → Opción <span id="instr-letra" style="font-weight:800;font-size:1rem"></span>
+    </div>
+    <button class="btn-main" id="btn-siguiente" style="display:none" onclick="siguientePregunta()">
+      ${rondaActual < RONDAS.length-1 ? 'Siguiente situación →' : 'Listo — conocer el futuro'}
+    </button>`;
+}
+
+function elegir(letra, idx){
+  document.querySelectorAll('.opt').forEach(b=>b.classList.add('bloqueada'));
+  document.getElementById(`opt-${idx}`).classList.remove('bloqueada');
+  document.getElementById(`opt-${idx}`).classList.add('elegida');
+  elecciones[rondaActual] = letra;
+  $('instr-letra').textContent = letra;
+  $('instruccion-box').style.display='block';
+  $('btn-siguiente').style.display='block';
+  $('btn-siguiente').textContent = rondaActual < RONDAS.length-1 ? 'Siguiente situación →' : 'Ver los futuros →';
+}
+
+function siguientePregunta(){
+  if(!elecciones[rondaActual]) return;
+  rondaActual++;
+  if(rondaActual < RONDAS.length){
+    mostrarPregunta();
+  } else {
+    mostrarSeparador();
+  }
+}
+
+// ════════════════════════════
+// SEPARADOR
+// ════════════════════════════
+function mostrarSeparador(){
+  fase='futuros'; rondaActual=0;
+  $('hud-ronda').textContent = 'Revelando futuros';
+  $('hud-titulo').textContent = 'Conocé tus resultados';
+  $('hud-edad').textContent = '';
+  $('pips').innerHTML='';
+  $('game-body').innerHTML=`
+    <div class="fase-sep">
+      <span class="fase-sep-emoji">🔮</span>
+      <div class="fase-sep-titulo">Elegiste en las 15 rondas</div>
+      <p class="fase-sep-desc">Ahora vas a conocer qué pasó con cada decisión y cuántos puntos conseguiste.<br><br>Anotá los puntos de cada ronda en tu hoja.</p>
+    </div>
+    <button class="btn-main" onclick="mostrarFuturo()">Ver el futuro de la ronda 1 →</button>`;
+}
+
+// ════════════════════════════
+// FASE 2 — FUTUROS
+// ════════════════════════════
+function mostrarFuturo(){
+  const r = RONDAS[rondaActual];
+  const letra = elecciones[rondaActual];
+  const fut = r.futuros[letra];
+  const ptsReales = Math.max(5, Math.min(100, azar(fut.pts)));
+  ptsTotales += ptsReales;
+
+  $('hud-ronda').textContent = `Futuro ${rondaActual+1} de ${RONDAS.length}`;
+  $('hud-titulo').textContent = r.nombre;
+  $('hud-edad').textContent = `${r.edad} años`;
+
+  const nivel = ptsReales>=75?'gan':ptsReales>=45?'neu':'per';
+  const clrPts = ptsReales>=75?'pts-al':ptsReales>=45?'pts-med':'pts-bj';
+
+  $('game-body').innerHTML=`
+    <div class="futuro-card fut-${nivel}">
+      <div class="fut-elegida">Elegiste la opción <span>${letra}</span> a los ${r.edad} años</div>
+      <div class="fut-historia">${fut.historia}</div>
+      <div class="fut-pts ${clrPts}">${ptsReales} pts</div>
+      <div class="fut-motivo">${fut.motivo}</div>
+    </div>
+    <div class="instruccion">
+      <strong>Anotá en tu hoja</strong>
+      Ronda ${rondaActual+1} → Opción ${letra} → <span style="font-weight:800;font-size:1rem">${ptsReales} puntos</span>
+    </div>
+    <button class="btn-main" onclick="siguienteFuturo()">
+      ${rondaActual < RONDAS.length-1 ? `Ver ronda ${rondaActual+2} →` : 'Ver mi resultado final →'}
+    </button>`;
+}
+
+function siguienteFuturo(){
+  rondaActual++;
+  if(rondaActual < RONDAS.length){
+    mostrarFuturo();
+  } else {
+    mostrarFinal();
+  }
+}
+
+// ════════════════════════════
+// FINAL
+// ════════════════════════════
+function mostrarFinal(){
+  const max = 1500;
+  const pct = Math.round((ptsTotales/max)*100);
+  let emoji,titulo,sub;
+  if(pct>=80){emoji='🏆';titulo='Mente financiera';sub='Tomaste decisiones equilibradas, pensaste a largo plazo y protegiste lo que ibas construyendo. Eso es exactamente lo que separa a quien llega bien a los 60 de quien no llega.';}
+  else if(pct>=65){emoji='💪';titulo='En camino';sub='La mayoría de tus decisiones fueron sólidas. Hubo momentos donde te costó pero en general priorizaste bien el futuro sobre el presente.';}
+  else if(pct>=45){emoji='😅';titulo='Aprendiste caro';sub='Tomaste algunas buenas decisiones pero también varias que te costaron puntos clave. La buena noticia: ahora sabés cuáles y por qué.';}
+  else{emoji='💸';titulo='A reiniciar';sub='Las decisiones de corto plazo dominaron sobre las de largo plazo. Pasó. Para eso existe el juego: aprender sin que cueste plata real.';}
+
+  ir('s-final');
+  $('fin-emoji').textContent=emoji;
+  $('fin-titulo').textContent=titulo;
+  $('fin-sub').textContent=sub;
+  $('fin-pts').textContent=ptsTotales;
+
+  // tabla resumen — solo muestra la opción elegida
+  $('fin-tabla').innerHTML=`
+    <tr><th>Ronda</th><th>Edad</th><th>Opción</th><th style="text-align:right">Pts</th></tr>
+    ${RONDAS.map((r,i)=>{
+      const letra=elecciones[i]||'?';
+      return `<tr><td>${i+1}</td><td>${r.edad}a</td><td style="font-weight:700;color:var(--amarillo)">${letra}</td><td class="pts-td">—</td></tr>`;
+    }).join('')}
+    <tr style="font-weight:700"><td colspan="3" style="color:var(--verde)">TOTAL</td><td class="pts-td" style="color:var(--verde);font-size:1rem">${ptsTotales}</td></tr>`;
+}
+
+function reiniciar(){ir('s-inicio')}
+</script>
+</body>
+</html>
