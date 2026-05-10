@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FinanzApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#F5C842;--gold-d:#C9991A;--gold-bg:rgba(245,200,66,0.1);
+  --green:#2ECC71;--green-bg:rgba(46,204,113,0.12);
+  --red:#E74C3C;--red-bg:rgba(231,76,60,0.12);
+  --blue:#3498DB;--orange:#F39C12;
+  --bg:#09090F;--s1:#111118;--s2:#18181F;--s3:#202028;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --text:#EFEFEF;--muted:#777;--muted2:#444;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+h1,h2,h3{font-family:'Syne',sans-serif;}
+.screen{display:none;flex-direction:column;min-height:100vh;padding:20px 18px 40px;}
+.screen.on{display:flex;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--gold);}
+.badge{background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;}
+.card.gold{border-color:rgba(245,200,66,.3);}
+.card.green{border-color:rgba(46,204,113,.35);}
+.card.red{border-color:rgba(231,76,60,.35);}
+.btn{display:block;width:100%;padding:15px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:10px;}
+.btn:first-child{margin-top:0;}
+.btn:active{transform:scale(.97);}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:var(--gold-d);}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm{padding:10px 14px;font-size:13px;border-radius:10px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-red{background:var(--red);color:#fff;}
+.money{font-family:'Syne',sans-serif;font-weight:800;color:var(--gold);}
+.money.big{font-size:36px;}
+.money.gain{color:var(--green);}
+.money.loss{color:var(--red);}
+input[type=text]{width:100%;background:var(--s2);border:1.5px solid var(--border2);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+input[type=text]:focus{border-color:var(--gold);}
+input[type=text]::placeholder{color:var(--muted2);}
+.progress{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:20px;}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .5s;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.concept{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.18);border-radius:11px;padding:14px;margin-bottom:16px;}
+.concept-tag{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.concept-text{font-size:13px;color:#aaa;line-height:1.65;}
+.phase-tag{display:inline-block;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:.8px;padding:3px 10px;border-radius:20px;margin-bottom:12px;}
+.ph-q{background:rgba(52,152,219,.2);color:var(--blue);}
+.ph-i{background:rgba(231,76,60,.2);color:var(--red);}
+.ph-a{background:rgba(46,204,113,.2);color:var(--green);}
+.opt{display:block;width:100%;padding:14px 16px;border-radius:11px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-bottom:10px;text-align:left;transition:all .15s;line-height:1.4;}
+.opt:hover{border-color:rgba(245,200,66,.4);}
+.opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.opt.wrong{border-color:var(--red);background:var(--red-bg);color:var(--red);opacity:.7;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;width:28px;color:var(--muted);text-align:center;}
+.lb-rank.top{color:var(--gold);}
+.lb-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
+.lb-name{flex:1;font-size:14px;font-weight:500;}
+.lb-amt{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--gold);}
+.risk-row{display:flex;gap:8px;margin-bottom:14px;}
+.risk-opt{flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .2s;}
+.risk-opt:active{transform:scale(.96);}
+.risk-opt.sel-r0{border-color:var(--green);background:var(--green-bg);}
+.risk-opt.sel-r1{border-color:var(--orange);background:rgba(243,156,18,.12);}
+.risk-opt.sel-r2{border-color:var(--red);background:var(--red-bg);}
+.roulette-wrap{position:relative;width:220px;height:220px;margin:0 auto 20px;}
+#rouletteCanvas{border-radius:50%;border:3px solid var(--gold);display:block;}
+.roulette-needle{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:18px solid var(--gold);z-index:10;}
+.asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.asset-card{background:var(--s2);border:1.5px solid var(--border2);border-radius:12px;padding:12px;cursor:pointer;transition:all .15s;position:relative;}
+.asset-card:hover:not(.no-buy){border-color:rgba(245,200,66,.5);transform:translateY(-2px);}
+.asset-card.owned-me{border-color:var(--green);background:var(--green-bg);cursor:default;}
+.asset-card.owned-other{opacity:.5;cursor:not-allowed;}
+.asset-card.cant-afford{opacity:.35;cursor:not-allowed;}
+.asset-card.no-buy{cursor:default;}
+.asset-icon{font-size:26px;margin-bottom:5px;}
+.asset-name{font-size:12px;font-weight:500;margin-bottom:4px;line-height:1.3;}
+.asset-price{font-family:'Syne',sans-serif;font-size:13px;color:var(--gold);font-weight:700;}
+.asset-rent{font-size:11px;color:var(--green);margin-top:2px;}
+.asset-badge{position:absolute;top:7px;right:7px;font-size:9px;padding:2px 6px;border-radius:20px;font-weight:700;}
+.ab-mine{background:var(--green-bg);color:var(--green);}
+.ab-other{background:var(--red-bg);color:var(--red);}
+.player-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.player-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+.player-del{background:none;border:1px solid var(--border2);border-radius:8px;padding:8px 11px;color:var(--muted);cursor:pointer;font-size:13px;flex-shrink:0;transition:all .15s;}
+.player-del:hover{border-color:var(--red);color:var(--red);}
+.current-player-bar{background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.cp-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.cp-name{font-size:14px;font-weight:500;flex:1;}
+.cp-money{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--gold);}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;}
+.overlay-box{background:var(--s1);border:1px solid var(--border2);border-radius:20px;padding:28px 22px;text-align:center;width:100%;max-width:340px;}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spinn .8s linear infinite;margin:20px auto;}
+@keyframes spinn{to{transform:rotate(360deg);}}
+@keyframes popIn{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.pop{animation:popIn .3s ease;}
+.slide{animation:slideUp .25s ease;}
+
+/* PASS PHONE SCREEN */
+.pass-screen{text-align:center;padding:30px 0;}
+.pass-icon{font-size:70px;margin-bottom:16px;}
+.pass-title{font-size:22px;font-weight:700;margin-bottom:8px;font-family:'Syne',sans-serif;}
+.pass-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:28px;}
+.pass-name{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="s-setup" class="screen on">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge">Configuración</span></div>
+  <h2 style="font-size:22px;margin-bottom:6px;">¡Bienvenidos!</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:22px;line-height:1.6;">Cargá los nombres de los jugadores del grupo. Compiten entre sí — el que más plata acumule gana.</p>
+  <div class="card">
+    <div style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:14px;text-transform:uppercase;letter-spacing:.6px;">Jugadores (mín. 2, máx. 8)</div>
+    <div id="player-list"></div>
+    <button class="btn btn-outline btn-sm" style="margin-top:4px;" onclick="addPlayer()" id="btn-add">+ Agregar jugador</button>
+  </div>
+  <div class="concept">
+    <div class="concept-tag">¿Cómo se juega?</div>
+    <div class="concept-text">
+      <b style="color:var(--text);">📝 Preguntas:</b> cada jugador responde en su turno. Bien = sumás. Mal = perdés un poco.<br><br>
+      <b style="color:var(--text);">🎡 Inversión:</b> elegí el riesgo y girá la ruleta. A mayor riesgo, mayor ganancia o pérdida.<br><br>
+      <b style="color:var(--text);">🏠 Activos:</b> comprá propiedades. Si otro jugador cae en la tuya, te paga alquiler.<br><br>
+      <b style="color:var(--gold);">El jugador con más dinero al final gana. 🏆</b>
+    </div>
+  </div>
+  <button class="btn btn-gold" onclick="startGame()">Empezar 🚀</button>
+</div>
+
+<!-- PASS PHONE -->
+<div id="s-pass" class="screen">
+  <div class="pass-screen">
+    <div class="pass-icon" id="pass-icon">📱</div>
+    <div class="pass-title" id="pass-title">Pasá el teléfono</div>
+    <div class="pass-sub" id="pass-sub">Es el turno de:</div>
+    <div class="pass-name" id="pass-name" style="color:var(--gold);">—</div>
+    <div style="margin-top:6px;font-size:13px;color:var(--muted);" id="pass-phase">Fase: Pregunta</div>
+  </div>
+  <div style="flex:1;"></div>
+  <div style="font-size:12px;color:var(--muted2);text-align:center;margin-bottom:16px;">Que solo vea la pantalla el jugador indicado ↑</div>
+  <button class="btn btn-gold" onclick="passContinue()">Listo, soy <span id="pass-btn-name">—</span> 👋</button>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="s-board" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge" id="board-badge">Ronda 1</span></div>
+  <div class="progress"><div class="progress-fill" id="board-prog" style="width:0%"></div></div>
+  <h2 style="font-size:20px;margin-bottom:6px;" id="board-title">Ranking</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:18px;" id="board-sub"></p>
+  <div id="lb-list"></div>
+  <div style="flex:1;min-height:20px;"></div>
+  <button class="btn btn-gold" onclick="boardNext()" style="margin-top:20px;" id="btn-board-next">Continuar →</button>
+</div>
+
+<!-- QUESTION -->
+<div id="s-question" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge" id="q-badge">Jugador</span></div>
+  <div class="progress"><div class="progress-fill" id="q-prog" style="width:0%"></div></div>
+  <div class="current-player-bar" id="q-player-bar">
+    <div class="cp-dot" id="q-cp-dot"></div>
+    <div class="cp-name" id="q-cp-name">—</div>
+    <div class="cp-money" id="q-cp-money">$0</div>
+  </div>
+  <div class="concept" id="q-concept" style="display:none;">
+    <div class="concept-tag">📚 Concepto</div>
+    <div class="concept-text" id="q-concept-text"></div>
+  </div>
+  <div id="q-block">
+    <span class="phase-tag ph-q">Pregunta</span>
+    <div class="card gold">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;color:var(--muted);" id="q-num">Ronda 1</span>
+        <span class="money" style="font-size:14px;" id="q-val">Vale $5.000</span>
+      </div>
+      <div style="font-size:16px;font-weight:500;line-height:1.55;margin-bottom:16px;" id="q-text">—</div>
+      <div id="q-opts"></div>
+    </div>
+  </div>
+  <div id="q-result" style="display:none;">
+    <div class="card pop" id="q-res-card" style="text-align:center;padding:24px;">
+      <div style="font-size:44px;margin-bottom:10px;" id="q-res-icon">✅</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:6px;" id="q-res-title">¡Correcto!</div>
+      <div class="money big" id="q-res-money">+$5.000</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.6;" id="q-res-explain"></div>
+    </div>
+    <button class="btn btn-gold" onclick="nextTurn()">Siguiente turno →</button>
+  </div>
+</div>
+
+<!-- INVESTMENT -->
+<div id="s-invest" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge" id="inv-badge">Jugador</span></div>
+  <div class="progress"><div class="progress-fill" id="inv-prog" style="width:0%"></div></div>
+  <div class="current-player-bar">
+    <div class="cp-dot" id="inv-cp-dot"></div>
+    <div class="cp-name" id="inv-cp-name">—</div>
+    <div class="cp-money" id="inv-cp-money">$0</div>
+  </div>
+  <span class="phase-tag ph-i">Inversión</span>
+  <h2 style="font-size:20px;margin-bottom:8px;">¿Cuánto riesgo tomás?</h2>
+  <div class="concept">
+    <div class="concept-tag">📚 Renta Fija vs Variable</div>
+    <div class="concept-text">La <b style="color:var(--text);">Renta Fija</b> (plazos fijos, bonos) da retornos bajos pero seguros. La <b style="color:var(--text);">Renta Variable</b> (acciones, crypto) puede multiplicar tu plata o hacerte perder todo. A mayor riesgo, mayor ganancia posible.</div>
+  </div>
+  <div id="inv-risk-section">
+    <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Elegí el nivel de riesgo:</div>
+    <div class="risk-row">
+      <div class="risk-opt" id="ro0" onclick="selectRisk(0)">
+        <div style="font-size:24px;margin-bottom:5px;">🏦</div>
+        <div style="font-size:12px;font-weight:500;color:var(--green);">Bajo</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">Renta Fija</div>
+        <div style="font-size:10px;margin-top:5px;line-height:1.5;"><b style="color:var(--green);">+$4.000</b> si gana<br><b style="color:var(--red);">-$1.500</b> si pierde</div>
+      </div>
+      <div class="risk-opt" id="ro1" onclick="selectRisk(1)">
+        <div style="font-size:24px;margin-bottom:5px;">📈</div>
+        <div style="font-size:12px;font-weight:500;color:var(--orange);">Medio</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">Acciones</div>
+        <div style="font-size:10px;margin-top:5px;line-height:1.5;"><b style="color:var(--green);">+$10.000</b> si gana<br><b style="color:var(--red);">-$5.000</b> si pierde</div>
+      </div>
+      <div class="risk-opt" id="ro2" onclick="selectRisk(2)">
+        <div style="font-size:24px;margin-bottom:5px;">🎰</div>
+        <div style="font-size:12px;font-weight:500;color:var(--red);">Alto</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">Especulación</div>
+        <div style="font-size:10px;margin-top:5px;line-height:1.5;"><b style="color:var(--green);">+$25.000</b> si gana<br><b style="color:var(--red);">Perdés todo</b></div>
+      </div>
+    </div>
+    <button class="btn btn-gold" id="btn-spin" onclick="startSpin()" disabled>Girar la ruleta 🎡</button>
+  </div>
+  <div id="inv-roulette-section" style="display:none;">
+    <div class="roulette-wrap">
+      <div class="roulette-needle"></div>
+      <canvas id="rouletteCanvas" width="220" height="220"></canvas>
+    </div>
+    <div id="spin-result" style="display:none;text-align:center;" class="pop">
+      <div style="font-size:48px;margin-bottom:10px;" id="spin-icon">🎉</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px;" id="spin-title">¡Ganaste!</div>
+      <div class="money big" id="spin-money">+$0</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6;" id="spin-explain"></div>
+      <button class="btn btn-gold" style="margin-top:18px;" onclick="afterInvest()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSETS -->
+<div id="s-assets" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge" id="ast-badge">Jugador</span></div>
+  <div class="progress"><div class="progress-fill" id="ast-prog" style="width:0%"></div></div>
+  <div class="current-player-bar">
+    <div class="cp-dot" id="ast-cp-dot"></div>
+    <div class="cp-name" id="ast-cp-name">—</div>
+    <div class="cp-money" id="ast-cp-money">$0</div>
+  </div>
+  <span class="phase-tag ph-a">Activos</span>
+  <h2 style="font-size:20px;margin-bottom:8px;">Comprá activos</h2>
+  <div class="concept" style="margin-bottom:14px;">
+    <div class="concept-tag">📚 Activos e ingreso pasivo</div>
+    <div class="concept-text">Un <b style="color:var(--text);">activo</b> genera dinero por sí solo. Si otro jugador cae en tu propiedad, te paga alquiler. Eso es <b style="color:var(--text);">ingreso pasivo</b>: tu plata trabajando sin que hagas nada.</div>
+  </div>
+  <div class="asset-grid" id="asset-grid"></div>
+  <button class="btn btn-outline" onclick="skipAssets()">Continuar sin comprar →</button>
+</div>
+
+<!-- RENT EVENT -->
+<div id="s-rent" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge">Evento</span></div>
+  <div style="text-align:center;padding:16px 0 24px;">
+    <div style="font-size:60px;margin-bottom:14px;" id="rent-emoji">🏠</div>
+    <h2 style="font-size:20px;margin-bottom:10px;" id="rent-title">¡Alquiler!</h2>
+    <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px;" id="rent-desc"></p>
+    <div class="card gold" style="text-align:left;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:2px;" id="rent-owner-lbl">Cobró</div>
+      <div class="money big gain" id="rent-gain-val">+$0</div>
+      <div class="divider"></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:2px;" id="rent-payer-lbl">Pagó</div>
+      <div class="money big loss" id="rent-loss-val">-$0</div>
+    </div>
+    <button class="btn btn-gold" onclick="afterRent()">Continuar →</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="s-end" class="screen">
+  <div class="topbar"><span class="logo">💰 FinanzApp</span><span class="badge">Final</span></div>
+  <div style="text-align:center;margin-bottom:24px;">
+    <div style="font-size:64px;margin-bottom:12px;">🏆</div>
+    <h1 style="font-size:26px;margin-bottom:6px;">¡Juego terminado!</h1>
+    <p style="color:var(--muted);font-size:14px;">Resultado final del grupo</p>
+  </div>
+  <div id="end-lb"></div>
+  <div class="concept" style="margin-top:16px;">
+    <div class="concept-tag">💡 La gran lección</div>
+    <div class="concept-text">El dinero solo no alcanza. Lo que importa es el <b style="color:var(--text);">sistema</b>: administrarlo, elegir el riesgo correcto y construir activos que generen ingresos pasivos. Eso es la libertad financiera.</div>
+  </div>
+  <button class="btn btn-gold" onclick="restartGame()">Jugar de nuevo 🔄</button>
+</div>
+
+
+<!-- CONFIRM SELL -->
+<div id="sell-ov" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <div style="font-size:44px;margin-bottom:10px;" id="sell-icon">🏠</div>
+    <h3 style="font-size:18px;margin-bottom:8px;" id="sell-title">¿Vendés este activo?</h3>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:4px;" id="sell-original">Pagaste: $0</p>
+    <p style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:6px;" id="sell-price">Recibís: $0</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:18px;">Vendés al 75% del precio original. Ya no genera alquiler.</p>
+    <button class="btn btn-red" style="margin-top:0;background:var(--red);color:#fff;" onclick="confirmSell()">Vender ✓</button>
+    <button class="btn btn-outline" onclick="cancelSell()">Cancelar</button>
+  </div>
+</div>
+
+<!-- CONFIRM PURCHASE -->
+<div id="confirm-ov" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <div style="font-size:44px;margin-bottom:10px;" id="conf-icon">🏠</div>
+    <h3 style="font-size:18px;margin-bottom:8px;" id="conf-title">¿Comprás?</h3>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:4px;" id="conf-price"></p>
+    <p style="font-size:13px;color:var(--green);margin-bottom:18px;" id="conf-rent"></p>
+    <button class="btn btn-gold" style="margin-top:0;" onclick="confirmBuy()">Comprar ✓</button>
+    <button class="btn btn-outline" onclick="cancelBuy()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const PLAYER_COLORS=['#FF6B6B','#4ECDC4','#FFD166','#A8E6CF','#C77DFF','#FF9F43','#74B9FF','#FD79A8'];
+const START_MONEY=50000;
+const TOTAL_ROUNDS=6;
+const INVEST_PER_ROUND=2; // ruleta turns per player per round
+
+const ASSETS_DATA=[
+  {id:'campo',   icon:'🌾',name:'Campo en la Pampa',    price:12000,rent:2500},
+  {id:'depto',   icon:'🏢',name:'Depto en Bs. Aires',   price:18000,rent:4000},
+  {id:'local',   icon:'🏪',name:'Local comercial',      price:14000,rent:3000},
+  {id:'acciones',icon:'📊',name:'Acciones en la bolsa', price:8000, rent:2000},
+  {id:'fondo',   icon:'💼',name:'Fondo de inversión',   price:10000,rent:1800},
+  {id:'crypto',  icon:'₿', name:'Criptomonedas',        price:6000, rent:3000},
+  {id:'tambo',   icon:'🐄',name:'Tambo en Córdoba',     price:9000, rent:1500},
+  {id:'startup', icon:'🚀',name:'Acciones startup',     price:5000, rent:2500},
+];
+
+const RISK_CFG=[
+  {win:4000,  lose:-1500,winChance:.65,name:'Renta Fija'},
+  {win:10000, lose:-5000,winChance:.50,name:'Renta Variable'},
+  {win:25000, lose:'all',winChance:.35,name:'Especulación'},
+];
+
+const QS=[
+  // BÁSICAS $3.000 — opciones claramente distintas
+  {q:"¿Qué es el ahorro?",opts:["Gastar menos de lo que uno quiere","Guardar parte de tus ingresos para el futuro","Pedir un préstamo al banco","Invertir todo en la bolsa"],ans:1,pts:3000,explain:"El ahorro es reservar dinero hoy para usarlo después. Es la base de cualquier plan financiero.",concept:"Ahorrar no es privarte. Es decidir conscientemente a dónde va tu plata."},
+  {q:"¿Qué es un presupuesto personal?",opts:["Un tipo de préstamo bancario","El saldo de tu cuenta corriente","Un plan de ingresos y gastos","Una inversión de largo plazo"],ans:2,pts:3000,explain:"Un presupuesto planifica cuánto entra y cuánto sale antes de que ocurra. Te da control total.",concept:"Sin presupuesto, la plata desaparece. Con presupuesto, vos decidís adónde va."},
+  {q:"¿Qué es un gasto fijo?",opts:["Lo que gastás en salidas y ocio","Un gasto inesperado como una rotura","Un gasto que se repite igual todos los meses","El impuesto anual que pagás al Estado"],ans:2,pts:3000,explain:"Gastos fijos son los que se repiten siempre: alquiler, servicios, cuotas. Son predecibles.",concept:"Conocer tus gastos fijos es el primer paso para armar un presupuesto real."},
+  {q:"¿Qué es un gasto variable?",opts:["El alquiler que pagás cada mes","Un préstamo con cuotas fijas","Los impuestos anuales","Un gasto que cambia cada mes según tus decisiones"],ans:3,pts:3000,explain:"Los gastos variables cambian mes a mes: comida, transporte, salidas, ropa.",concept:"Los gastos variables son los más fáciles de reducir cuando querés ahorrar más."},
+  {q:"¿Para qué sirve un fondo de emergencia?",opts:["Para invertir en acciones cuando hay oportunidades","Para pagar impuestos al final del año","Para cubrir imprevistos sin endeudarte","Para jubilarse antes de tiempo"],ans:2,pts:3000,explain:"Un fondo de emergencia te permite enfrentar gastos inesperados sin pedir préstamos.",concept:"Lo ideal es tener entre 3 y 6 meses de gastos guardados como fondo de emergencia."},
+  {q:"¿Qué significa 'vivir dentro de tus posibilidades'?",opts:["No tener deudas nunca bajo ninguna circunstancia","Invertir todo el sueldo sin gastarlo","Ganar más de lo que necesitás","Gastar menos de lo que ganás"],ans:3,pts:3000,explain:"Vivir dentro de tus posibilidades significa que tus gastos no superan tus ingresos.",concept:"Es el principio más básico de finanzas personales. Sin esto, nada más funciona."},
+
+  // INTERMEDIAS $5.000-$7.000 — opciones más parecidas
+  {q:"¿Qué es la tasa de interés?",opts:["El precio de una acción en el mercado","El porcentaje que mide la inflación anual","El costo de pedir dinero prestado o la ganancia de prestarlo","El impuesto que cobra el Estado sobre inversiones"],ans:2,pts:5000,explain:"La tasa es lo que cobra el banco por prestarte plata, o lo que te paga por ahorrar con ellos.",concept:"Cuando pedís crédito, la tasa es tu costo. Cuando ahorrás, es tu ganancia."},
+  {q:"¿Qué es la inflación?",opts:["Una suba puntual del precio de un solo producto","El aumento general y sostenido de los precios","Una política del gobierno para subir salarios","La suba del dólar frente al peso"],ans:1,pts:5000,explain:"Con inflación, los precios suben generalmente y tu plata compra menos cosas que antes.",concept:"Con inflación alta, si no invertís tu dinero, perdés poder de compra. La plata se derrite."},
+  {q:"¿Qué es un plazo fijo?",opts:["Un préstamo del banco con cuotas fijas","Una cuenta corriente con rendimiento automático","Un fondo de inversión de bajo riesgo","Depositar dinero a una tasa pactada por un período fijo"],ans:3,pts:5000,explain:"En un plazo fijo, depositás dinero por un tiempo acordado y el banco te paga intereses fijos.",concept:"Renta fija clásica: sabés exactamente cuánto vas a ganar. Bajo riesgo, retorno predecible."},
+  {q:"¿Qué es un activo financiero?",opts:["Algo que te genera gastos recurrentes","Algo que perdés valor al usarlo","El dinero que gastás en inversión","Algo que te genera ingresos o aumenta de valor"],ans:3,pts:6000,explain:"Un activo pone plata en tu bolsillo. Un pasivo saca plata de tu bolsillo.",concept:"La clave de la riqueza: acumular activos que generen ingresos sin trabajar directamente."},
+  {q:"¿Cuál es la diferencia entre activo y pasivo?",opts:["El activo es lo que debés, el pasivo lo que tenés","No hay diferencia práctica, son sinónimos","El activo genera ingresos, el pasivo genera gastos","El activo es a corto plazo, el pasivo a largo plazo"],ans:2,pts:6000,explain:"Un activo pone plata en tu bolsillo (alquiler, dividendos). Un pasivo saca plata (cuotas, deudas).",concept:"El auto que compraste a crédito es un pasivo. La propiedad que alquilás es un activo."},
+  {q:"¿Qué es el ingreso pasivo?",opts:["El sueldo que recibís por tu trabajo principal","Dinero que ganás sin trabajar activamente en ese momento","Un subsidio del gobierno para personas sin empleo","El ingreso que declarás menos los impuestos"],ans:1,pts:6000,explain:"Ingreso pasivo: plata que entra sin trabajar directamente, como alquileres o dividendos.",concept:"Libertad financiera = que tus ingresos pasivos cubran tus gastos. Que el dinero trabaje para vos."},
+  {q:"¿Qué es un bono soberano?",opts:["Una acción de empresa que garantiza dividendos","Un préstamo que le hacés al gobierno a cambio de intereses","Un tipo de seguro de vida emitido por el Estado","Un fondo de inversión administrado por el Estado"],ans:1,pts:7000,explain:"Al comprar un bono, le prestás plata al Estado, que te la devuelve con intereses al vencimiento.",concept:"Bonos = renta fija. Sabés cuánto vas a cobrar. Menor riesgo, menor ganancia que las acciones."},
+  {q:"¿Qué significa diversificar inversiones?",opts:["Invertir todo en el activo con mayor rendimiento histórico","Mover el dinero entre activos frecuentemente para aprovechar subas","No poner toda la plata en un solo tipo de activo","Invertir en el exterior para evitar riesgos locales"],ans:2,pts:7000,explain:"Diversificar es repartir el riesgo entre distintas inversiones para reducir posibles pérdidas.",concept:"No pongas todos los huevos en la misma canasta. Regla básica de gestión de riesgo."},
+  {q:"¿Qué es el flujo de caja?",opts:["El valor total de tus activos en un momento dado","El saldo acumulado en tu cuenta de ahorros","La diferencia entre los ingresos y los gastos en un período","Tu patrimonio neto calculado anualmente"],ans:2,pts:7000,explain:"Flujo de caja positivo: entra más de lo que sale. Negativo: sale más de lo que entra.",concept:"Podés ser rico en papel pero quebrar sin flujo de caja. Es la sangre de las finanzas."},
+  {q:"¿Cuál es la diferencia entre renta fija y variable?",opts:["La fija rinde más a largo plazo, la variable a corto","La fija es para empresas grandes, la variable para personas","La fija tiene retorno conocido de antemano, la variable fluctúa con el mercado","La variable siempre da más dinero que la fija"],ans:2,pts:7000,explain:"Renta fija: sabés cuánto vas a ganar. Renta variable: puede subir mucho o caer mucho.",concept:"Mayor riesgo = mayor ganancia posible, pero también mayor pérdida posible."},
+  {q:"¿Qué es una acción de empresa?",opts:["Un contrato de préstamo con una empresa","Una parte proporcional de la propiedad de una empresa","Un bono emitido por una empresa privada","Un seguro que paga si la empresa quiebra"],ans:1,pts:7000,explain:"Comprar una acción es comprar una pequeña parte de esa empresa y sus ganancias futuras.",concept:"Si la empresa crece, tu acción vale más. Si le va mal, tu acción baja. Eso es renta variable."},
+  {q:"¿Qué es un dividendo?",opts:["El interés que paga un plazo fijo al vencimiento","El aumento de precio de una acción en bolsa","La comisión que cobra el broker por operar","La parte de las ganancias que una empresa reparte a sus accionistas"],ans:3,pts:7000,explain:"Un dividendo es la ganancia que una empresa reparte entre sus accionistas periódicamente.",concept:"Los dividendos son ingreso pasivo bursátil: ganás plata por tener acciones, sin venderlas."},
+
+  // AVANZADAS $8.000-$12.000 — opciones muy parecidas, fácil confundirse
+  {q:"¿Qué es el interés compuesto?",opts:["Pagar interés sobre el capital original solamente","Ganar interés sobre el capital más los intereses acumulados","Cobrar dos tasas de interés distintas a la vez","Reinvertir las ganancias solo al final del período"],ans:1,pts:8000,explain:"Con interés compuesto, los intereses se suman al capital y generan más intereses. Se multiplica exponencialmente.",concept:"Quien empieza a invertir más joven, siempre gana. El tiempo es el recurso más valioso."},
+  {q:"¿Qué función cumple el Banco Central?",opts:["Administrar las inversiones del Estado en bolsa","Otorgar créditos hipotecarios a familias","Regular la emisión monetaria y las tasas de interés del sistema","Supervisar solo a los bancos públicos del país"],ans:2,pts:8000,explain:"El Banco Central regula la moneda, las tasas y el sistema financiero del país completo.",concept:"Cuando sube tasas, el crédito se encarece. Cuando las baja, la economía se activa."},
+  {q:"¿Qué es un fondo común de inversión?",opts:["Una cuenta bancaria compartida entre familiares","Un vehículo donde muchos inversores aportan capital para invertir en conjunto","Un plazo fijo colectivo entre empleados de una empresa","Un seguro de retiro administrado por el Estado"],ans:1,pts:8000,explain:"Un fondo agrupa dinero de muchas personas para invertir en distintos activos con gestión profesional.",concept:"Permiten diversificar con poco dinero. Ideales para empezar a invertir sin ser experto."},
+  {q:"¿Qué mide la liquidez de un activo?",opts:["Cuánto rendimiento generó en el último año","Qué tan seguro es ante una crisis financiera","Con qué facilidad y rapidez se puede convertir en efectivo","El riesgo de perder valor en el mercado secundario"],ans:2,pts:8000,explain:"Un activo líquido se convierte en efectivo fácil y rápido. El dinero en efectivo es el más líquido.",concept:"No solo importa cuánto vale, sino qué tan rápido podés venderlo cuando lo necesitás."},
+  {q:"¿Qué es el riesgo de mercado?",opts:["La probabilidad de que el emisor de un bono no pague","La pérdida posible por movimientos en precios del mercado","El riesgo de no poder vender un activo rápidamente","La posibilidad de fraude en una transacción financiera"],ans:1,pts:8000,explain:"El riesgo de mercado es la pérdida posible por variaciones en precios de activos financieros.",concept:"Toda inversión tiene riesgo. La clave es entenderlo y tomarlo conscientemente."},
+  {q:"¿Qué es una hipoteca?",opts:["Un alquiler con opción a compra al final del contrato","Un préstamo de largo plazo donde la propiedad es garantía","Un préstamo personal sin garantía para comprar inmuebles","Un seguro obligatorio al comprar una propiedad"],ans:1,pts:9000,explain:"Una hipoteca es un préstamo donde la propiedad queda como garantía. Si no pagás, el banco ejecuta.",concept:"Si no pagás la hipoteca, el banco puede quedarse con tu propiedad. Es deuda con garantía real."},
+  {q:"¿Qué es el apalancamiento financiero?",opts:["Reinvertir las ganancias obtenidas para crecer","Reducir el riesgo distribuyendo inversiones","Usar capital propio al máximo antes de pedir deuda","Usar deuda para invertir más de lo que tenés propio"],ans:3,pts:9000,explain:"Apalancarse es usar plata prestada para invertir más. Multiplica ganancias Y también pérdidas.",concept:"Las grandes fortunas suelen construirse con apalancamiento. Pero el riesgo crece en la misma proporción."},
+  {q:"¿Qué es un ETF?",opts:["Un bono emitido por un banco internacional","Un fondo que replica un índice y cotiza en bolsa como acción","Un tipo de plazo fijo con tasa variable","Una cuenta de inversión con beneficios impositivos"],ans:1,pts:9000,explain:"Un ETF es una canasta de activos que se compra y vende en bolsa. Combina diversificación con liquidez.",concept:"Los ETFs combinan la diversificación de un fondo con la flexibilidad de una acción. Ideales para principiantes."},
+  {q:"¿Cómo se calcula el valor neto personal?",opts:["Ingresos anuales menos impuestos pagados","Total de activos menos total de pasivos (deudas)","Sueldo mensual multiplicado por 12","Ahorros totales más inversiones en bolsa"],ans:1,pts:9000,explain:"Valor neto = activos totales - deudas totales. Es la foto real de tu situación financiera.",concept:"Podés ganar mucho y tener valor neto negativo si tus deudas superan tus activos."},
+  {q:"¿Qué es el costo de oportunidad?",opts:["El costo adicional de producir una unidad más","La pérdida que genera una mala inversión","El valor de la mejor alternativa que descartás al elegir algo","El impuesto implícito en cada decisión de consumo"],ans:2,pts:10000,explain:"Si usás $10.000 para salir de viaje, el costo de oportunidad es lo que esa plata hubiera generado invertida.",concept:"Cada decisión financiera tiene un costo de oportunidad. La clave es elegir conscientemente."},
+  {q:"¿Qué es la devaluación de una moneda?",opts:["Cuando el gobierno sube los impuestos al comercio exterior","Cuando la moneda local pierde valor frente a monedas extranjeras","Cuando bajan los precios internos por exceso de oferta","Cuando el Banco Central sube las tasas de interés"],ans:1,pts:10000,explain:"La devaluación ocurre cuando la moneda local vale menos en relación a monedas extranjeras.",concept:"En países con devaluación frecuente, ahorrar en moneda local hace que pierdas poder adquisitivo real."},
+  {q:"¿Qué mide el ROI (retorno sobre inversión)?",opts:["El tiempo que tarda en recuperarse el capital invertido","El riesgo relativo de una inversión versus el mercado","El porcentaje de ganancia obtenido respecto al capital invertido","La diferencia entre la tasa nominal y la tasa real"],ans:2,pts:10000,explain:"ROI = (ganancia - inversión) / inversión x 100. Mide qué tan rentable fue cada peso invertido.",concept:"Si invertís $10.000 y ganás $12.000, tu ROI es 20%. Siempre compará el ROI entre distintas opciones."},
+  {q:"¿Cuál es la diferencia entre tasa nominal y tasa real?",opts:["La nominal incluye impuestos, la real no","La real es siempre mayor que la nominal","La nominal es lo que paga el banco, la real descuenta la inflación","Son iguales cuando la inflación es baja"],ans:2,pts:12000,explain:"Tasa nominal: lo que dice el banco. Tasa real: lo que ganás después de descontar la inflación.",concept:"Si tu plazo fijo paga 50% anual pero la inflación es 60%, tu tasa real es -10%. Perdés poder adquisitivo."},
+  {q:"¿Qué caracteriza a un mercado alcista (bull market)?",opts:["Caída sostenida de precios por más de dos meses","Alta volatilidad sin tendencia clara en los activos","Subas sostenidas en los precios de los activos por un período prolongado","Alta demanda de bonos y fuga de las acciones"],ans:2,pts:12000,explain:"Bull market (toro) es cuando los mercados suben sostenidamente. Bear market (oso) es lo opuesto.",concept:"En bull market casi todo sube. En bear market, la paciencia y la diversificación son tu escudo."},
+];
+
+// STATE
+let G={
+  players:[],  // {name, money, hist, assets (array of asset ids owned)}
+  assets:[],   // ASSETS_DATA with owner index
+  round:1,
+  playerIdx:0, // current player
+  phase:'q',   // 'q','inv','assets'
+  curQ:null,
+  selRisk:-1,
+  spinning:false,
+  pendingAsset:-1,
+  boardCb:null,
+  usedQs:[],
+  rentQueue:[],
+  rentQueueIdx:0,
+  passTarget:null, // {name, phase, cb}
+};
+
+function fmt(n){const a=Math.abs(Math.round(n)).toLocaleString('es-AR');return n<0?'-$'+a:'$'+a;}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function color(i){return PLAYER_COLORS[i%PLAYER_COLORS.length];}
+
+// SETUP
+function initSetup(){
+  G.players=[
+    {name:'Jugador 1',money:START_MONEY,hist:[START_MONEY]},
+    {name:'Jugador 2',money:START_MONEY,hist:[START_MONEY]},
+    {name:'Jugador 3',money:START_MONEY,hist:[START_MONEY]},
+    {name:'Jugador 4',money:START_MONEY,hist:[START_MONEY]},
+  ];
+  renderSetup();
+}
+
+function renderSetup(){
+  const list=document.getElementById('player-list');
+  list.innerHTML='';
+  G.players.forEach((p,i)=>{
+    const row=document.createElement('div');
+    row.className='player-row';
+    row.innerHTML=`<div class="player-dot" style="background:${color(i)}"></div><input type="text" placeholder="Nombre jugador ${i+1}" value="${p.name}" oninput="G.players[${i}].name=this.value||'Jugador ${i+1}'"/>${G.players.length>2?`<button class="player-del" onclick="removePlayer(${i})">✕</button>`:''}`;
+    list.appendChild(row);
+  });
+  document.getElementById('btn-add').style.display=G.players.length>=8?'none':'block';
+}
+
+function addPlayer(){
+  if(G.players.length>=8)return;
+  G.players.push({name:'Jugador '+(G.players.length+1),money:START_MONEY,hist:[START_MONEY]});
+  renderSetup();
+}
+
+function removePlayer(i){
+  if(G.players.length<=2)return;
+  G.players.splice(i,1);
+  renderSetup();
+}
+
+function startGame(){
+  G.players.forEach((p,i)=>{if(!p.name.trim())p.name='Jugador '+(i+1);p.money=START_MONEY;p.hist=[START_MONEY];});
+  G.assets=ASSETS_DATA.map(a=>({...a,owner:-1}));
+  G.round=1;G.playerIdx=0;G.phase='q';G.usedQs=[];G.investTurn=0;
+  showBoard('¡Empieza el juego! 🎯','Cada jugador arranca con '+fmt(START_MONEY)+'. ¡Que gane el mejor!',()=>passPhone('pregunta',()=>loadQuestion()));
+}
+
+function restartGame(){
+  G.players.forEach(p=>{p.money=START_MONEY;p.hist=[START_MONEY];});
+  G.assets=ASSETS_DATA.map(a=>({...a,owner:-1}));
+  G.round=1;G.playerIdx=0;G.phase='q';G.usedQs=[];G.investTurn=0;
+  show('s-setup');renderSetup();
+}
+
+// PASS PHONE
+function passPhone(phaseName,cb){
+  const p=G.players[G.playerIdx];
+  show('s-pass');
+  const icons={'pregunta':'🧠','inversión':'🎡','activos':'🏠'};
+  document.getElementById('pass-icon').textContent=icons[phaseName]||'📱';
+  document.getElementById('pass-title').textContent='¡Pasá el teléfono!';
+  document.getElementById('pass-sub').textContent='Es el turno de:';
+  document.getElementById('pass-name').textContent=p.name;
+  document.getElementById('pass-name').style.color=color(G.playerIdx);
+  document.getElementById('pass-phase').textContent='Fase: '+phaseName.charAt(0).toUpperCase()+phaseName.slice(1);
+  document.getElementById('pass-btn-name').textContent=p.name;
+  G.passTarget=cb;
+}
+
+function passContinue(){if(G.passTarget)G.passTarget();}
+
+// LEADERBOARD
+function showBoard(title,sub,cb){
+  show('s-board');
+  G.boardCb=cb;
+  const pct=Math.round(((G.round-1)/TOTAL_ROUNDS)*100);
+  document.getElementById('board-prog').style.width=pct+'%';
+  document.getElementById('board-badge').textContent='Ronda '+G.round+' de '+TOTAL_ROUNDS;
+  document.getElementById('board-title').textContent=title||'Ranking';
+  document.getElementById('board-sub').textContent=sub||'';
+  const sorted=[...G.players].map((p,i)=>({...p,oi:i})).sort((a,b)=>b.money-a.money);
+  const list=document.getElementById('lb-list');
+  list.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const prev=p.hist[p.hist.length-2]??START_MONEY;
+    const delta=p.money-prev;
+    const ds=delta===0?'':(delta>0?`<span style="color:var(--green);font-size:11px;">+${fmt(delta)}</span>`:`<span style="color:var(--red);font-size:11px;">${fmt(delta)}</span>`);
+    const row=document.createElement('div');
+    row.className='lb-row slide';
+    row.style.animationDelay=(i*.07)+'s';
+    row.innerHTML=`<div class="lb-rank ${i===0?'top':''}">${['🥇','🥈','🥉'][i]||i+1}</div><div class="lb-dot" style="background:${color(p.oi)}"></div><div class="lb-name">${p.name}</div><div style="text-align:right;"><div class="lb-amt">${fmt(p.money)}</div>${ds}</div>`;
+    list.appendChild(row);
+  });
+}
+
+function boardNext(){if(G.boardCb)G.boardCb();}
+
+// QUESTIONS
+function pickQ(){
+  const avail=QS.map((_,i)=>i).filter(i=>!G.usedQs.includes(i));
+  if(!avail.length){G.usedQs=[];return pickQ();}
+  const i=avail[Math.floor(Math.random()*avail.length)];
+  G.usedQs.push(i);return QS[i];
+}
+
+function loadQuestion(){
+  const p=G.players[G.playerIdx];
+  show('s-question');
+  const pct=((G.round-1)/TOTAL_ROUNDS)*100;
+  document.getElementById('q-prog').style.width=Math.min(pct,98)+'%';
+  document.getElementById('q-badge').textContent=p.name;
+  document.getElementById('q-badge').style.color=color(G.playerIdx);
+  document.getElementById('q-cp-dot').style.background=color(G.playerIdx);
+  document.getElementById('q-cp-name').textContent=p.name;
+  document.getElementById('q-cp-money').textContent=fmt(p.money);
+  document.getElementById('q-block').style.display='block';
+  document.getElementById('q-result').style.display='none';
+  const q=pickQ();G.curQ=q;
+  if(q.concept){document.getElementById('q-concept').style.display='block';document.getElementById('q-concept-text').textContent=q.concept;}
+  else{document.getElementById('q-concept').style.display='none';}
+  document.getElementById('q-num').textContent='Ronda '+G.round+' • Turno de '+p.name;
+  document.getElementById('q-val').textContent='Vale '+fmt(q.pts);
+  document.getElementById('q-text').textContent=q.q;
+  const od=document.getElementById('q-opts');od.innerHTML='';
+  // Shuffle display order but track which index is correct
+  const indices=[0,1,2,3];
+  for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
+  const shuffledOpts=indices.map(i=>q.opts[i]);
+  const newAns=indices.indexOf(q.ans); // new position of the correct answer
+  shuffledOpts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt slide';btn.style.animationDelay=(i*.07)+'s';
+    btn.textContent=o;btn.onclick=()=>answerQ(i===newAns,btn);
+    od.appendChild(btn);
+  });
+}
+
+function answerQ(correct,btn){
+  const q=G.curQ,p=G.players[G.playerIdx];
+  // Disable all options
+  document.querySelectorAll('.opt').forEach(b=>{b.onclick=null;});
+  // Mark selected button
+  btn.className=correct?'opt correct':'opt wrong';
+  const rc=document.getElementById('q-res-card');
+  if(correct){
+    p.money+=q.pts;
+    document.getElementById('q-res-icon').textContent='✅';
+    document.getElementById('q-res-title').textContent='¡Correcto, '+p.name+'!';
+    document.getElementById('q-res-money').textContent='+'+fmt(q.pts);
+    document.getElementById('q-res-money').className='money big gain';
+    rc.className='card green';
+  } else {
+    const pen=Math.round(q.pts*.25);p.money=Math.max(0,p.money-pen);
+    document.getElementById('q-res-icon').textContent='❌';
+    document.getElementById('q-res-title').textContent='Incorrecto';
+    document.getElementById('q-res-money').textContent='-'+fmt(pen);
+    document.getElementById('q-res-money').className='money big loss';
+    rc.className='card red';
+  }
+  document.getElementById('q-res-explain').textContent=q.explain;
+  document.getElementById('q-block').style.display='none';
+  document.getElementById('q-result').style.display='block';
+}
+
+function nextTurn(){
+  G.playerIdx++;
+  if(G.playerIdx>=G.players.length){
+    // All players answered, go to investment
+    G.playerIdx=0;
+    G.players.forEach(p=>p.hist.push(p.money));
+    showBoard('Ranking tras las preguntas 📊','Ahora viene la fase de inversión.',()=>passPhone('inversión',()=>loadInvestment()));
+    return;
+  }
+  passPhone('pregunta',()=>loadQuestion());
+}
+
+// INVESTMENT
+function loadInvestment(){
+  if(G.playerIdx>=G.players.length){
+    G.playerIdx=0;
+    G.players.forEach(p=>p.hist.push(p.money));
+    showBoard('Ranking tras inversiones 📈','Ahora pueden comprar activos.',()=>passPhone('activos',()=>loadAssets()));
+    return;
+  }
+  const p=G.players[G.playerIdx];
+  show('s-invest');
+  G.selRisk=-1;G.spinning=false;
+  const pct=((G.round-1+.5)/TOTAL_ROUNDS)*100;
+  document.getElementById('inv-prog').style.width=Math.min(pct,98)+'%';
+  document.getElementById('inv-badge').textContent=p.name;
+  document.getElementById('inv-badge').style.color=color(G.playerIdx);
+  document.getElementById('inv-cp-dot').style.background=color(G.playerIdx);
+  document.getElementById('inv-cp-name').textContent=p.name;
+  document.getElementById('inv-cp-money').textContent=fmt(p.money);
+  [0,1,2].forEach(i=>document.getElementById('ro'+i).className='risk-opt');
+  document.getElementById('btn-spin').disabled=true;
+  document.getElementById('inv-roulette-section').style.display='none';
+  document.getElementById('spin-result').style.display='none';
+  document.getElementById('inv-risk-section').style.display='block';
+}
+
+function selectRisk(l){
+  G.selRisk=l;
+  [0,1,2].forEach(i=>document.getElementById('ro'+i).className='risk-opt'+(i===l?' sel-r'+l:''));
+  document.getElementById('btn-spin').disabled=false;
+}
+
+function startSpin(){
+  if(G.spinning||G.selRisk<0)return;
+  G.spinning=true;
+  document.getElementById('btn-spin').disabled=true;
+  document.getElementById('inv-risk-section').style.display='none';
+  document.getElementById('inv-roulette-section').style.display='block';
+  const cfg=RISK_CFG[G.selRisk];
+  const winCount=[5,4,3][G.selRisk];
+
+  // Giro completamente aleatorio — velocidad y posicion final al azar
+  const fullSpins=(6+Math.floor(Math.random()*6))*360;
+  const extraDeg=Math.random()*360;
+  const totalRot=fullSpins+extraDeg;
+  const dur=2800+Math.random()*2000;
+
+  const canvas=document.getElementById('rouletteCanvas');
+  const ctx=canvas.getContext('2d');
+  const start=performance.now();
+  let lastEasedRot=0;
+
+  function frame(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-t,4);
+    lastEasedRot=ease*totalRot;
+    drawWheel(ctx,lastEasedRot,winCount);
+    if(t<1){
+      requestAnimationFrame(frame);
+    } else {
+      // Leer resultado EXACTAMENTE desde donde quedo la rueda visualmente
+      // drawWheel rota el canvas deg grados. La seccion que queda bajo la aguja
+      // es la que esta en posicion (360 - finalDeg%360 + 360) % 360 del dibujo original.
+      // El dibujo empieza con la seccion 0 centrada en -90deg (top), y cada seccion mide 45deg.
+      // Seccion 0 cubre de -90 a -45 grados originales = 0 a 45 grados normalizados.
+      const finalRotDeg = lastEasedRot % 360;
+      // El angulo del dibujo original que queda arriba (bajo la aguja)
+      const angleUnderNeedle = ((360 - finalRotDeg) % 360 + 360) % 360;
+      // Convertir a indice de seccion: seccion 0 empieza a 0deg en coords normalizadas
+      const sectionIdx = Math.floor(angleUnderNeedle / 45) % 8;
+      const won = sectionIdx < winCount;
+      showSpinResult(won, cfg);
+    }
+  }
+  drawWheel(ctx,0,winCount);
+  requestAnimationFrame(frame);
+}
+
+function drawWheel(ctx,deg,winCount){
+  // winCount: cuántas secciones verdes (de 8 total), determinado por nivel de riesgo
+  if(winCount===undefined)winCount=[5,4,3][G.selRisk>=0?G.selRisk:1];
+  const cx=110,cy=110,r=106;
+  ctx.clearRect(0,0,220,220);
+  // Primeras winCount secciones = VERDE, el resto = ROJO
+  const secs=Array.from({length:8},(_,i)=>
+    i<winCount
+      ? {c:'#2ECC71',l:'GANÁS'}
+      : {c:'#E74C3C',l:'PERDÉS'}
+  );
+  const sl=(2*Math.PI)/secs.length;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(deg*Math.PI/180);
+  secs.forEach((s,i)=>{
+    const st=i*sl-Math.PI/2,en=st+sl;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,st,en);
+    ctx.fillStyle=s.c;ctx.fill();ctx.strokeStyle='#09090F';ctx.lineWidth=2;ctx.stroke();
+    ctx.save();ctx.rotate(st+sl/2);ctx.translate(r*.65,0);ctx.rotate(Math.PI/2);
+    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(s.l,0,0);
+    ctx.restore();
+  });
+  ctx.beginPath();ctx.arc(0,0,18,0,2*Math.PI);ctx.fillStyle='#09090F';ctx.fill();
+  ctx.strokeStyle=color(G.playerIdx);ctx.lineWidth=3;ctx.stroke();
+  ctx.restore();
+}
+
+function showSpinResult(won,cfg){
+  const p=G.players[G.playerIdx];
+  document.getElementById('spin-result').style.display='block';
+  let delta=0,explain='';
+
+  const WIN_EXPLAINS=[
+    [`¡El plazo fijo rindió! El banco te pagó los intereses acordados. Así funciona la Renta Fija: predecible y segura.`,
+     `¡Tus bonos subieron de precio! El mercado de renta fija te sonrió esta vez.`,
+     `El fondo de inversión conservador generó ganancias estables. Bajo riesgo, retorno positivo.`],
+    [`¡Las acciones que elegiste subieron! El mercado estuvo a tu favor. Renta Variable en su mejor momento.`,
+     `¡Boom bursátil! Las empresas en las que invertiste reportaron ganancias record. Tus acciones valieron más.`,
+     `La economía creció y tu cartera de acciones lo reflejó. El riesgo medio te recompensó.`],
+    [`¡JACKPOT! Tu apuesta especulativa explotó. Compraste en el piso y vendiste en la cima.`,
+     `¡La crypto se multiplicó! Entraste en el momento exacto. El mercado especulativo te favoreció.`,
+     `¡Tu startup fue adquirida por una multinacional! El riesgo extremo te dio la recompensa extrema.`]
+  ];
+  const LOSE_EXPLAINS=[
+    [`El banco bajó las tasas y tu plazo fijo rindió menos de lo esperado. Aun así, perdés poco. Eso es Renta Fija: protege de las pérdidas grandes.`,
+     `Los bonos del Estado bajaron su valor en el mercado secundario. La inflación erosionó tu retorno real.`,
+     `El fondo conservador tuvo un mes negativo por la suba de tasas del Banco Central.`],
+    [`El mercado cayó. Las empresas donde invertiste tuvieron malos resultados y tus acciones perdieron valor.`,
+     `Hubo un shock externo (suba del dólar, crisis internacional) y la bolsa se desplomó. Así es la Renta Variable.`,
+     `Las acciones que elegiste fueron de las más golpeadas por la corrección del mercado.`],
+    [`La crypto colapsó un 90% en una semana. Pasó en 2022 con Bitcoin, pasó con Terra/Luna. Vos lo viviste hoy.`,
+     `La startup en la que apostaste quebró. El 90% de las startups fracasan. Esta fue una de ellas.`,
+     `El regulador prohibió tu activo especulativo de un día para el otro. Todo a cero. El riesgo extremo es real.`]
+  ];
+
+  const riskIdx=G.selRisk>=0?G.selRisk:1;
+  const winPool=WIN_EXPLAINS[riskIdx];
+  const losePool=LOSE_EXPLAINS[riskIdx];
+
+  if(won){
+    delta=cfg.win;p.money+=delta;
+    document.getElementById('spin-icon').textContent='🎉';
+    document.getElementById('spin-title').textContent='¡'+p.name+' ganó!';
+    document.getElementById('spin-money').textContent='+'+fmt(delta);
+    document.getElementById('spin-money').className='money big gain';
+    explain=winPool[Math.floor(Math.random()*winPool.length)];
+  } else {
+    if(cfg.lose==='all'){
+      delta=-p.money;p.money=0;
+      explain=losePool[Math.floor(Math.random()*losePool.length)]+' Perdiste todo tu capital.';
+    } else {
+      delta=cfg.lose;p.money=Math.max(0,p.money+delta);
+      explain=losePool[Math.floor(Math.random()*losePool.length)];
+    }
+    document.getElementById('spin-icon').textContent='😬';
+    document.getElementById('spin-title').textContent='Perdiste esta vez';
+    document.getElementById('spin-money').textContent=fmt(delta);
+    document.getElementById('spin-money').className='money big loss';
+  }
+  document.getElementById('spin-explain').textContent=explain;
+}
+
+function afterInvest(){
+  G.spinning=false;G.playerIdx++;
+  if(G.playerIdx>=G.players.length){
+    G.playerIdx=0;
+    G.investTurn++;
+    if(G.investTurn<INVEST_PER_ROUND){
+      // Another round of investment for all players
+      showBoard('Ronda '+G.investTurn+' de inversión terminó 🎡','¡Viene otra vuelta de ruleta!',()=>passPhone('inversión',()=>loadInvestment()));
+    } else {
+      G.investTurn=0;
+      G.players.forEach(p=>p.hist.push(p.money));
+      showBoard('Ranking tras inversiones 📈','Ahora pueden comprar activos.',()=>passPhone('activos',()=>loadAssets()));
+    }
+  } else {
+    passPhone('inversión',()=>loadInvestment());
+  }
+}
+
+// ASSETS
+function loadAssets(){
+  if(G.playerIdx>=G.players.length){
+    G.playerIdx=0;doRentEvents();return;
+  }
+  const p=G.players[G.playerIdx];
+  show('s-assets');
+  const pct=((G.round-1+.75)/TOTAL_ROUNDS)*100;
+  document.getElementById('ast-prog').style.width=Math.min(pct,98)+'%';
+  document.getElementById('ast-badge').textContent=p.name;
+  document.getElementById('ast-badge').style.color=color(G.playerIdx);
+  document.getElementById('ast-cp-dot').style.background=color(G.playerIdx);
+  document.getElementById('ast-cp-name').textContent=p.name;
+  document.getElementById('ast-cp-money').textContent=fmt(p.money);
+  renderAssetGrid();
+}
+
+function renderAssetGrid(){
+  const p=G.players[G.playerIdx];
+  const grid=document.getElementById('asset-grid');grid.innerHTML='';
+  G.assets.forEach((a,i)=>{
+    const mine=a.owner===G.playerIdx,other=a.owner>=0&&a.owner!==G.playerIdx,cant=p.money<a.price;
+    const sellPrice=Math.round(a.price*0.75); // sell at 75% of buy price
+    const card=document.createElement('div');
+    let cls='asset-card';
+    if(mine)cls+=' owned-me';
+    else if(other)cls+=' owned-other no-buy';
+    else if(cant)cls+=' cant-afford no-buy';
+    let badge='';
+    if(mine)badge='<div class="asset-badge ab-mine">Tuyo ✓</div>';
+    else if(other)badge=`<div class="asset-badge ab-other">${G.players[a.owner].name.slice(0,8)}</div>`;
+    // Sell button for owned assets
+    const sellBtn=mine?`<button onclick="event.stopPropagation();promptSell(${i})" style="margin-top:6px;width:100%;padding:5px;border-radius:7px;border:1px solid rgba(231,76,60,.5);background:var(--red-bg);color:var(--red);font-size:10px;cursor:pointer;font-weight:600;">Vender ${fmt(sellPrice)}</button>`:'';
+    card.className=cls;
+    card.innerHTML=`${badge}<div class="asset-icon">${a.icon}</div><div class="asset-name">${a.name}</div><div class="asset-price">${fmt(a.price)}</div><div class="asset-rent">+${fmt(a.rent)}/ronda</div>${sellBtn}`;
+    if(!mine&&!other&&!cant)card.onclick=()=>promptBuy(i);
+    grid.appendChild(card);
+  });
+}
+
+function promptBuy(idx){
+  const a=G.assets[idx];G.pendingAsset=idx;
+  document.getElementById('conf-icon').textContent=a.icon;
+  document.getElementById('conf-title').textContent=a.name;
+  document.getElementById('conf-price').textContent='Precio: '+fmt(a.price);
+  document.getElementById('conf-rent').textContent='Ingreso por ronda: +'+fmt(a.rent);
+  document.getElementById('confirm-ov').style.display='flex';
+}
+
+function confirmBuy(){
+  document.getElementById('confirm-ov').style.display='none';
+  if(G.pendingAsset<0)return;
+  const a=G.assets[G.pendingAsset],p=G.players[G.playerIdx];
+  if(p.money<a.price)return;
+  p.money-=a.price;a.owner=G.playerIdx;
+  document.getElementById('ast-cp-money').textContent=fmt(p.money);
+  renderAssetGrid();G.pendingAsset=-1;
+}
+
+function cancelBuy(){document.getElementById('confirm-ov').style.display='none';G.pendingAsset=-1;}
+
+function skipAssets(){
+  G.playerIdx++;
+  if(G.playerIdx>=G.players.length){G.playerIdx=0;doRentEvents();}
+  else{passPhone('activos',()=>loadAssets());}
+}
+
+// RENT EVENTS
+function doRentEvents(){
+  const events=[];
+  G.assets.forEach(a=>{
+    if(a.owner>=0){
+      G.players.forEach((p,i)=>{
+        if(i!==a.owner&&Math.random()<.55)events.push({a,owner:a.owner,payer:i});
+      });
+    }
+  });
+  G.rentQueue=events;G.rentQueueIdx=0;processNextRent();
+}
+
+function processNextRent(){
+  if(G.rentQueueIdx>=G.rentQueue.length){endRound();return;}
+  const ev=G.rentQueue[G.rentQueueIdx++];
+  const owner=G.players[ev.owner],payer=G.players[ev.payer];
+  const amt=Math.min(ev.a.rent,payer.money);
+  owner.money+=amt;payer.money=Math.max(0,payer.money-amt);
+  show('s-rent');
+  document.getElementById('rent-emoji').textContent=ev.a.icon;
+  document.getElementById('rent-title').textContent='¡Alquiler cobrado!';
+  document.getElementById('rent-desc').textContent=`${payer.name} cayó en "${ev.a.name}" de ${owner.name}. Ingreso pasivo en acción: cobrás sin hacer nada.`;
+  document.getElementById('rent-owner-lbl').textContent=owner.name+' cobró';
+  document.getElementById('rent-gain-val').textContent='+'+fmt(amt);
+  document.getElementById('rent-payer-lbl').textContent=payer.name+' pagó';
+  document.getElementById('rent-loss-val').textContent='-'+fmt(amt);
+}
+
+function afterRent(){processNextRent();}
+
+// END ROUND
+function endRound(){
+  G.players.forEach(p=>p.hist.push(p.money));
+  if(G.round>=TOTAL_ROUNDS){showEndGame();return;}
+  G.round++;G.playerIdx=0;G.phase='q';
+  showBoard('Ronda '+G.round+' de '+TOTAL_ROUNDS+' 🎯','Los activos siguen generando ingresos. ¡A responder!',()=>passPhone('pregunta',()=>loadQuestion()));
+}
+
+// END
+function showEndGame(){
+  show('s-end');
+  const sorted=[...G.players].map((p,i)=>({...p,oi:i})).sort((a,b)=>b.money-a.money);
+  const lb=document.getElementById('end-lb');lb.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const myAssets=G.assets.filter(a=>a.owner===p.oi).map(a=>a.icon).join(' ')||'—';
+    const row=document.createElement('div');
+    row.className='lb-row slide pop';
+    row.style.animationDelay=(i*.1)+'s';
+    row.innerHTML=`<div class="lb-rank ${i===0?'top':''}">${['🥇','🥈','🥉'][i]||i+1}</div><div class="lb-dot" style="background:${color(p.oi)}"></div><div style="flex:1;"><div class="lb-name">${p.name}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Activos: ${myAssets}</div></div><div class="lb-amt">${fmt(p.money)}</div>`;
+    lb.appendChild(row);
+  });
+}
+
+
+let pendingSellIdx=-1;
+function promptSell(idx){
+  const a=G.assets[idx];
+  const sellPrice=Math.round(a.price*0.75);
+  pendingSellIdx=idx;
+  document.getElementById('sell-icon').textContent=a.icon;
+  document.getElementById('sell-title').textContent='¿Vendés '+a.name+'?';
+  document.getElementById('sell-original').textContent='Pagaste: '+fmt(a.price);
+  document.getElementById('sell-price').textContent='Recibís: '+fmt(sellPrice);
+  document.getElementById('sell-ov').style.display='flex';
+}
+function confirmSell(){
+  document.getElementById('sell-ov').style.display='none';
+  if(pendingSellIdx<0)return;
+  const a=G.assets[pendingSellIdx];
+  const p=G.players[G.playerIdx];
+  const sellPrice=Math.round(a.price*0.75);
+  p.money+=sellPrice;
+  a.owner=-1;
+  document.getElementById('ast-cp-money').textContent=fmt(p.money);
+  renderAssetGrid();
+  pendingSellIdx=-1;
+}
+function cancelSell(){document.getElementById('sell-ov').style.display='none';pendingSellIdx=-1;}
+
+initSetup();
+</script>
+</body>
+</html>
