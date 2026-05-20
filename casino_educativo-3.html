@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casino Educativo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.hidden{display:none!important}
+
+/* ---- INICIO ---- */
+#pg-start{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:28px;text-align:center}
+.logo{font-size:64px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.title{font-size:clamp(26px,5vw,46px);font-weight:800;background:linear-gradient(135deg,#00d4ff,#7c3aed,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:#7a8ba3;font-size:15px}
+.start-box{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.start-box label{font-size:13px;color:#7a8ba3;text-align:left}
+.start-box input{padding:14px 16px;background:#1a2235;border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#e2e8f0;font-size:16px;outline:none;width:100%}
+.start-box input:focus{border-color:#00d4ff}
+.btn-start{padding:16px;background:linear-gradient(135deg,#00d4ff,#7c3aed);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;width:100%;text-transform:uppercase;letter-spacing:.5px}
+.btn-start:hover{opacity:.9}
+.info-box{background:#111827;border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px;font-size:13px;line-height:1.7;color:#7a8ba3;text-align:left;max-width:400px}
+.info-box strong{color:#00d4ff}
+
+/* ---- JUEGO ---- */
+#pg-game{display:flex;flex-direction:column;min-height:100vh}
+.hdr{background:#111827;border-bottom:1px solid rgba(255,255,255,0.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+.hdr-item{display:flex;flex-direction:column;align-items:center}
+.hdr-lbl{font-size:10px;color:#7a8ba3;text-transform:uppercase;letter-spacing:.6px}
+.hdr-val{font-size:16px;font-weight:700}
+.hdr-bal{color:#ffd700}
+.hdr-timer{color:#00d4ff;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.hdr-timer.red{color:#ff3d57;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.hdr-net-pos{color:#00e676}
+.hdr-net-neg{color:#ff3d57}
+
+.game-wrap{display:flex;flex:1;gap:0}
+.game-main{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sidebar{width:260px;background:#111827;border-left:1px solid rgba(255,255,255,0.08);padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+@media(max-width:860px){.sidebar{display:none}}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:8px 14px;background:#1a2235;border:1px solid rgba(255,255,255,0.08);border-radius:30px;cursor:pointer;font-size:13px;font-weight:600;color:#7a8ba3;white-space:nowrap;transition:all .2s}
+.tab:hover{border-color:#00d4ff;color:#e2e8f0}
+.tab.on{background:rgba(0,212,255,0.1);border-color:#00d4ff;color:#00d4ff}
+
+/* Panels */
+.panel{background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;flex:1}
+
+/* Chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 13px;border-radius:20px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,0.1);background:#1f2d42;cursor:pointer;color:#e2e8f0;transition:all .15s}
+.chip:hover,.chip.on{background:#00d4ff;color:#000;border-color:#00d4ff}
+.chip-lbl{font-size:11px;color:#7a8ba3;margin-bottom:4px}
+
+/* Botones de juego */
+.btn-play{padding:12px 22px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.4px}
+.btn-green{background:#00e676;color:#000}
+.btn-green:hover{box-shadow:0 0 16px rgba(0,230,118,.4)}
+.btn-blue{background:linear-gradient(135deg,#00d4ff,#7c3aed);color:#fff}
+.btn-blue:hover{opacity:.85}
+.btn-red{background:#ff3d57;color:#fff}
+.btn-gold{background:linear-gradient(135deg,#ffd700,#e0a800);color:#000}
+.btn-play:disabled{opacity:.35;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rtp-note{font-size:12px;color:#7a8ba3;margin-top:2px}
+.rtp-note b{color:#00d4ff}
+
+/* ---- AVIATOR ---- */
+.av-stage{background:#0d1b35;border-radius:12px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden}
+.av-plane{font-size:52px;transition:transform .3s;filter:drop-shadow(0 0 10px rgba(0,212,255,.6))}
+.av-mult{font-size:52px;font-weight:900;background:linear-gradient(135deg,#00d4ff,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-variant-numeric:tabular-nums}
+.av-mult.crash{background:linear-gradient(135deg,#ff3d57,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.av-sub{font-size:13px;color:#7a8ba3}
+
+/* ---- MINES ---- */
+.mines-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:320px;margin:0 auto}
+.mcell{aspect-ratio:1;background:#1a2235;border:1px solid rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .15s}
+.mcell:hover:not(.done){border-color:#00d4ff;transform:scale(1.05)}
+.mcell.safe{background:#0d3320;border-color:#00e676}
+.mcell.mine{background:#3a0a10;border-color:#ff3d57;animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.mines-stats{display:flex;gap:10px;flex-wrap:wrap}
+.mstat{background:#1a2235;border-radius:10px;padding:8px 14px;text-align:center}
+.mstat-lbl{font-size:10px;color:#7a8ba3}
+.mstat-val{font-size:18px;font-weight:700;color:#ffd700}
+
+/* ---- SLOTS ---- */
+.slots-box{background:#1a2235;border:2px solid rgba(0,212,255,.15);border-radius:16px;padding:16px;max-width:360px;margin:0 auto}
+.reels{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.reel{width:78px;height:88px;background:#0a0e1a;border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.reel.spin{animation:rspin .07s linear infinite}
+@keyframes rspin{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+.reel.glow{box-shadow:0 0 18px rgba(255,215,0,.7);border-color:#ffd700}
+.win-line{height:3px;border-radius:2px;margin:3px 0;background:transparent;transition:background .3s}
+.win-line.on{background:linear-gradient(90deg,transparent,#ffd700,transparent)}
+.near-msg{text-align:center;font-size:13px;font-weight:600;color:#ffd700;min-height:20px}
+.paytable{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:11px;color:#7a8ba3;background:#111827;border-radius:8px;padding:8px 10px;margin-top:6px}
+.paytable span{color:#e2e8f0}
+
+/* ---- RULETA ---- */
+.roul-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.roul-ring{width:170px;height:170px;border-radius:50%;border:4px solid rgba(255,215,0,.3);position:relative;box-shadow:0 0 24px rgba(0,0,0,.5)}
+.roul-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:#1a1a1a;border:3px solid rgba(255,215,0,.4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#ffd700;z-index:2}
+.roul-ptr{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:14px solid #ffd700}
+.roul-bets{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.rb{padding:9px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:#1a2235;cursor:pointer;font-size:13px;font-weight:600;color:#e2e8f0;transition:all .15s;min-width:76px;text-align:center}
+.rb:hover{transform:translateY(-2px)}
+.rb.red-b{border-color:#c0392b}.rb.red-b:hover,.rb.red-b.on{background:#c0392b;color:#fff}
+.rb.blk-b{border-color:#555}.rb.blk-b:hover,.rb.blk-b.on{background:#444;color:#fff}
+.rb.grn-b{border-color:#1a6b3a}.rb.grn-b:hover,.rb.grn-b.on{background:#1a6b3a;color:#fff}
+.rb.evn-b{border-color:#7c3aed}.rb.evn-b:hover,.rb.evn-b.on{background:#7c3aed;color:#fff}
+.rb.odd-b{border-color:rgba(255,215,0,.4)}.rb.odd-b:hover,.rb.odd-b.on{background:rgba(255,215,0,.2);color:#ffd700}
+.roul-hist{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:300px}
+.rhip{width:26px;height:26px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff}
+
+/* ---- SIDEBAR ---- */
+.sb-title{font-size:11px;color:#7a8ba3;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.sb-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sb-box{background:#1a2235;border-radius:10px;padding:9px 11px}
+.sb-box .sl{font-size:10px;color:#7a8ba3;text-transform:uppercase}
+.sb-box .sv{font-size:14px;font-weight:700}
+.rtp-track{background:rgba(255,255,255,.08);border-radius:4px;height:7px;margin-top:7px;overflow:hidden}
+.rtp-fill{height:100%;border-radius:4px;transition:width .5s,background .5s}
+.rtp-marks{display:flex;justify-content:space-between;font-size:9px;color:#7a8ba3;margin-top:3px}
+.fact-box{background:#1a2235;border-radius:10px;padding:10px;font-size:12px;line-height:1.6;color:#7a8ba3}
+.fact-box b{color:#00d4ff}
+
+/* ---- POPUP RESULTADO ---- */
+#result-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:999;background:#111827;border-radius:16px;padding:22px 34px;text-align:center;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 50px rgba(0,0,0,.6);transition:transform .25s cubic-bezier(.34,1.56,.64,1);pointer-events:none;min-width:200px}
+#result-pop.show{transform:translate(-50%,-50%) scale(1)}
+.rp-lbl{font-size:12px;color:#7a8ba3}
+.rp-amt{font-size:34px;font-weight:800;margin:6px 0}
+.rp-msg{font-size:13px;color:#7a8ba3}
+
+/* ---- BIG WIN ---- */
+#bigwin{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;cursor:pointer}
+#bigwin.show{display:flex}
+.bw-box{text-align:center;animation:bwIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes bwIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.bw-title{font-size:68px;font-weight:900;color:#ffd700;text-shadow:0 0 36px #ffd700}
+.bw-amt{font-size:34px;font-weight:700;color:#fff;margin-top:6px}
+.bw-tap{font-size:14px;color:#7a8ba3;margin-top:10px}
+
+/* ---- FINAL ---- */
+#pg-final{min-height:100vh;padding:24px;display:flex;flex-direction:column;align-items:center;gap:22px}
+.fin-title{font-size:clamp(22px,4vw,38px);font-weight:800;text-align:center}
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;width:100%;max-width:780px}
+.fin-card{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;text-align:center}
+.fin-card .fv{font-size:26px;font-weight:800;margin:4px 0}
+.fin-card .fl{font-size:11px;color:#7a8ba3;text-transform:uppercase}
+.edu{width:100%;max-width:780px;display:flex;flex-direction:column;gap:14px}
+.edu-card{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px}
+.edu-card h3{font-size:15px;font-weight:700;margin-bottom:10px}
+.edu-card p{font-size:14px;line-height:1.75;color:#7a8ba3}
+.edu-card p strong,.edu-card p b{color:#e2e8f0}
+.edu-card.accent{border-color:rgba(0,212,255,.3)}
+.edu-card.accent h3{color:#00d4ff}
+
+/* ---- PROFESOR ---- */
+#teacher{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.87);overflow-y:auto;padding:24px}
+#teacher.show{display:block}
+.tbox{max-width:640px;margin:0 auto;background:#111827;border:1px solid rgba(255,215,0,.3);border-radius:16px;padding:26px}
+.tbox h2{color:#ffd700;font-size:20px;margin-bottom:18px}
+.tsec{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06)}
+.tsec:last-child{border-bottom:none;margin-bottom:0}
+.tsec h4{font-size:11px;color:#00d4ff;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.trow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03)}
+.trow:last-child{border-bottom:none}
+.tv{color:#ffd700;font-weight:700}
+.talert{background:rgba(255,61,87,.1);border:1px solid rgba(255,61,87,.3);border-radius:8px;padding:11px 13px;font-size:13px;color:#ffa0a0;line-height:1.6;margin-top:10px}
+.particle{position:fixed;pointer-events:none;z-index:1000;width:8px;height:8px;border-radius:2px;animation:pfall 1.3s ease-out forwards}
+@keyframes pfall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(280px) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<!-- INICIO -->
+<div id="pg-start">
+  <div class="logo">🎰</div>
+  <div>
+    <div class="title">Casino Educativo</div>
+    <div class="subtitle">Matemática y Psicología del Juego</div>
+  </div>
+  <div class="start-box">
+    <label for="gname">Nombre del grupo</label>
+    <input type="text" id="gname" placeholder="Ej: Los Afortunados" maxlength="30">
+    <button class="btn-start" id="btn-start">🎲 Comenzar con $100.000</button>
+  </div>
+  <div class="info-box">
+    <strong>Objetivo:</strong> Intentá ganar la mayor cantidad posible antes de que terminen los <strong>20 minutos</strong>.<br><br>
+    Empezás con <strong>$100.000 virtuales</strong>. Al final veremos qué pasó con tu dinero.
+  </div>
+  <div style="font-size:11px;color:#7a8ba3;opacity:.5">Modo profesor: mantenés <kbd style="background:#1a2235;padding:1px 5px;border-radius:3px">P</kbd> por 3 segundos</div>
+</div>
+
+<!-- JUEGO -->
+<div id="pg-game" class="hidden">
+  <div class="hdr">
+    <div class="hdr-item">
+      <span class="hdr-lbl">Grupo</span>
+      <span class="hdr-val" id="h-group" style="color:#7c3aed;font-size:14px">—</span>
+    </div>
+    <div class="hdr-item">
+      <span class="hdr-lbl">Tiempo</span>
+      <span class="hdr-timer" id="h-timer">20:00</span>
+    </div>
+    <div class="hdr-item">
+      <span class="hdr-lbl">Balance</span>
+      <span class="hdr-val hdr-bal" id="h-bal">$100.000</span>
+    </div>
+    <div class="hdr-item">
+      <span class="hdr-lbl">+/−</span>
+      <span class="hdr-val" id="h-net">$0</span>
+    </div>
+    <div class="hdr-item">
+      <span class="hdr-lbl">Apuestas</span>
+      <span class="hdr-val" id="h-bets" style="color:#7a8ba3">0</span>
+    </div>
+  </div>
+
+  <div class="game-wrap">
+    <div class="game-main">
+      <div class="tabs">
+        <div class="tab on"  id="tab-av"   onclick="goTab('av'  )">✈️ Aviator</div>
+        <div class="tab"     id="tab-mi"   onclick="goTab('mi'  )">💣 Mines</div>
+        <div class="tab"     id="tab-sl"   onclick="goTab('sl'  )">🎰 Tragamonedas</div>
+        <div class="tab"     id="tab-rl"   onclick="goTab('rl'  )">🎡 Ruleta</div>
+      </div>
+
+      <!-- AVIATOR -->
+      <div id="pan-av" class="panel">
+        <div class="av-stage" id="av-stage">
+          <div class="av-plane" id="av-plane">✈️</div>
+          <div class="av-mult" id="av-mult">1.00x</div>
+          <div class="av-sub"  id="av-sub">Apostá y esperá el despegue</div>
+        </div>
+        <div>
+          <div class="chip-lbl">Apuesta</div>
+          <div class="chips" id="av-chips">
+            <div class="chip on" data-v="500"   onclick="pickChip('av',this)">$500</div>
+            <div class="chip"    data-v="1000"  onclick="pickChip('av',this)">$1.000</div>
+            <div class="chip"    data-v="2000"  onclick="pickChip('av',this)">$2.000</div>
+            <div class="chip"    data-v="5000"  onclick="pickChip('av',this)">$5.000</div>
+            <div class="chip"    data-v="10000" onclick="pickChip('av',this)">$10.000</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-play btn-green" id="av-go"   onclick="avBet()">🚀 Apostar</button>
+          <button class="btn-play btn-red"   id="av-cash" onclick="avCash()" disabled>💰 Retirar</button>
+        </div>
+        <div class="rtp-note">RTP <b>97%</b> · El avión sube hasta que explota. Retirá cuando quieras, pero si explota antes perdés todo.</div>
+      </div>
+
+      <!-- MINES -->
+      <div id="pan-mi" class="panel hidden">
+        <div class="mines-stats">
+          <div class="mstat"><div class="mstat-lbl">Multiplicador</div><div class="mstat-val" id="mi-mult">1.00x</div></div>
+          <div class="mstat"><div class="mstat-lbl">Seguras</div><div class="mstat-val" id="mi-safe">0</div></div>
+          <div class="mstat"><div class="mstat-lbl">Potencial</div><div class="mstat-val" id="mi-pot">—</div></div>
+        </div>
+        <div class="mines-grid" id="mi-grid"></div>
+        <div>
+          <div class="chip-lbl">Apuesta</div>
+          <div class="chips" id="mi-chips">
+            <div class="chip on" data-v="500"  onclick="pickChip('mi',this)">$500</div>
+            <div class="chip"   data-v="1000" onclick="pickChip('mi',this)">$1.000</div>
+            <div class="chip"   data-v="2000" onclick="pickChip('mi',this)">$2.000</div>
+            <div class="chip"   data-v="5000" onclick="pickChip('mi',this)">$5.000</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <label style="font-size:13px;color:#7a8ba3">Minas:
+            <select id="mi-sel" style="background:#1a2235;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:8px;padding:5px 8px;font-size:13px;margin-left:6px">
+              <option value="3">3</option><option value="5">5</option>
+              <option value="7">7</option><option value="10">10</option>
+            </select>
+          </label>
+          <button class="btn-play btn-blue" id="mi-go"   onclick="miStart()">💣 Nueva partida</button>
+          <button class="btn-play btn-gold" id="mi-cash" onclick="miCash()" disabled>💰 Cobrar</button>
+        </div>
+        <div class="rtp-note">RTP <b>97%</b> · Cada casilla segura multiplica tu apuesta. Una mina = perdés todo.</div>
+      </div>
+
+      <!-- SLOTS -->
+      <div id="pan-sl" class="panel hidden">
+        <div class="slots-box">
+          <div style="text-align:center;font-size:11px;color:#7a8ba3;letter-spacing:.8px;text-transform:uppercase">Las Vegas Pro 3000</div>
+          <div class="win-line" id="sl-wl1"></div>
+          <div class="reels">
+            <div class="reel" id="sl-r0">🍒</div>
+            <div class="reel" id="sl-r1">🍋</div>
+            <div class="reel" id="sl-r2">🍊</div>
+          </div>
+          <div class="win-line" id="sl-wl2"></div>
+          <div class="near-msg" id="sl-near"></div>
+          <div class="paytable">
+            <span>💎💎💎</span><span>×50</span>
+            <span>🔔🔔🔔</span><span>×25</span>
+            <span>⭐⭐⭐</span><span>×15</span>
+            <span>🍇🍇🍇</span><span>×8</span>
+            <span>🍊🍊🍊</span><span>×5</span>
+            <span>🍋🍋🍋</span><span>×4</span>
+            <span>🍒🍒🍒</span><span>×3</span>
+            <span>Dos 🍒🍒</span><span>×1.5</span>
+          </div>
+        </div>
+        <div>
+          <div class="chip-lbl">Apuesta por giro</div>
+          <div class="chips" id="sl-chips">
+            <div class="chip on" data-v="200"  onclick="pickChip('sl',this)">$200</div>
+            <div class="chip"   data-v="500"  onclick="pickChip('sl',this)">$500</div>
+            <div class="chip"   data-v="1000" onclick="pickChip('sl',this)">$1.000</div>
+            <div class="chip"   data-v="2000" onclick="pickChip('sl',this)">$2.000</div>
+            <div class="chip"   data-v="5000" onclick="pickChip('sl',this)">$5.000</div>
+          </div>
+        </div>
+        <button class="btn-play btn-blue" id="sl-go" onclick="slSpin()" style="font-size:17px;padding:14px 30px;width:100%">🎰 GIRAR</button>
+        <div class="rtp-note">RTP <b>94%</b> · El peor RTP de los 4 juegos. Muchas mini-victorias que ocultan las pérdidas.</div>
+      </div>
+
+      <!-- RULETA -->
+      <div id="pan-rl" class="panel hidden">
+        <div class="roul-wrap">
+          <div class="roul-ring" id="rl-ring"
+               style="background:conic-gradient(#c0392b 0 9.7deg,#2c2c2a 9.7deg 19.4deg,#c0392b 19.4deg 29.1deg,#2c2c2a 29.1deg 38.8deg,#c0392b 38.8deg 48.5deg,#2c2c2a 48.5deg 58.2deg,#c0392b 58.2deg 67.9deg,#2c2c2a 67.9deg 77.6deg,#c0392b 77.6deg 87.3deg,#2c2c2a 87.3deg 97deg,#c0392b 97deg 106.7deg,#2c2c2a 106.7deg 116.4deg,#c0392b 116.4deg 126.1deg,#2c2c2a 126.1deg 135.8deg,#c0392b 135.8deg 145.5deg,#2c2c2a 145.5deg 155.2deg,#c0392b 155.2deg 164.9deg,#2c2c2a 164.9deg 174.6deg,#1a6b3a 174.6deg 184.3deg,#2c2c2a 184.3deg 194deg,#c0392b 194deg 203.7deg,#2c2c2a 203.7deg 213.4deg,#c0392b 213.4deg 223.1deg,#2c2c2a 223.1deg 232.8deg,#c0392b 232.8deg 242.5deg,#2c2c2a 242.5deg 252.2deg,#c0392b 252.2deg 261.9deg,#2c2c2a 261.9deg 271.6deg,#c0392b 271.6deg 281.3deg,#2c2c2a 281.3deg 291deg,#c0392b 291deg 300.7deg,#2c2c2a 300.7deg 310.4deg,#c0392b 310.4deg 320.1deg,#2c2c2a 320.1deg 329.8deg,#c0392b 329.8deg 339.5deg,#2c2c2a 339.5deg 349.2deg,#c0392b 349.2deg 360deg)">
+            <div class="roul-ptr"></div>
+            <div class="roul-center" id="rl-num">?</div>
+          </div>
+          <div class="roul-hist" id="rl-hist"></div>
+          <div class="roul-bets">
+            <div class="rb red-b on" id="rb-red"   onclick="setRB('red'  )">🔴 Rojo ×2</div>
+            <div class="rb blk-b"    id="rb-black" onclick="setRB('black')">⚫ Negro ×2</div>
+            <div class="rb evn-b"    id="rb-even"  onclick="setRB('even' )">Par ×2</div>
+            <div class="rb odd-b"    id="rb-odd"   onclick="setRB('odd'  )">Impar ×2</div>
+            <div class="rb grn-b"    id="rb-zero"  onclick="setRB('zero' )">🟢 0 ×35</div>
+          </div>
+          <div class="chips" id="rl-chips">
+            <div class="chip on" data-v="500"  onclick="pickChip('rl',this)">$500</div>
+            <div class="chip"   data-v="1000" onclick="pickChip('rl',this)">$1.000</div>
+            <div class="chip"   data-v="2000" onclick="pickChip('rl',this)">$2.000</div>
+            <div class="chip"   data-v="5000" onclick="pickChip('rl',this)">$5.000</div>
+          </div>
+          <button class="btn-play btn-blue" id="rl-go" onclick="rlSpin()">🎡 Girar ruleta</button>
+        </div>
+        <div class="rtp-note">RTP <b>97,3%</b> · El 0 verde es la ventaja del casino. 1 número de 37 que no paga nada.</div>
+      </div>
+    </div><!-- /game-main -->
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div>
+        <div class="sb-title">Estadísticas en vivo</div>
+        <div class="sb-grid">
+          <div class="sb-box"><div class="sl">Balance</div><div class="sv" id="sb-bal" style="color:#ffd700">$100.000</div></div>
+          <div class="sb-box"><div class="sl">Gan/Perd</div><div class="sv" id="sb-net">$0</div></div>
+          <div class="sb-box"><div class="sl">Apostado</div><div class="sv" id="sb-wag" style="color:#7a8ba3">$0</div></div>
+          <div class="sb-box"><div class="sl">Apuestas</div><div class="sv" id="sb-cnt" style="color:#7a8ba3">0</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="sb-title" style="margin:0">Tu RTP real</span>
+          <span style="font-size:15px;font-weight:800" id="sb-rtp">—</span>
+        </div>
+        <div class="rtp-track"><div class="rtp-fill" id="rtp-fill" style="width:50%;background:#00e676"></div></div>
+        <div class="rtp-marks"><span>50%</span><span>ideal 97%</span><span>150%</span></div>
+      </div>
+      <div>
+        <div class="sb-title">Evolución del saldo</div>
+        <canvas id="chart" height="120" style="width:100%;display:block"></canvas>
+      </div>
+      <div class="fact-box">
+        <b>¿Sabías?</b><br>
+        Por cada $100 apostados, el casino retiene $3–$8. Parece poco, pero se acumula con cada jugada.
+      </div>
+    </div>
+  </div><!-- /game-wrap -->
+</div><!-- /pg-game -->
+
+<!-- FINAL -->
+<div id="pg-final" class="hidden">
+  <div class="fin-title" id="fin-title">📊 Análisis Final</div>
+  <div class="fin-grid" id="fin-grid"></div>
+  <div class="edu" id="edu-section"></div>
+  <button class="btn-start" style="max-width:320px;margin-bottom:40px" onclick="doReset()">🔄 Nueva partida</button>
+</div>
+
+<!-- POPUP RESULTADO -->
+<div id="result-pop">
+  <div class="rp-lbl" id="rp-lbl">Resultado</div>
+  <div class="rp-amt" id="rp-amt">+$0</div>
+  <div class="rp-msg" id="rp-msg"></div>
+</div>
+
+<!-- BIG WIN -->
+<div id="bigwin" onclick="document.getElementById('bigwin').classList.remove('show')">
+  <div class="bw-box">
+    <div class="bw-title">🏆 BIG WIN!</div>
+    <div class="bw-amt" id="bw-amt">+$0</div>
+    <div class="bw-tap">Tocá para continuar</div>
+  </div>
+</div>
+
+<!-- MODO PROFESOR -->
+<div id="teacher">
+  <div class="tbox">
+    <h2>🔐 Modo Profesor</h2>
+    <button onclick="closeTeacher()" style="background:#1a2235;color:#e2e8f0;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;margin-bottom:16px">✕ Cerrar</button>
+    <div class="tsec">
+      <h4>RTP y House Edge por juego</h4>
+      <div class="trow"><span>Aviator</span><span class="tv">RTP 97% → House Edge 3%</span></div>
+      <div class="trow"><span>Mines</span><span class="tv">RTP 97% → House Edge 3%</span></div>
+      <div class="trow"><span>Tragamonedas</span><span class="tv">RTP 94% → House Edge 6%</span></div>
+      <div class="trow"><span>Ruleta europea</span><span class="tv">RTP 97,3% → House Edge 2,7%</span></div>
+    </div>
+    <div class="tsec">
+      <h4>Manipulación psicológica activa</h4>
+      <div class="trow"><span>Near miss en slots</span><span class="tv">25% de giros — forzado</span></div>
+      <div class="trow"><span>Boost inicial</span><span class="tv">Primeras 5 apuestas +10%</span></div>
+      <div class="trow"><span>Big Win overlay</span><span class="tv">Se activa con ganancias ×10</span></div>
+      <div class="trow"><span>Animación de victoria</span><span class="tv">Incluso en ganancias mínimas</span></div>
+    </div>
+    <div class="tsec">
+      <h4>Pérdida esperada por $1.000 apostados</h4>
+      <div class="trow"><span>Aviator / Mines</span><span class="tv">−$30</span></div>
+      <div class="trow"><span>Ruleta</span><span class="tv">−$27</span></div>
+      <div class="trow"><span>Tragamonedas</span><span class="tv">−$60</span></div>
+    </div>
+    <div class="tsec">
+      <h4>Sesión actual</h4>
+      <div class="trow"><span>Total apostado</span><span class="tv" id="tp-wag">$0</span></div>
+      <div class="trow"><span>Pérdida real</span><span class="tv" id="tp-loss">$0</span></div>
+      <div class="trow"><span>RTP obtenido</span><span class="tv" id="tp-rtp">—</span></div>
+      <div class="trow"><span>Apuestas realizadas</span><span class="tv" id="tp-cnt">0</span></div>
+    </div>
+    <div class="talert">
+      <b>Para la clase:</b> El casino no necesita que el alumno pierda hoy. Solo necesita que siga jugando. Con 100 apuestas de $1.000 en slots, la pérdida esperada es $6.000. Con 1.000 apuestas: $60.000. La ley de los grandes números garantiza la convergencia.
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ESTADO
+// ============================================================
+var S = {
+  bal: 100000, init: 100000, wag: 0, cnt: 0,
+  hist: [100000], group: '', timerSec: 1200,
+  tid: null, blocked: false, boost: 5
+};
+var BETS = { av: 500, mi: 500, sl: 200, rl: 500 };
+var RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+function rnd()  { return Math.random(); }
+function ri(a,b){ return Math.floor(rnd()*(b-a+1))+a; }
+function el(id) { return document.getElementById(id); }
+
+// ============================================================
+// ARRANQUE
+// ============================================================
+el('btn-start').addEventListener('click', function() {
+  S.group = el('gname').value.trim() || 'Grupo Sin Nombre';
+  el('h-group').textContent = S.group;
+  el('pg-start').classList.add('hidden');
+  el('pg-game').classList.remove('hidden');
+  buildMiGrid();
+  startTimer();
+  updateUI();
+  setTimeout(initChart, 100);
+});
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  S.tid = setInterval(function() {
+    S.timerSec--;
+    var m = Math.floor(S.timerSec/60);
+    var s = S.timerSec % 60;
+    el('h-timer').textContent = pad(m)+':'+pad(s);
+    if (S.timerSec <= 60) el('h-timer').classList.add('red');
+    if (S.timerSec <= 0)  endGame();
+  }, 1000);
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+// ============================================================
+// TABS
+// ============================================================
+function goTab(t) {
+  ['av','mi','sl','rl'].forEach(function(x) {
+    el('tab-'+x).classList.toggle('on', x===t);
+    el('pan-'+x).classList.toggle('hidden', x!==t);
+  });
+}
+
+// ============================================================
+// CHIPS
+// ============================================================
+function pickChip(game, node) {
+  var mapId = { av:'av-chips', mi:'mi-chips', sl:'sl-chips', rl:'rl-chips' };
+  el(mapId[game]).querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  node.classList.add('on');
+  BETS[game] = parseInt(node.dataset.v);
+}
+
+// ============================================================
+// ACTUALIZAR UI
+// ============================================================
+function updateUI() {
+  var net = S.bal - S.init;
+  var rtp = S.wag > 0 ? (S.wag - (S.init - S.bal)) / S.wag * 100 : null;
+
+  el('h-bal').textContent  = fmt(S.bal);
+  el('h-bets').textContent = S.cnt;
+  el('h-net').textContent  = (net>=0?'+':'')+fmt(net);
+  el('h-net').className    = 'hdr-val '+(net>=0?'hdr-net-pos':'hdr-net-neg');
+
+  el('sb-bal').textContent = fmt(S.bal);
+  el('sb-wag').textContent = fmt(S.wag);
+  el('sb-cnt').textContent = S.cnt;
+  var netEl = el('sb-net');
+  netEl.textContent = (net>=0?'+':'')+fmt(net);
+  netEl.style.color = net>=0 ? '#00e676' : '#ff3d57';
+
+  if (rtp !== null) {
+    el('sb-rtp').textContent = rtp.toFixed(1)+'%';
+    el('sb-rtp').style.color = rtp>=95?'#00e676':rtp>=85?'#ffd700':'#ff3d57';
+    var pct = Math.min(Math.max((rtp-50)/100*100, 0), 100);
+    el('rtp-fill').style.width = pct+'%';
+    el('rtp-fill').style.background = rtp>=97?'#00e676':rtp>=90?'#ffd700':'#ff3d57';
+  }
+
+  // Modo profesor
+  el('tp-wag').textContent  = fmt(S.wag);
+  el('tp-loss').textContent = fmt(Math.max(0, S.init - S.bal));
+  el('tp-rtp').textContent  = rtp!==null ? rtp.toFixed(2)+'%' : '—';
+  el('tp-cnt').textContent  = S.cnt;
+
+  S.hist.push(S.bal);
+  if (S.hist.length > 100) S.hist.shift();
+  drawChart();
+}
+
+// ============================================================
+// GRÁFICO
+// ============================================================
+var ctx = null;
+function initChart() {
+  var c = el('chart');
+  c.width = c.offsetWidth || 220;
+  ctx = c.getContext('2d');
+  drawChart();
+}
+function drawChart() {
+  if (!ctx) return;
+  var c = ctx.canvas, w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h);
+  var d = S.hist; if (d.length < 2) return;
+  var mn = Math.min.apply(null,d)*0.97, mx = Math.max.apply(null,d)*1.03;
+  if (mn===mx) { mn-=1000; mx+=1000; }
+  var px = function(i){ return i/(d.length-1)*w; };
+  var py = function(v){ return h-((v-mn)/(mx-mn))*h; };
+  // línea de inicio
+  ctx.setLineDash([3,3]);
+  ctx.strokeStyle='rgba(255,255,255,.12)';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,py(S.init)); ctx.lineTo(w,py(S.init)); ctx.stroke();
+  ctx.setLineDash([]);
+  // relleno
+  ctx.beginPath();
+  ctx.moveTo(px(0),py(d[0]));
+  d.forEach(function(v,i){ ctx.lineTo(px(i),py(v)); });
+  ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+  var below = d[d.length-1] < S.init;
+  var g = ctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0, below?'rgba(255,61,87,.25)':'rgba(0,230,118,.25)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fill();
+  // línea
+  ctx.beginPath();
+  ctx.moveTo(px(0),py(d[0]));
+  d.forEach(function(v,i){ ctx.lineTo(px(i),py(v)); });
+  ctx.strokeStyle = below?'#ff3d57':'#00e676';
+  ctx.lineWidth=2; ctx.stroke();
+}
+
+// ============================================================
+// POPUP RESULTADO
+// ============================================================
+var popT = null;
+function showPop(profit, msg) {
+  clearTimeout(popT);
+  el('rp-lbl').textContent = profit>=0?'🎉 Ganaste':'💸 Perdiste';
+  el('rp-amt').textContent = (profit>=0?'+':'')+fmt(profit);
+  el('rp-amt').style.color = profit>=0?'#00e676':'#ff3d57';
+  el('rp-msg').textContent = msg||'';
+  el('result-pop').classList.add('show');
+  popT = setTimeout(function(){ el('result-pop').classList.remove('show'); }, 2200);
+}
+function particles(x,y) {
+  var cols=['#ffd700','#00d4ff','#00e676','#ff3d57','#7c3aed'];
+  for(var i=0;i<14;i++){
+    var p=document.createElement('div');
+    p.className='particle';
+    p.style.left=(x+ri(-60,60))+'px'; p.style.top=y+'px';
+    p.style.background=cols[ri(0,4)];
+    p.style.animationDelay=(rnd()*.4)+'s';
+    document.body.appendChild(p);
+    setTimeout(function(){ if(p.parentNode) p.parentNode.removeChild(p); },1500);
+  }
+}
+function bigWin(profit) {
+  el('bw-amt').textContent = '+'+fmt(profit);
+  el('bigwin').classList.add('show');
+  for(var i=0;i<5;i++){
+    (function(ii){ setTimeout(function(){ particles(window.innerWidth/2, window.innerHeight/3); }, ii*180); })(i);
+  }
+}
+
+// Apuesta core — Aviator la maneja por separado
+function applyBet(bet, payout, msg) {
+  if (S.blocked) return;
+  S.bal += (payout - bet);
+  S.wag += bet; S.cnt++;
+  if (S.boost>0) S.boost--;
+  updateUI();
+  var profit = payout-bet;
+  showPop(profit, msg);
+  if (profit>0) {
+    particles(window.innerWidth/2, window.innerHeight*.4);
+    if (payout >= bet*10) bigWin(profit);
+  }
+}
+
+// ============================================================
+// AVIATOR
+// ============================================================
+var av = { on:false, mult:1, crashAt:1, iv:null };
+function avCrashPt() {
+  var r=rnd();
+  if (r<.40) return 1+rnd()*.5;
+  if (r<.70) return 1.5+rnd()*1.5;
+  if (r<.90) return 3+rnd()*5;
+  return 8+rnd()*42;
+}
+function avBet() {
+  if (av.on||S.blocked) return;
+  if (S.bal < BETS.av) { alert('Saldo insuficiente'); return; }
+  // Descontar apuesta del balance (la ganancia se aplica en cashout/crash)
+  S.bal -= BETS.av; S.wag += BETS.av; S.cnt++;
+  if (S.boost>0) S.boost--;
+  av.on=true; av.mult=1.0;
+  av.crashAt = avCrashPt() * (S.boost>0?1.1:1);
+  el('av-stage').style.background='#0d1b35';
+  el('av-mult').className='av-mult';
+  el('av-sub').textContent='Volando... ¡Retirá!';
+  el('av-go').disabled=true;
+  el('av-cash').disabled=false;
+  var spd=1;
+  av.iv = setInterval(function(){
+    if (av.mult>10) spd=2;
+    av.mult += (0.01 + av.mult*0.004)*spd;
+    el('av-mult').textContent=av.mult.toFixed(2)+'x';
+    var lift=Math.min((av.mult-1)/10*70,70);
+    el('av-plane').style.transform='translateY(-'+lift+'px) rotate(-'+(lift*.3)+'deg)';
+    if (av.mult >= av.crashAt) avCrash();
+  },80);
+  updateUI();
+}
+function avCash() {
+  if (!av.on) return;
+  clearInterval(av.iv); av.on=false;
+  var payout = Math.round(BETS.av * av.mult);
+  S.bal += payout; updateUI();
+  showPop(payout-BETS.av, 'Retiraste en '+av.mult.toFixed(2)+'x');
+  if (payout>BETS.av) particles(window.innerWidth/2,window.innerHeight*.4);
+  if (payout>=BETS.av*10) bigWin(payout-BETS.av);
+  el('av-go').disabled=false; el('av-cash').disabled=true;
+  el('av-sub').textContent='¡Retiraste! Apostá de nuevo.';
+}
+function avCrash() {
+  clearInterval(av.iv); av.on=false;
+  el('av-mult').className='av-mult crash';
+  el('av-mult').textContent='💥 '+av.crashAt.toFixed(2)+'x';
+  el('av-sub').textContent='Crash — perdiste tu apuesta.';
+  el('av-stage').style.background='rgba(60,10,16,.8)';
+  el('av-go').disabled=false; el('av-cash').disabled=true;
+  showPop(-BETS.av,'Crash en '+av.crashAt.toFixed(2)+'x');
+}
+
+// ============================================================
+// MINES
+// ============================================================
+var mi = { on:false, mines:[], rev:[], mult:1, bet:500 };
+function buildMiGrid() {
+  var g=el('mi-grid'); g.innerHTML='';
+  for(var i=0;i<25;i++){
+    var c=document.createElement('div');
+    c.className='mcell'; c.textContent='?'; c.dataset.i=i;
+    c.addEventListener('click', (function(idx){ return function(){ miReveal(idx); }; })(i));
+    g.appendChild(c);
+  }
+}
+function miReset() {
+  mi.on=false; mi.mines=[]; mi.rev=[]; mi.mult=1;
+  buildMiGrid();
+  el('mi-mult').textContent='1.00x';
+  el('mi-safe').textContent='0';
+  el('mi-pot').textContent='—';
+  el('mi-go').disabled=false;
+  el('mi-cash').disabled=true;
+}
+function miStart() {
+  if (S.blocked) return;
+  mi.bet=BETS.mi;
+  if (S.bal<mi.bet){ alert('Saldo insuficiente'); return; }
+  S.bal-=mi.bet; S.wag+=mi.bet; S.cnt++;
+  if(S.boost>0) S.boost--;
+  var mc=parseInt(el('mi-sel').value);
+  mi.on=true; mi.mines=[]; mi.rev=[]; mi.mult=1;
+  while(mi.mines.length<mc){ var n=ri(0,24); if(mi.mines.indexOf(n)<0) mi.mines.push(n); }
+  buildMiGrid();
+  el('mi-go').disabled=true; el('mi-cash').disabled=false;
+  updateUI();
+}
+function miReveal(idx) {
+  if (!mi.on) return;
+  if (mi.rev.indexOf(idx)>=0) return;
+  var cells=el('mi-grid').querySelectorAll('.mcell');
+  if (mi.mines.indexOf(idx)>=0) {
+    // MINA
+    cells[idx].textContent='💣'; cells[idx].classList.add('mine','done');
+    mi.mines.forEach(function(m){ cells[m].textContent='💣'; cells[m].classList.add('mine','done'); });
+    mi.on=false;
+    el('mi-go').disabled=false; el('mi-cash').disabled=true;
+    showPop(-mi.bet,'Encontraste una mina 💣');
+    S.hist.push(S.bal); drawChart();
+  } else {
+    mi.rev.push(idx);
+    cells[idx].textContent='💎'; cells[idx].classList.add('safe','done');
+    var total=25, mines=mi.mines.length, r=mi.rev.length;
+    var m=1;
+    for(var i=0;i<r;i++) m *= (total-mines-i)/(total-i);
+    mi.mult = (1/m)*0.97;
+    el('mi-mult').textContent=mi.mult.toFixed(2)+'x';
+    el('mi-safe').textContent=mi.rev.length;
+    el('mi-pot').textContent=fmt(Math.round(mi.bet*mi.mult));
+    if (mi.rev.length >= (25-mines-2)) miCash();
+  }
+}
+function miCash() {
+  if (!mi.on) return;
+  mi.on=false;
+  var pay=Math.round(mi.bet*mi.mult);
+  S.bal+=pay; updateUI();
+  el('mi-go').disabled=false; el('mi-cash').disabled=true;
+  showPop(pay-mi.bet, mi.rev.length+' casillas · '+mi.mult.toFixed(2)+'x');
+  if(pay>mi.bet) particles(window.innerWidth/2,window.innerHeight*.4);
+  if(pay>=mi.bet*10) bigWin(pay-mi.bet);
+}
+
+// ============================================================
+// SLOTS
+// ============================================================
+var SYM=['🍒','🍋','🍊','🍇','⭐','🔔','💎'];
+var WT =[30,  25,  20,  12,  7,   4,   2 ];
+var SM ={'🍒🍒🍒':3,'🍋🍋🍋':4,'🍊🍊🍊':5,'🍇🍇🍇':8,'⭐⭐⭐':15,'🔔🔔🔔':25,'💎💎💎':50,'🍒🍒':1.5,'🍋🍋':1.8};
+var slSpinning=false;
+function spinOne(){
+  var r=rnd()*100;
+  for(var i=0;i<SYM.length;i++){ r-=WT[i]; if(r<=0) return SYM[i]; }
+  return SYM[0];
+}
+function slSpin() {
+  if (slSpinning||S.blocked) return;
+  if (S.bal<BETS.sl){ alert('Saldo insuficiente'); return; }
+  slSpinning=true;
+  el('sl-go').disabled=true;
+  el('sl-near').textContent='';
+  var ticks=0, max=12+ri(0,6);
+  var iv=setInterval(function(){
+    el('sl-r0').textContent=spinOne();
+    el('sl-r1').textContent=spinOne();
+    el('sl-r2').textContent=spinOne();
+    el('sl-r0').classList.add('spin');
+    el('sl-r1').classList.add('spin');
+    el('sl-r2').classList.add('spin');
+    ticks++;
+    if(ticks>=max){
+      clearInterval(iv);
+      el('sl-r0').classList.remove('spin');
+      el('sl-r1').classList.remove('spin');
+      el('sl-r2').classList.remove('spin');
+      var r1=spinOne(),r2=spinOne(),r3=spinOne();
+      var nearMiss = rnd()<.25 && !SM[r1+r2+r3];
+      if(nearMiss){ r1=SYM[ri(0,4)]; r2=r1; do{r3=spinOne();}while(r3===r1); }
+      el('sl-r0').textContent=r1;
+      el('sl-r1').textContent=r2;
+      el('sl-r2').textContent=r3;
+      var key3=r1+r2+r3, key2=r1+r2;
+      var mult=(SM[key3]||SM[key2]||0)*0.94;
+      var pay=mult>0?Math.round(BETS.sl*mult):0;
+      if(nearMiss&&mult===0){
+        el('sl-near').textContent='😱 ¡Casi!! ¡Muy cerca!';
+      } else if(mult>0){
+        el('sl-wl1').classList.add('on'); el('sl-wl2').classList.add('on');
+        el('sl-r0').classList.add('glow'); el('sl-r1').classList.add('glow'); el('sl-r2').classList.add('glow');
+        setTimeout(function(){
+          el('sl-wl1').classList.remove('on'); el('sl-wl2').classList.remove('on');
+          el('sl-r0').classList.remove('glow'); el('sl-r1').classList.remove('glow'); el('sl-r2').classList.remove('glow');
+        },1400);
+      }
+      slSpinning=false;
+      el('sl-go').disabled=false;
+      applyBet(BETS.sl, pay, mult>0?r1+r2+r3+' ×'+mult.toFixed(1):r1+r2+r3+' — sin combinación');
+    }
+  },60);
+}
+
+// ============================================================
+// RULETA
+// ============================================================
+var rlBet='red', rlSpinning=false;
+function setRB(t) {
+  rlBet=t;
+  ['red','black','even','odd','zero'].forEach(function(x){
+    el('rb-'+x).classList.toggle('on',x===t);
+  });
+}
+function rlSpin() {
+  if(rlSpinning||S.blocked) return;
+  rlSpinning=true;
+  el('rl-go').disabled=true;
+  var num=ri(0,36);
+  var ring=el('rl-ring');
+  ring.style.transition='none';
+  ring.style.transform='rotate(0deg)';
+  setTimeout(function(){
+    ring.style.transition='transform 3s cubic-bezier(0.2,0.8,0.3,1)';
+    ring.style.transform='rotate('+(ri(720,1080)+(num/37)*360)+'deg)';
+  },30);
+  setTimeout(function(){
+    el('rl-num').textContent=num;
+    var isRed=RED.indexOf(num)>=0, isZ=num===0;
+    var win=false;
+    if(rlBet==='red')   win=!isZ&&isRed;
+    if(rlBet==='black') win=!isZ&&!isRed;
+    if(rlBet==='even')  win=!isZ&&num%2===0;
+    if(rlBet==='odd')   win=!isZ&&num%2!==0;
+    if(rlBet==='zero')  win=isZ;
+    var mult=rlBet==='zero'?36:2;
+    var pay=win?BETS.rl*mult:0;
+    // historial
+    var chip=document.createElement('div');
+    chip.className='rhip';
+    chip.textContent=num;
+    chip.style.background=isZ?'#1a6b3a':isRed?'#c0392b':'#2c2c2a';
+    el('rl-hist').appendChild(chip);
+    if(el('rl-hist').children.length>12) el('rl-hist').removeChild(el('rl-hist').firstChild);
+    rlSpinning=false;
+    el('rl-go').disabled=false;
+    applyBet(BETS.rl,pay,win?'Número '+num+' — Ganaste!':'Número '+num+' — Perdiste');
+  },3200);
+}
+
+// ============================================================
+// FIN DEL JUEGO
+// ============================================================
+function endGame() {
+  clearInterval(S.tid);
+  S.blocked=true;
+  ['av-go','av-cash','mi-go','mi-cash','sl-go','rl-go'].forEach(function(id){
+    var e=el(id); if(e) e.disabled=true;
+  });
+  setTimeout(showFinal, 1200);
+}
+function showFinal() {
+  el('pg-game').classList.add('hidden');
+  el('pg-final').classList.remove('hidden');
+  var loss=S.init-S.bal, net=S.bal-S.init;
+  var rtp=S.wag>0?(S.wag-loss)/S.wag*100:100;
+  var expLoss=S.wag*0.04;
+  el('fin-title').innerHTML=(loss>0?'📉':'🎉')+' Análisis Final — <span style="color:#00d4ff">'+S.group+'</span>';
+  el('fin-grid').innerHTML=[
+    {l:'Balance final',   v:fmt(S.bal),  c:S.bal>=S.init?'#00e676':'#ff3d57'},
+    {l:'Ganado/Perdido',  v:(net>=0?'+':'')+fmt(net), c:net>=0?'#00e676':'#ff3d57'},
+    {l:'Total apostado',  v:fmt(S.wag),  c:'#ffd700'},
+    {l:'Apuestas',        v:S.cnt,       c:'#00d4ff'},
+    {l:'Tu RTP real',     v:rtp.toFixed(1)+'%', c:rtp>=97?'#00e676':rtp>=90?'#ffd700':'#ff3d57'},
+    {l:'RTP esperado',    v:'94–97,3%',  c:'#7a8ba3'},
+  ].map(function(x){
+    return '<div class="fin-card"><div class="fl">'+x.l+'</div><div class="fv" style="color:'+x.c+'">'+x.v+'</div></div>';
+  }).join('');
+
+  el('edu-section').innerHTML=
+    '<div class="edu-card"><h3>📐 La matemática que nunca falla</h3><p>'+
+    'El grupo <b>'+S.group+'</b> realizó <b>'+S.cnt+' apuestas</b> por un total de <b>'+fmt(S.wag)+'</b>.<br><br>'+
+    'Con un house edge promedio del 4%, la pérdida matemáticamente esperada era de <b>'+fmt(expLoss)+'</b>. '+
+    'La pérdida real fue de <b style="color:'+(loss>0?'#ff3d57':'#00e676')+'">'+fmt(Math.abs(loss))+'</b>.<br><br>'+
+    'Su RTP real fue <b>'+rtp.toFixed(2)+'%</b> vs el ideal del casino de <b>94–97,3%</b>. '+
+    (S.cnt<20?'<br><br><em>Con pocas apuestas la varianza es alta. Con más tiempo, el resultado habría convergido más hacia la pérdida esperada.</em>':'')+'</p></div>'+
+    '<div class="edu-card"><h3>🧠 Por qué sentiste que ganabas</h3><p>'+
+    '<b>Near miss effect:</b> Casi ganar activa el mismo circuito cerebral que ganar. Los slots muestran combinaciones "casi premiadas" más seguido de lo que la estadística indicaría.<br><br>'+
+    '<b>Rachas ganadoras al inicio:</b> Las primeras jugadas tienen probabilidades ligeramente mejores para crear el hábito. Una vez enganchado, el RTP vuelve a la norma.<br><br>'+
+    '<b>Recompensas variables:</b> No saber cuándo vas a ganar es más adictivo que ganar siempre. El cerebro produce dopamina durante la <em>anticipación</em>, no solo en la victoria.<br><br>'+
+    '<b>Mini victorias:</b> Ganar $300 en una apuesta de $500 se <em>siente</em> como ganar. Pero perdiste $200. El cerebro registra "gané" igual.</p></div>'+
+    '<div class="edu-card"><h3>📉 Expectativa matemática</h3><p>'+
+    'Por cada $1.000 apostados: Aviator/Mines −$30 · Ruleta −$27 · Tragamonedas −$60.<br><br>'+
+    'Con 100 jugadas de $1.000 en slots, la pérdida esperada es <b>$6.000</b>. Con 1.000 jugadas: <b>$60.000</b>.<br><br>'+
+    'La probabilidad de terminar ganando después de 1.000 apuestas en slots es <b>menor al 2%</b>.</p></div>'+
+    '<div class="edu-card accent"><h3>💡 Conclusión</h3><p>'+
+    '<b>No existe una estrategia ganadora a largo plazo.</b> Ni Fibonacci, ni Martingala, ni "sentir el momento". Con suficientes jugadas, el resultado converge hacia la pérdida esperada.<br><br>'+
+    'Los casinos no necesitan trucos. Solo necesitan que <b>sigas jugando</b>.<br><br>'+
+    '<b>La única apuesta ganadora es no jugar.</b></p></div>';
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function doReset() {
+  S={bal:100000,init:100000,wag:0,cnt:0,hist:[100000],group:'',timerSec:1200,tid:null,blocked:false,boost:5};
+  BETS={av:500,mi:500,sl:200,rl:500};
+  el('pg-final').classList.add('hidden');
+  el('pg-start').classList.remove('hidden');
+  el('gname').value='';
+  el('h-timer').classList.remove('red');
+}
+
+// ============================================================
+// MODO PROFESOR — tecla P por 3 segundos
+// ============================================================
+var pTimer=null;
+document.addEventListener('keydown',function(e){
+  if((e.key==='p'||e.key==='P')&&!pTimer){
+    pTimer=setTimeout(function(){ el('teacher').classList.add('show'); },3000);
+  }
+});
+document.addEventListener('keyup',function(e){
+  if(e.key==='p'||e.key==='P'){ clearTimeout(pTimer); pTimer=null; }
+});
+function closeTeacher(){ el('teacher').classList.remove('show'); }
+</script>
+</body>
+</html>
