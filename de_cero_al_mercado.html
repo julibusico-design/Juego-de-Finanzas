@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Cero al Mercado</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F4F0;min-height:100vh;padding:1rem}
+.wrap{max-width:680px;margin:0 auto}
+.game-title{text-align:center;margin-bottom:1.5rem;padding-top:.5rem}
+.game-title h1{font-size:26px;font-weight:700;color:#1a1a1a}
+.game-title p{font-size:13px;color:#888;margin-top:4px}
+.card{background:#fff;border-radius:14px;border:1px solid #E8E6E0;padding:1.25rem;margin-bottom:.875rem}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:.875rem}
+.badge-normal{background:#E6F1FB;color:#0C447C}
+.badge-apuesta{background:#FAEEDA;color:#633806}
+.badge-doble{background:#FCEBEB;color:#791F1F}
+.badge-impostor{background:#EEEDFE;color:#3C3489}
+.q-text{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:1rem;line-height:1.5}
+.opt{width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #E0DDD8;font-size:13px;color:#1a1a1a;background:#fff;text-align:left;margin-bottom:6px;line-height:1.4;font-family:inherit;cursor:default;display:block}
+.opt-correct{background:#27500A;border-color:#27500A;color:#fff;font-weight:600}
+.opt-wrong{background:#F7C1C1;border-color:#E24B4A;color:#501313}
+.btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px;font-family:inherit;display:block}
+.btn:active{opacity:.8}
+.btn-green{background:#27500A;color:#fff}
+.btn-purple{background:#534AB7;color:#fff}
+.btn-orange{background:#993C1D;color:#fff}
+.btn-gray{background:#E8E6E0;color:#444}
+.setup-input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #E0DDD8;font-size:14px;color:#1a1a1a;background:#fff;margin-bottom:8px;font-family:inherit}
+.setup-input:focus{outline:none;border-color:#7F77DD}
+.teams-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.875rem}
+.tcard{border-radius:12px;padding:.875rem;border:1.5px solid}
+.tname{font-size:11px;font-weight:700;margin-bottom:2px}
+.tscore{font-size:26px;font-weight:700}
+.coins-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.coin{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.coin-used{opacity:.3;text-decoration:line-through;pointer-events:none}
+.coin-active{background:#EEEDFE;border-color:#534AB7;color:#26215C;font-weight:600}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem}
+.ans-card{border-radius:10px;padding:.75rem;border:1.5px solid}
+.ans-teamname{font-size:11px;font-weight:700;margin-bottom:6px}
+.ans-btns{display:flex;gap:4px}
+.ans-opt-btn{flex:1;padding:7px 2px;border-radius:8px;border:1px solid #ccc;font-size:13px;font-weight:700;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.ans-opt-pending{background:#534AB7;border-color:#534AB7;color:#fff}
+.ans-opt-correct{background:#27500A;border-color:#27500A;color:#fff}
+.ans-opt-wrong{background:#E24B4A;border-color:#E24B4A;color:#fff}
+.bet-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem}
+.bet-card{border-radius:10px;padding:.75rem;border:1.5px solid;text-align:center}
+.bet-input{width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;font-size:18px;font-weight:700;text-align:center;font-family:inherit;background:#fff}
+.bet-label{font-size:11px;font-weight:700;margin-top:4px}
+.reveal-box{background:#F0F8E8;border:1.5px solid #3B6D11;border-radius:10px;padding:1rem;margin-bottom:.875rem}
+.reveal-box strong{color:#27500A;font-size:14px;display:block;margin-bottom:6px}
+.reveal-box p{font-size:13px;color:#3B6D11;line-height:1.6}
+.secret-box{background:#EEEDFE;border:1.5px solid #534AB7;border-radius:10px;padding:.875rem;margin-bottom:.875rem;font-size:13px;color:#26215C;font-weight:500;line-height:1.5}
+.action-btn{width:100%;padding:11px;border-radius:10px;border:1.5px solid;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px;text-align:left;font-family:inherit;background:#fff}
+.imp-vote-card{border-radius:10px;padding:.875rem;border:1.5px solid #E0DDD8;background:#fff;margin-bottom:8px}
+.vote-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.vote-opt-btn{padding:7px 14px;border-radius:8px;border:1.5px solid #ccc;font-size:14px;font-weight:700;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.vote-opt-sel{background:#EEEDFE;border-color:#534AB7;color:#26215C}
+.progress-bar{height:5px;background:#E8E6E0;border-radius:3px;margin-bottom:1rem}
+.progress-fill{height:5px;background:#7F77DD;border-radius:3px;transition:width .4s}
+.rank-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0EDE8}
+.rank-num{font-size:16px;font-weight:700;width:28px;color:#999}
+.rank-name{flex:1;font-size:14px;font-weight:600;color:#1a1a1a}
+.rank-score{font-size:18px;font-weight:700}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="game-title">
+    <h1>&#128200; De Cero al Mercado</h1>
+    <p>El juego de educación financiera</p>
+  </div>
+  <div id="root"></div>
+</div>
+<script>
+var TC=[
+  {bg:"#EEEDFE",border:"#7F77DD",text:"#26215C",dark:"#3C3489"},
+  {bg:"#EAF3DE",border:"#3B6D11",text:"#27500A",dark:"#173404"},
+  {bg:"#FAECE7",border:"#993C1D",text:"#4A1B0C",dark:"#712B13"},
+  {bg:"#E6F1FB",border:"#185FA5",text:"#042C53",dark:"#0C447C"}
+];
+
+var ROUNDS=[
+  {type:"normal",qi:0},{type:"normal",qi:1},{type:"apuesta",qi:2},
+  {type:"normal",qi:3},{type:"normal",qi:4},{type:"apuesta",qi:5},
+  {type:"normal",qi:6},{type:"normal",qi:7},{type:"impostor"},
+  {type:"normal",qi:8},{type:"normal",qi:9},{type:"apuesta",qi:10},
+  {type:"normal",qi:11},{type:"normal",qi:12},{type:"apuesta",qi:13},
+  {type:"normal",qi:14},{type:"doble",qi:15},{type:"doble",qi:16}
+];
+
+var QS=[
+  {t:"¿Qué es un bono?",o:["a) Parte de la propiedad de una empresa que comprás en bolsa","b) Un préstamo que le hacés a una empresa o al Estado, que promete devolver capital más intereses","c) Un contrato de ahorro administrado por una compañía de seguros","d) Un instrumento que emite el BCRA para controlar la inflación"],c:1,exp:"El bono es deuda — quien lo emite te debe plata. La opción a describe una acción. La c describe un seguro de ahorro. La d confunde con política monetaria del BCRA."},
+  {t:"¿Quiénes pueden emitir bonos en Argentina?",o:["a) Solo el Estado nacional y el BCRA","b) Solo las empresas que cotizan en bolsa hace más de 5 años","c) El Estado nacional, las provincias y las empresas privadas autorizadas","d) Cualquier empresa con más de 50 empleados registrados"],c:2,exp:"El Estado emite bonos soberanos, las provincias emiten bonos provinciales. Las empresas privadas también pueden hacerlo pero necesitan autorización de la CNV."},
+  {t:"Una empresa privada quiere endeudarse con el mercado sin ir al banco. ¿Cómo se llama el instrumento que emite?",o:["a) Bono soberano","b) Letra del Tesoro","c) Obligación negociable","d) Cuotaparte de fondo común"],c:2,exp:"La obligación negociable es el instrumento de deuda exclusivo de las empresas privadas. El bono soberano y la letra del Tesoro son del Estado. La cuotaparte es participación en un fondo."},
+  {t:"¿Qué hace la CNV?",o:["a) Controla los bancos y fija las tasas de interés","b) Regula las compañías de seguros y los fondos de retiro","c) Supervisa el mercado de capitales — acciones, bonos, fondos y brokers","d) Administra los aportes jubilatorios de los trabajadores"],c:2,exp:"La a describe al BCRA. La b describe a la SSN. La d describe a ANSES. La CNV es el regulador del mercado de capitales."},
+  {t:"¿Qué hace la SSN?",o:["a) Supervisa los bancos y garantiza los depósitos de los ahorristas","b) Regula las compañías de seguros y exige que tengan reservas para pagar lo que prometen","c) Autoriza la emisión de acciones y obligaciones negociables","d) Fija el tipo de cambio oficial del peso argentino"],c:1,exp:"La a es el BCRA. La c es la CNV. La d también es el BCRA. La SSN existe para que las aseguradoras tengan respaldo real cuando necesitás cobrar."},
+  {t:"Una empresa quiere financiarse sin ir al banco. ¿Qué puede hacer dentro del mercado de capitales?",o:["a) Solicitar un préstamo directo al BCRA","b) Emitir acciones o emitir obligaciones negociables","c) Crear un fondo común de inversión con su propio capital","d) Transferir sus reservas al mercado cambiario oficial"],c:1,exp:"Las empresas acceden al mercado de capitales vendiendo partes de sí mismas (acciones) o endeudándose con inversores (ON). El BCRA no le presta a empresas privadas."},
+  {t:"¿Qué impuesto grava el patrimonio total de una persona en Argentina?",o:["a) IVA","b) Impuesto a las ganancias","c) Impuesto sobre los bienes personales","d) Impuesto cedular"],c:2,exp:"El IVA grava el consumo. Ganancias grava los ingresos. El impuesto cedular grava los rendimientos financieros. Bienes personales mira el patrimonio total acumulado al 31 de diciembre de cada año."},
+  {t:"¿Qué es la liquidez de una inversión?",o:["a) La ganancia que genera durante un año","b) La capacidad de convertirla en efectivo rápidamente sin perder valor","c) El respaldo en dólares que tiene una inversión regulada por el BCRA","d) El porcentaje de impuestos que se paga al vender un activo"],c:1,exp:"Liquidez no es ganancia ni respaldo — es velocidad de conversión a efectivo. Un inmueble es muy poco líquido. Las acciones se venden en minutos en el mercado."},
+  {t:"¿Los beneficiarios de un seguro de vida pagan ganancias sobre el capital que cobran?",o:["a) Sí, siempre — es un ingreso como cualquier otro","b) Sí, pero solo si supera el mínimo no imponible anual","c) No, el capital cobrado por seguro de vida está exento del impuesto a las ganancias","d) Solo pagan si el beneficiario no es familiar directo del asegurado"],c:2,exp:"Esta es una de las ventajas fiscales más importantes del seguro de vida. El capital que cobra el beneficiario no tributa ganancias — muy atractivo para planificación sucesoria."},
+  {t:"¿Qué diferencia hay entre una acción y una obligación negociable para el inversor?",o:["a) Ninguna — ambas son formas de prestarle plata a una empresa","b) La acción tiene garantía del Estado; la ON no tiene respaldo legal","c) La acción te hace socio; la ON te convierte en acreedor con derecho a cobrar intereses fijos","d) La ON solo la pueden comprar inversores institucionales"],c:2,exp:"El accionista es dueño — gana si le va bien y pierde si le va mal. El tenedor de ON es acreedor — la empresa le debe un monto fijo. En quiebra, los acreedores cobran antes que los accionistas."},
+  {t:"¿Qué es un Fondo Común de Inversión money market?",o:["a) Un fondo que invierte exclusivamente en acciones tecnológicas","b) Un fondo que replica el rendimiento del dólar informal","c) Un fondo administrado por el BCRA para estabilizar la liquidez","d) Un fondo que invierte en activos de muy corto plazo y alta liquidez para preservar el capital"],c:3,exp:"El money market es el FCI más conservador. No busca grandes ganancias sino preservar el capital. Ideal para quien no quiere riesgo pero tampoco quiere los pesos quietos. Lo regula la CNV."},
+  {t:"¿Qué instrumento es más líquido?",o:["a) Un departamento en el centro de Buenos Aires","b) Una obligación negociable a 5 años de una empresa privada","c) Un Fondo Común de Inversión money market","d) Un plazo fijo a 365 días"],c:2,exp:"El FCI money market permite entrar y salir en 24 horas. El plazo fijo a 365 días tiene el capital inmovilizado. La ON a 5 años tiene un plazo largo. El inmueble puede tardar meses en venderse."},
+  {t:"¿Qué diferencia hay entre el fondo de retiro privado y la jubilación del Estado?",o:["a) Son lo mismo — el fondo de retiro es administrado por ANSES bajo otra modalidad","b) El fondo de retiro lo regula la CNV y solo acceden trabajadores independientes","c) El fondo de retiro es voluntario, lo administra una aseguradora privada y lo regula la SSN; la jubilación es obligatoria y la administra el Estado","d) Son lo mismo pero con tasa garantizada por el BCRA"],c:2,exp:"Son sistemas completamente distintos y paralelos. El fondo de retiro privado no reemplaza la jubilación — la complementa. Muchos lo contratan porque la jubilación estatal suele ser una fracción del último sueldo."},
+  {t:"¿Por qué el Estado ofrece exenciones impositivas sobre ciertos bonos y seguros de vida?",o:["a) Porque la Constitución prohíbe gravar instrumentos financieros públicos","b) Para beneficiar exclusivamente a inversores de altos ingresos","c) Por presión directa de bancos y aseguradoras sobre el Poder Ejecutivo","d) Para incentivar que la gente invierta — el Estado consigue financiamiento y el inversor paga menos impuestos"],c:3,exp:"Las exenciones son política fiscal deliberada. Al eximir de bienes personales ciertos bonos, el gobierno los hace más atractivos. Al eximir de ganancias el capital de seguros de vida, incentiva la protección familiar."},
+  {t:"¿Qué diferencia hay entre el BCRA, la CNV y la SSN?",o:["a) Son tres nombres del mismo organismo según el tipo de operación","b) BCRA regula bancos; CNV regula el mercado de capitales; SSN regula los seguros","c) BCRA regula todo el sistema; CNV y SSN son organismos secundarios sin poder real","d) Los tres regulan lo mismo pero en distintas provincias"],c:1,exp:"Cada uno tiene su ámbito específico. Si ponés plata en un banco, te cubre el BCRA. Si invertís en acciones o fondos, te cubre la CNV. Si contratás un seguro o fondo de retiro, te cubre la SSN."},
+  {t:"Una empresa emite obligaciones negociables. Un inversor las compra. La empresa quiebra. ¿Qué pasa con el inversor?",o:["a) Pierde todo — las ON no tienen ningún respaldo jurídico","b) La CNV le devuelve el capital porque garantiza todas las emisiones","c) El inversor es acreedor y tiene derecho a cobrar en el proceso de quiebra antes que los accionistas","d) El BCRA congela los activos y paga directamente a los tenedores"],c:2,exp:"En una quiebra primero cobran los empleados, después los acreedores (entre ellos los tenedores de ON), y si queda algo cobran los accionistas. La CNV regula el mercado pero no garantiza las inversiones."},
+  {t:"Una inversión muy líquida generalmente tiene una característica en común. ¿Cuál es?",o:["a) Mayor rendimiento porque el inversor puede salir rápido si algo sale mal","b) Menor riesgo de default porque el emisor controla mejor los plazos","c) Menor rendimiento porque el inversor resigna rentabilidad a cambio de flexibilidad","d) Mayor protección impositiva porque el Estado incentiva el ahorro de corto plazo"],c:2,exp:"Liquidez y rentabilidad suelen ir en sentido contrario. Cuanto más fácil es salir de una inversión, menos te pagan por quedarte. El inversor que inmoviliza su plata más tiempo recibe más rendimiento a cambio."}
+];
+
+var IMP=[
+  {t:"¿Cuál de estas afirmaciones sobre el BCRA es INCORRECTA?",
+   o:["a) Regula y supervisa a los bancos comerciales","b) Fija la tasa de interés de referencia del sistema bancario","c) Garantiza los depósitos de los ahorristas hasta cierto monto","d) Autoriza la emisión de acciones y obligaciones negociables en bolsa"],
+   wrong:3,
+   exp:"El BCRA regula bancos, fija tasas y garantiza depósitos. Quien autoriza la emisión de acciones y obligaciones negociables es la CNV, no el BCRA."},
+  {t:"¿Cuál de estas afirmaciones sobre los bonos es INCORRECTA?",
+   o:["a) El Estado nacional puede emitir bonos para financiarse","b) Las provincias también pueden emitir bonos propios","c) Un bono es un instrumento de deuda — quien lo emite te debe plata","d) Cualquier persona física puede emitir bonos en el mercado argentino"],
+   wrong:3,
+   exp:"El Estado y las provincias pueden emitir bonos. Las empresas privadas pueden emitir obligaciones negociables. Una persona física no puede emitir bonos — requiere ser un ente público o empresa autorizada por la CNV."},
+  {t:"¿Cuál de estas afirmaciones sobre la SSN es INCORRECTA?",
+   o:["a) Regula y controla a las compañías de seguros en Argentina","b) Exige que las aseguradoras mantengan reservas técnicas para pagar lo que prometen","c) Supervisa los fondos de retiro ofrecidos por compañías de seguros","d) Garantiza automáticamente el pago de todos los siniestros aunque la aseguradora quiebre"],
+   wrong:3,
+   exp:"La SSN regula, exige reservas y supervisa fondos de retiro. Pero no garantiza automáticamente el pago si una aseguradora quiebra — por eso es fundamental verificar el registro antes de contratar."},
+  {t:"¿Cuál de estas afirmaciones sobre las acciones es INCORRECTA?",
+   o:["a) Comprar una acción te hace dueño de una parte de la empresa","b) Si la empresa gana plata, el valor de la acción puede subir","c) Las acciones son más líquidas que un inmueble porque se pueden vender rápido","d) Comprar acciones garantiza una ganancia fija anual sin importar cómo le vaya a la empresa"],
+   wrong:3,
+   exp:"Las acciones te hacen socio, pueden subir si la empresa gana y son líquidas. Pero no garantizan ganancia fija — eso sería una obligación negociable o un plazo fijo. Con acciones el rendimiento depende del mercado."}
+];
+
+var S={
+  phase:"setup",
+  teams:["Equipo 1","Equipo 2","Equipo 3","Equipo 4"],
+  scores:[0,0,0,0],
+  coins:[["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"]],
+  ri:0,
+  bets:[1,1,1,1],
+  activeCoins:[null,null,null,null],
+  teamAnswers:[null,null,null,null],
+  revealed:false,
+  postCorrect:null,
+  impSub:0,
+  impVotes:{},
+  impPhase:"show"
+};
+
+var CLABELS={vida:"Vida",cambio:"Cambio",x2:"x2"};
+
+function R(){
+  var root=document.getElementById("root");
+  if(S.phase==="setup") root.innerHTML=renderSetup();
+  else if(S.phase==="question") root.innerHTML=renderQuestion();
+  else if(S.phase==="postcorrect") root.innerHTML=renderPostCorrect();
+  else if(S.phase==="scores") root.innerHTML=renderScores();
+  else if(S.phase==="impostor") root.innerHTML=renderImpostor();
+  else if(S.phase==="end") root.innerHTML=renderEnd();
+}
+
+function renderSetup(){
+  var h='<div class="card"><div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:1rem">Nombres de los equipos</div>';
+  for(var i=0;i<4;i++){
+    var c=TC[i];
+    h+='<input class="setup-input" style="border-color:'+c.border+'" value="'+S.teams[i]+'" oninput="S.teams['+i+']=this.value" placeholder="Equipo '+(i+1)+'">';
+  }
+  h+='</div><button class="btn btn-purple" onclick="startGame()">&#9654; Empezar juego</button>';
+  return h;
+}
+
+function startGame(){S.phase="question";S.ri=0;R();}
+
+function renderQuestion(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  var pct=Math.round((S.ri/ROUNDS.length)*100);
+  var badgeClass="badge-normal",badgeText="Ronda normal";
+  if(isA){badgeClass="badge-apuesta";badgeText="Ronda apuesta — todos ven las opciones primero";}
+  if(isD){badgeClass="badge-doble";badgeText="&#9733; Doble puntaje";}
+
+  var h='<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">';
+  h+='<span style="font-size:12px;font-weight:600;color:#999">PREGUNTA '+(S.ri+1)+' DE '+ROUNDS.length+'</span>';
+  var pts=S.teams.map(function(t,i){return t.split(" ")[0]+":"+S.scores[i];}).join(" · ");
+  h+='<span style="font-size:11px;color:#999">'+pts+'</span></div>';
+  h+='<div class="card"><span class="badge '+badgeClass+'">'+badgeText+'</span><div class="q-text">'+q.t+'</div>';
+
+  if(isA&&!S.revealed){
+    h+='<div style="font-size:13px;font-weight:600;color:#555;margin-bottom:.75rem">Apuesta de cada equipo (1-30):</div><div class="bet-row">';
+    for(var i=0;i<4;i++){
+      var c=TC[i];
+      h+='<div class="bet-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="bet-label" style="color:'+c.dark+'">'+S.teams[i]+'</div>';
+      h+='<input class="bet-input" style="border-color:'+c.border+'" type="number" min="1" max="30" step="1" value="'+S.bets[i]+'" oninput="S.bets['+i+']=Math.min(30,Math.max(1,parseInt(this.value)||1))">';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+
+  for(var i=0;i<q.o.length;i++){
+    var cls="opt";
+    if(S.revealed&&i===q.c) cls="opt opt-correct";
+    else if(S.revealed) cls="opt opt-wrong";
+    h+='<div class="'+cls+'">'+q.o[i]+'</div>';
+  }
+  h+='</div>';
+
+  if(!S.revealed){
+    h+='<div class="card"><div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:.75rem">Comodines</div><div class="teams-grid">';
+    for(var i=0;i<4;i++){
+      var c=TC[i];
+      h+='<div class="tcard" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="tname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="coins-row">';
+      var ckeys=["vida","cambio","x2"];
+      for(var k=0;k<ckeys.length;k++){
+        var co=ckeys[k];
+        var has=S.coins[i].indexOf(co)>=0;
+        var act=S.activeCoins[i]===co;
+        var cls2="coin"+(has?"":" coin-used")+(act?" coin-active":"");
+        h+='<button class="'+cls2+'" onclick="toggleCoin('+i+',\''+co+'\')" '+(has?"":"disabled")+'>'+CLABELS[co]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+
+    h+='<div class="card"><div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:.75rem">Respuesta de cada equipo</div><div class="ans-grid">';
+    for(var i=0;i<4;i++){
+      var c=TC[i];
+      h+='<div class="ans-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="ans-teamname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="ans-btns">';
+      var letters=["A","B","C","D"];
+      for(var k=0;k<4;k++){
+        var sel=S.teamAnswers[i]===k;
+        var cls2="ans-opt-btn"+(sel?" ans-opt-pending":"");
+        h+='<button class="'+cls2+'" onclick="setAns('+i+','+k+')">'+letters[k]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+    h+='<button class="btn btn-green" onclick="doReveal()">&#128065; Revelar respuesta</button>';
+  }
+
+  if(S.revealed){
+    h+='<div class="card"><div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:.75rem">Lo que eligió cada equipo</div><div class="ans-grid">';
+    for(var i=0;i<4;i++){
+      var c=TC[i];
+      var chosen=S.teamAnswers[i];
+      var correct=chosen===q.c;
+      h+='<div class="ans-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="ans-teamname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="ans-btns">';
+      var letters=["A","B","C","D"];
+      for(var k=0;k<4;k++){
+        var isSel=chosen===k;
+        var cls2="ans-opt-btn";
+        if(isSel) cls2+=(correct?" ans-opt-correct":" ans-opt-wrong");
+        h+='<button class="'+cls2+'" disabled>'+letters[k]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+    h+='<div class="reveal-box"><strong>&#10003; Respuesta correcta: '+q.o[q.c]+'</strong><p>'+q.exp+'</p></div>';
+    h+='<button class="btn btn-purple" onclick="goPostCorrect()">Ver resultados &#8594;</button>';
+  }
+  return h;
+}
+
+function toggleCoin(t,c){
+  if(S.coins[t].indexOf(c)<0) return;
+  S.activeCoins[t]=S.activeCoins[t]===c?null:c;
+  R();
+}
+
+function setAns(t,v){S.teamAnswers[t]=v;R();}
+
+function doReveal(){
+  for(var i=0;i<4;i++){if(S.teamAnswers[i]===null){alert("Registrá la respuesta de todos los equipos.");return;}}
+  var q=QS[ROUNDS[S.ri].qi];
+  for(var i=0;i<4;i++){
+    if(S.teamAnswers[i]!==q.c&&S.activeCoins[i]==="cambio"){
+      S.coins[i]=S.coins[i].filter(function(x){return x!=="cambio";});
+      S.activeCoins[i]=null;
+      S.teamAnswers[i]=null;
+      alert(S.teams[i]+" usó Cambio — registrá su nueva respuesta.");
+      R();return;
+    }
+  }
+  S.revealed=true;R();
+}
+
+function goPostCorrect(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  var winners=[];
+  for(var i=0;i<4;i++){
+    if(S.teamAnswers[i]===q.c){
+      var pts=isA?S.bets[i]:(isD?20:10);
+      if(S.activeCoins[i]==="x2"){pts*=2;S.coins[i]=S.coins[i].filter(function(x){return x!=="x2";});}
+      winners.push({i:i,pts:pts});
+    }
+  }
+  if(winners.length===0){calcLosers();return;}
+  S.postCorrect={winners:winners,cur:0};
+  S.phase="postcorrect";R();
+}
+
+function renderPostCorrect(){
+  var w=S.postCorrect.winners[S.postCorrect.cur];
+  var c=TC[w.i];
+  var h='<div class="card">';
+  h+='<div style="font-size:16px;font-weight:700;color:'+c.dark+';margin-bottom:4px">&#10003; '+S.teams[w.i]+' acertó</div>';
+  h+='<div style="font-size:13px;color:#777;margin-bottom:1rem">Ganó '+w.pts+' puntos. ¿Qué hace?</div>';
+  h+='<button class="btn btn-green" onclick="chooseAction('+w.i+','+w.pts+',\'sumar\',-1)">+ Sumar '+w.pts+' puntos</button>';
+  h+='<div style="font-size:13px;color:#999;text-align:center;margin:.5rem 0">— o robar 5 puntos a —</div>';
+  for(var j=0;j<4;j++){
+    if(j===w.i) continue;
+    var tc=TC[j];
+    h+='<button class="action-btn" style="background:'+tc.bg+';border-color:'+tc.border+';color:'+tc.dark+'" onclick="chooseAction('+w.i+','+w.pts+',\'robar\','+j+')">&#9876; Robar 5 pts de '+S.teams[j]+' ('+S.scores[j]+' pts)</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function chooseAction(team,pts,action,target){
+  if(action==="sumar") S.scores[team]+=pts;
+  else S.scores[target]-=5;
+  S.postCorrect.cur++;
+  if(S.postCorrect.cur<S.postCorrect.winners.length){R();return;}
+  calcLosers();
+}
+
+function calcLosers(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  for(var i=0;i<4;i++){
+    if(S.teamAnswers[i]!==q.c){
+      if(S.activeCoins[i]==="vida") S.coins[i]=S.coins[i].filter(function(x){return x!=="vida";});
+      else{var pts=isA?S.bets[i]:(isD?20:10);S.scores[i]-=pts;}
+    }
+    S.activeCoins[i]=null;
+  }
+  S.phase="scores";R();
+}
+
+function renderScores(){
+  var sorted=S.scores.map(function(s,i){return{s:s,i:i};}).sort(function(a,b){return b.s-a.s;});
+  var h='<div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:.75rem">Tabla de posiciones</div>';
+  for(var k=0;k<sorted.length;k++){
+    var x=sorted[k];
+    var c=TC[x.i];
+    var crown=k===0?"&#128081; ":"";
+    h+='<div class="rank-row">';
+    h+='<div class="rank-num">'+(k+1)+'</div>';
+    h+='<span class="dot" style="background:'+c.border+'"></span>';
+    h+='<div class="rank-name">'+crown+S.teams[x.i]+'</div>';
+    h+='<div class="rank-score" style="color:'+c.dark+'">'+x.s+'</div>';
+    h+='</div>';
+  }
+  var nextRnd=ROUNDS[S.ri+1];
+  var isLast=S.ri===ROUNDS.length-1;
+  h+='<div style="margin-top:1rem">';
+  if(isLast) h+='<button class="btn btn-purple" onclick="goEnd()">&#127942; Ver ganador final</button>';
+  else if(nextRnd&&nextRnd.type==="impostor") h+='<button class="btn btn-orange" onclick="goImpostor()">&#128373; Ronda impostor</button>';
+  else h+='<button class="btn btn-green" onclick="nextRound()">Siguiente pregunta &#8594;</button>';
+  h+='</div>';
+  return h;
+}
+
+function nextRound(){S.ri++;S.teamAnswers=[null,null,null,null];S.bets=[1,1,1,1];S.revealed=false;S.phase="question";R();}
+
+function goImpostor(){S.phase="impostor";S.impSub=0;S.impPhase="show";S.impVotes={};R();}
+
+function renderImpostor(){
+  var sub=S.impSub;
+  var q=IMP[sub];
+
+  if(S.impPhase==="show"){
+    var h='<span class="badge badge-impostor">&#128373; Ronda impostor — '+(sub+1)+' de 4</span>';
+    h+='<div class="card"><div class="q-text">'+q.t+'</div>';
+    for(var i=0;i<q.o.length;i++) h+='<div class="opt">'+q.o[i]+'</div>';
+    h+='</div>';
+    h+='<div class="secret-box">&#128274; Solo vos ves esto<br>';
+    h+='<strong>Opción INCORRECTA: '+String.fromCharCode(65+q.wrong)+') '+q.o[q.wrong]+'</strong><br>';
+    h+='<span style="font-size:12px;opacity:.8">Las otras 3 son correctas. Cada equipo defiende una opción distinta. El que defiende la incorrecta es el impostor.</span></div>';
+    h+='<button class="btn btn-purple" onclick="S.impPhase=\'vote\';R()">Los 4 equipos justificaron — pasar a votar &#8594;</button>';
+    return h;
+  }
+
+  if(S.impPhase==="vote"){
+    var h='<span class="badge badge-impostor">&#128373; ¿Cuál opción es la INCORRECTA?</span>';
+    h+='<div class="card" style="font-size:13px;color:#555;line-height:1.6">Cada equipo vota cuál opción cree que es la incorrecta:</div>';
+    for(var j=0;j<4;j++){
+      var jc=TC[j];
+      h+='<div class="imp-vote-card" style="border-color:'+jc.border+'">';
+      h+='<div style="font-size:13px;font-weight:700;color:'+jc.dark+';margin-bottom:4px">'+S.teams[j]+' vota:</div>';
+      h+='<div class="vote-opts">';
+      for(var k=0;k<4;k++){
+        var sel=S.impVotes[j]===k;
+        h+='<button class="vote-opt-btn'+(sel?" vote-opt-sel":"")+'" onclick="setImpVote('+j+','+k+')">'+String.fromCharCode(65+k)+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='<button class="btn btn-purple" style="margin-top:.5rem" onclick="resolveImp()">&#128065; Revelar respuesta</button>';
+    return h;
+  }
+
+  if(S.impPhase==="results"){
+    var h='<span class="badge badge-impostor">Resultado impostor '+(sub+1)+' de 4</span>';
+    h+='<div class="card" style="margin-bottom:.75rem">';
+    h+='<div style="font-size:13px;color:#555;margin-bottom:.5rem">La opción INCORRECTA era:</div>';
+    h+='<div style="background:#FCEBEB;border:1.5px solid #E24B4A;border-radius:8px;padding:.75rem;font-size:14px;font-weight:700;color:#791F1F">'+String.fromCharCode(65+q.wrong)+') '+q.o[q.wrong]+'</div></div>';
+    for(var j=0;j<4;j++){
+      var jc=TC[j];
+      var voted=S.impVotes[j];
+      var found=(voted!==undefined&&voted===q.wrong);
+      h+='<div class="imp-vote-card" style="border-color:'+jc.border+';background:'+jc.bg+'">';
+      h+='<span style="color:'+jc.dark+';font-weight:700;font-size:14px">'+S.teams[j]+'</span> ';
+      h+='<span style="font-size:13px;font-weight:600;color:'+(found?"#27500A":"#A32D2D")+'">'+(found?"&#10003; +5 pts — encontró al impostor":"&#10007; -5 pts — no lo encontró")+'</span>';
+      h+='</div>';
+    }
+    h+='<div class="reveal-box" style="margin-top:.75rem"><strong>&#10003; Explicación</strong><p>'+q.exp+'</p></div>';
+    var isLast=sub===3;
+    if(isLast) h+='<button class="btn btn-green" onclick="afterImp()">Continuar con las preguntas &#8594;</button>';
+    else h+='<button class="btn btn-purple" onclick="nextImpSub()">Siguiente &#8594;</button>';
+    return h;
+  }
+  return "";
+}
+
+function setImpVote(j,k){S.impVotes[j]=k;R();}
+
+function resolveImp(){
+  var q=IMP[S.impSub];
+  for(var j=0;j<4;j++){
+    var v=S.impVotes[j];
+    if(v===undefined) continue;
+    if(v===q.wrong) S.scores[j]+=5;
+    else S.scores[j]-=5;
+  }
+  S.impPhase="results";R();
+}
+
+function nextImpSub(){S.impSub++;S.impPhase="show";S.impVotes={};R();}
+
+function afterImp(){S.ri++;S.teamAnswers=[null,null,null,null];S.bets=[1,1,1,1];S.revealed=false;S.phase="question";R();}
+
+function goEnd(){S.phase="end";R();}
+
+function renderEnd(){
+  var sorted=S.scores.map(function(s,i){return{s:s,i:i};}).sort(function(a,b){return b.s-a.s;});
+  var w=sorted[0];
+  var wc=TC[w.i];
+  var h='<div class="card" style="text-align:center;border-color:'+wc.border+';margin-bottom:.875rem">';
+  h+='<div style="font-size:13px;font-weight:600;color:#999;margin-bottom:4px">GANADOR</div>';
+  h+='<div style="font-size:28px;font-weight:700;color:'+wc.dark+'">&#127942; '+S.teams[w.i]+'</div>';
+  h+='<div style="font-size:20px;color:'+wc.dark+'">'+w.s+' puntos</div></div>';
+  h+='<div class="card">';
+  var medals=["&#129351;","&#129352;","&#129353;","4."];
+  for(var k=0;k<sorted.length;k++){
+    var x=sorted[k];
+    var c=TC[x.i];
+    h+='<div class="rank-row">';
+    h+='<div class="rank-num">'+medals[k]+'</div>';
+    h+='<span class="dot" style="background:'+c.border+'"></span>';
+    h+='<div class="rank-name">'+S.teams[x.i]+'</div>';
+    h+='<div class="rank-score" style="color:'+c.dark+'">'+x.s+' pts</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<button class="btn btn-gray" onclick="restartGame()">&#8635; Jugar de nuevo</button>';
+  return h;
+}
+
+function restartGame(){
+  S={phase:"setup",teams:["Equipo 1","Equipo 2","Equipo 3","Equipo 4"],scores:[0,0,0,0],
+  coins:[["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"]],
+  ri:0,bets:[1,1,1,1],activeCoins:[null,null,null,null],teamAnswers:[null,null,null,null],
+  revealed:false,postCorrect:null,impSub:0,impVotes:{},impPhase:"show"};
+  R();
+}
+
+R();
+</script>
+</body>
+</html>
