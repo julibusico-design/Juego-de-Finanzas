@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rumbo a la Jubilación</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(160deg,#3B0764 0%,#7B2FF7 45%,#00B4D8 100%);min-height:100vh;padding:1rem}
+.wrap{max-width:680px;margin:0 auto}
+.game-title{text-align:center;margin-bottom:1.5rem;padding-top:.5rem}
+.game-title h1{font-size:28px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.game-title p{font-size:13px;color:#FFE9A8;margin-top:4px;font-weight:600}
+.card{background:#fff;border-radius:14px;border:2px solid #EDE9FE;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:1.25rem;margin-bottom:.875rem}
+.badge{display:inline-block;font-size:12px;font-weight:800;padding:5px 14px;border-radius:20px;margin-bottom:.875rem}
+.badge-normal{background:#00B4D8;color:#fff}
+.badge-apuesta{background:#FF6B00;color:#fff}
+.badge-doble{background:#E91E63;color:#fff}
+.badge-impostor{background:#FFD600;color:#7C4A03}
+.q-text{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:1rem;line-height:1.5}
+.opt{width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #E0DDD8;font-size:13px;color:#1a1a1a;background:#fff;text-align:left;margin-bottom:6px;line-height:1.4;font-family:inherit;cursor:default;display:block}
+.opt-correct{background:#00C853;border-color:#00C853;color:#fff;font-weight:700}
+.opt-wrong{background:#FF5252;border-color:#D32F2F;color:#fff}
+.btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:6px;font-family:inherit}
+.btn:active{opacity:.8}
+.btn-green{background:#00C853;color:#fff}
+.btn-purple{background:#7B2FF7;color:#fff}
+.btn-orange{background:#FF6B00;color:#fff}
+.btn-gray{background:#EDE9FE;color:#4A0072}
+.setup-input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #D6C8FF;font-size:14px;color:#1a1a1a;background:#fff;margin-bottom:8px;font-family:inherit}
+.setup-input:focus{outline:none;border-color:#7B2FF7}
+.teams-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.875rem}
+.tcard{border-radius:12px;padding:.875rem;border:2px solid}
+.tname{font-size:11px;font-weight:800;margin-bottom:2px}
+.tscore{font-size:26px;font-weight:800}
+.coins-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.coin{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.coin-used{opacity:.3;text-decoration:line-through;pointer-events:none}
+.coin-active{background:#F0E6FF;border-color:#7B2FF7;color:#4A0072;font-weight:700}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem}
+.ans-card{border-radius:10px;padding:.75rem;border:2px solid}
+.ans-teamname{font-size:11px;font-weight:800;margin-bottom:6px}
+.ans-btns{display:flex;gap:4px}
+.ans-opt-btn{flex:1;padding:7px 2px;border-radius:8px;border:1px solid #ccc;font-size:13px;font-weight:800;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.ans-opt-pending{background:#7B2FF7;border-color:#7B2FF7;color:#fff}
+.ans-opt-correct{background:#00C853;border-color:#00C853;color:#fff}
+.ans-opt-wrong{background:#FF5252;border-color:#D32F2F;color:#fff}
+.bet-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem}
+.bet-card{border-radius:10px;padding:.75rem;border:2px solid;text-align:center}
+.bet-input{width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;font-size:18px;font-weight:800;text-align:center;font-family:inherit;background:#fff}
+.bet-label{font-size:11px;font-weight:800;margin-top:4px}
+.reveal-box{background:#E6FFF2;border:2px solid #00A651;border-radius:10px;padding:1rem;margin-bottom:.875rem}
+.reveal-box strong{color:#00693E;font-size:14px;display:block;margin-bottom:6px}
+.reveal-box p{font-size:13px;color:#00693E;line-height:1.6}
+.secret-box{background:#F0E6FF;border:2px solid #7B2FF7;border-radius:10px;padding:.875rem;margin-bottom:.875rem;font-size:13px;color:#4A0072;font-weight:600;line-height:1.5}
+.action-btn{width:100%;padding:11px;border-radius:10px;border:2px solid;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;text-align:left;font-family:inherit;background:#fff}
+.imp-vote-card{border-radius:10px;padding:.875rem;border:2px solid #E0DDD8;background:#fff;margin-bottom:8px}
+.vote-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.vote-opt-btn{padding:7px 14px;border-radius:8px;border:2px solid #ccc;font-size:14px;font-weight:800;background:#fff;color:#555;cursor:pointer;font-family:inherit}
+.vote-opt-sel{background:#F0E6FF;border-color:#7B2FF7;color:#4A0072}
+.progress-bar{height:6px;background:rgba(255,255,255,.35);border-radius:3px;margin-bottom:1rem}
+.progress-fill{height:6px;background:#FFD600;border-radius:3px;transition:width .4s}
+.rank-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0EDE8}
+.rank-num{font-size:16px;font-weight:800;width:28px;color:#999}
+.rank-name{flex:1;font-size:14px;font-weight:700;color:#1a1a1a}
+.rank-score{font-size:18px;font-weight:800}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="game-title">
+    <h1>&#127891; Rumbo a la Jubilación</h1>
+    <p>El juego del sistema previsional argentino</p>
+  </div>
+  <div id="root"></div>
+</div>
+<script>
+var TC=[
+  {bg:"#FFE0EE",border:"#E91E63",text:"#880E4F",dark:"#C2185B"},
+  {bg:"#DFF7FF",border:"#00B4D8",text:"#023E8A",dark:"#0077B6"},
+  {bg:"#EAFBD7",border:"#7CB518",text:"#365314",dark:"#4D7C0F"},
+  {bg:"#FFF1D6",border:"#FF9800",text:"#7C2D12",dark:"#E65100"}
+];
+
+var ROUNDS=[
+  {type:"normal",qi:0},{type:"normal",qi:1},{type:"apuesta",qi:2},
+  {type:"normal",qi:3},{type:"normal",qi:4},{type:"apuesta",qi:5},
+  {type:"normal",qi:6},{type:"normal",qi:7},{type:"normal",qi:8},
+  {type:"normal",qi:9},{type:"apuesta",qi:10},{type:"normal",qi:11},
+  {type:"normal",qi:12},{type:"apuesta",qi:13},{type:"normal",qi:14},
+  {type:"doble",qi:15},{type:"doble",qi:16}
+];
+
+var ALL_QS=[
+  {t:"¿Qué es el sistema previsional?",o:["a) Un sistema de créditos bancarios para jubilados","b) Un conjunto de reglas que garantiza un ingreso a las personas cuando dejan de trabajar por edad, invalidez o fallecimiento de quien las mantenía","c) Un impuesto que pagan solo las empresas grandes","d) Un seguro privado obligatorio para menores de 18 años"],c:1,exp:"El sistema previsional cubre tres contingencias centrales: vejez (jubilación), invalidez y muerte del sostén de familia (pensión). No es un banco ni un impuesto empresarial — es la protección social para cuando alguien deja de generar ingresos por sí mismo.",svi:0},
+  {t:"¿Cómo se llama el sistema previsional argentino actual, vigente desde 2008?",o:["a) AFJP","b) SIPA (Sistema Integrado Previsional Argentino)","c) SIJP","d) PAMI"],c:1,exp:"El SIPA reemplazó en 2008 al sistema mixto que incluía a las AFJP (administradoras privadas de fondos de jubilación). Desde entonces, todos los aportes van a un único sistema público de reparto.",svi:1},
+  {t:"¿Qué organismo estatal administra las jubilaciones y pensiones en Argentina?",o:["a) BCRA","b) AFIP/ARCA","c) ANSES","d) CNV"],c:2,exp:"ANSES (Administración Nacional de la Seguridad Social) gestiona jubilaciones, pensiones y asignaciones familiares como la AUH. El BCRA regula bancos, la AFIP/ARCA recauda impuestos y la CNV regula el mercado de capitales.",svi:2},
+  {t:"En el régimen general, ¿a qué edad se pueden jubilar las mujeres?",o:["a) 55 años","b) 60 años","c) 65 años","d) 70 años"],c:1,exp:"Las mujeres pueden jubilarse a los 60 años (y pueden optar por seguir trabajando hasta los 65). Los varones se jubilan a los 65 años. Ambos necesitan además 30 años de aportes.",svi:3},
+  {t:"¿Cuántos años de aportes se necesitan como mínimo para jubilarse en el régimen general?",o:["a) 10 años","b) 20 años","c) 25 años","d) 30 años"],c:3,exp:"El requisito general es de 30 años de aportes computables, sumado a la edad mínima (60 mujeres, 65 varones). Sin esos años, existen mecanismos como la moratoria o la PUAM para acceder a un ingreso igual.",svi:4},
+  {t:"Cuando un trabajador en relación de dependencia cobra su sueldo, ¿qué es el aporte jubilatorio?",o:["a) Un bono extra que paga el Estado","b) Un porcentaje del sueldo que se descuenta y va al sistema previsional","c) Una multa por faltar al trabajo","d) Un seguro de vida obligatorio"],c:1,exp:"El aporte jubilatorio es un descuento sobre el sueldo bruto del trabajador (visible en el recibo de sueldo) que se destina al sistema previsional. Es plata del trabajador, no un regalo del Estado.",svi:5},
+  {t:"Además del aporte del trabajador, ¿quién más contribuye al sistema previsional por cada empleado en relación de dependencia?",o:["a) Nadie más, solo aporta el trabajador","b) El empleador, con una contribución patronal adicional","c) Los jubilados actuales","d) El sindicato"],c:1,exp:"El empleador también aporta un porcentaje sobre el sueldo (contribución patronal), además de lo que se le descuenta al trabajador. Entre ambos aportes se financia el sistema de reparto.",svi:6},
+  {t:"¿Qué es PAMI?",o:["a) Un banco para jubilados","b) El instituto que brinda cobertura de salud a jubilados, pensionados y algunos otros beneficiarios","c) Un impuesto que pagan los jubilados","d) Una AFJP que todavía existe"],c:1,exp:"PAMI (Instituto Nacional de Servicios Sociales para Jubilados y Pensionados) da cobertura médica a quienes cobran jubilación, pensión, o beneficios como la PUAM. No es un banco ni un impuesto.",svi:7},
+  {t:"¿Cuál es la diferencia principal entre una jubilación y una pensión?",o:["a) Son exactamente lo mismo, cambia solo el nombre","b) La jubilación se gana con los propios aportes; la pensión se recibe por el fallecimiento de otra persona o por una situación de vulnerabilidad","c) La pensión la paga el empleador y la jubilación el Estado","d) La jubilación es solo para mujeres y la pensión solo para varones"],c:1,exp:"La jubilación es una prestación contributiva que se gana con los años de aportes propios. La pensión suele ser derivada — por ejemplo, la que reciben los hijos o el cónyuge de una persona fallecida — o asistencial, sin exigir aportes previos.",svi:8},
+  {t:"¿Qué es la PUAM (Pensión Universal para el Adulto Mayor)?",o:["a) Un beneficio para menores de 30 años","b) Una prestación para personas de 65 años que no llegan a los 30 años de aportes, equivalente al 80% del haber mínimo","c) Un aumento extra para todos los jubilados en diciembre","d) Un préstamo que ANSES otorga a los jubilados"],c:1,exp:"La PUAM permite que alguien de 65 años sin los 30 años de aportes completos acceda igual a un ingreso (80% de la jubilación mínima) y a la cobertura de PAMI, aunque con una evaluación socioeconómica previa.",svi:9},
+  {t:"¿Qué es una moratoria previsional?",o:["a) Un descuento en el sueldo de los jubilados","b) Un mecanismo para regularizar o completar años de aportes faltantes y así cumplir el requisito para jubilarse","c) La fecha límite para presentar el trámite de jubilación","d) Un aumento automático de la jubilación mínima"],c:1,exp:"La moratoria (hoy bajo distintas normas, como el Plan de Pago de Deuda Previsional) permite a quienes tienen años de aportes incompletos regularizar esos períodos con un plan de pagos, para poder acceder a la jubilación ordinaria.",svi:10},
+  {t:"Entre 1994 y 2008, en Argentina coexistió el sistema de reparto estatal con otro sistema. ¿Cómo se llamaban las administradoras de ese sistema privado?",o:["a) ANSES","b) AFJP (Administradoras de Fondos de Jubilaciones y Pensiones)","c) FCI","d) ART"],c:1,exp:"Durante ese período, cada trabajador podía elegir entre el sistema de reparto estatal o una AFJP, que invertía sus aportes en una cuenta individual (capitalización). En 2008 este sistema mixto se eliminó y todos los fondos volvieron al Estado, dando origen al SIPA.",svi:11},
+  {t:"Un monotributista, ¿aporta al sistema previsional?",o:["a) No, el monotributo no incluye ningún aporte jubilatorio","b) Sí, la cuota mensual del monotributo incluye un componente previsional","c) Solo si factura más de cierto monto","d) Solo los monotributistas sociales aportan"],c:1,exp:"La cuota del monotributo incluye, además del componente impositivo, un aporte al Sistema Integrado Previsional Argentino y a la obra social. Por eso pagar el monotributo también construye la futura jubilación.",svi:12},
+  {t:"Un trabajador que cobra en negro (sin registrar), ¿qué consecuencia tiene para su futura jubilación?",o:["a) Ninguna, igual se le cuentan esos años","b) Esos períodos no generan aportes, por lo que no cuentan como años trabajados para jubilarse","c) Se jubila antes que los trabajadores registrados","d) Recibe automáticamente la PUAM"],c:1,exp:"El trabajo no registrado no genera aportes previsionales, así que esos años no suman para los 30 años requeridos. Es una de las razones por las que existen mecanismos como la moratoria: para compensar años sin aportes reales.",svi:13},
+  {t:"¿Qué es la movilidad jubilatoria?",o:["a) La posibilidad de mudarse de provincia sin perder la jubilación","b) El mecanismo por el cual se actualiza periódicamente el monto de los haberes jubilatorios","c) Un descuento que se aplica a los jubilados que trabajan","d) El límite de edad para jubilarse"],c:1,exp:"La movilidad es el ajuste periódico (hoy trimestral) que actualiza el monto que cobran los jubilados, para que no pierda valor frente a la inflación y los cambios en los salarios.",svi:14},
+  {t:"Algunas actividades (como la docencia o tareas insalubres) tienen regímenes previsionales diferenciales. ¿Qué característica suelen tener?",o:["a) Exigen más años de aportes que el régimen general","b) Permiten jubilarse con menor edad o menos años de aportes, por el desgaste de la tarea","c) No dan derecho a jubilación, solo a pensión","d) Solo aplican a trabajadores estatales"],c:1,exp:"Los regímenes diferenciales reconocen que ciertas tareas (docencia, trabajos insalubres, mineros, etc.) generan un desgaste físico mayor, por lo que permiten acceder antes al retiro, con edades o años de aportes reducidos respecto del régimen general.",svi:15},
+  {t:"Si una persona llega a la edad jubilatoria pero le faltan algunos años de aportes, la ley permite compensar esa falta con exceso de edad. ¿Cómo funciona esa compensación?",o:["a) Por cada año de más que trabaje, se descuenta un año de aportes exigido","b) Por cada 2 años de edad que exceda el mínimo, se computa 1 año de aportes","c) No existe ninguna compensación posible","d) Se descuentan directamente los años faltantes del haber final"],c:1,exp:"El artículo 19 de la Ley 24.241 permite compensar años de aportes faltantes con edad excedente: por cada 2 años que superen la edad jubilatoria mínima, se reconoce 1 año de servicios. Es una opción además de la moratoria.",svi:16}
+];
+var QS=[];
+var IMP=[];
+
+var SVGS=[
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#F3E8FF"/><circle cx="150" cy="95" r="26" fill="#FFC94A"/><rect x="120" y="122" width="60" height="60" rx="10" fill="#7B2FF7"/><path d="M 90 90 Q 150 40 210 90 L 210 120 Q 150 150 90 120 Z" fill="#00B4D8" opacity=".85"/><text x="150" y="200" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4A0072" font-weight="800">PROTECCIÓN</text><rect x="290" y="80" width="100" height="70" rx="8" fill="#fff" stroke="#E91E63" stroke-width="2.5"/><text x="340" y="105" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#C2185B" font-weight="800">VEJEZ</text><text x="340" y="132" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#E91E63">&#128104;&#8203;&#128481;</text><rect x="410" y="80" width="100" height="70" rx="8" fill="#fff" stroke="#00B4D8" stroke-width="2.5"/><text x="460" y="105" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0077B6" font-weight="800">INVALIDEZ</text><rect x="430" y="118" width="60" height="18" rx="4" fill="#00B4D8"/><rect x="530" y="80" width="90" height="70" rx="8" fill="#fff" stroke="#FF6B00" stroke-width="2.5"/><text x="575" y="105" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#E65100" font-weight="800">FALLECIMIENTO</text><rect x="545" y="118" width="60" height="18" rx="4" fill="#FF6B00"/><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4A0072" font-weight="800">El sistema previsional cubre vejez, invalidez y fallecimiento</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#E0F7FF"/><rect x="70" y="150" width="180" height="40" rx="8" fill="#FF5252"/><text x="160" y="175" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#fff" font-weight="800">AFJP (hasta 2008)</text><line x1="90" y1="150" x2="230" y2="190" stroke="#7C0000" stroke-width="4"/><line x1="230" y1="150" x2="90" y2="190" stroke="#7C0000" stroke-width="4"/><rect x="220" y="55" width="200" height="110" rx="12" fill="#fff" stroke="#00B4D8" stroke-width="3"/><rect x="220" y="55" width="200" height="34" rx="12" fill="#00B4D8"/><text x="320" y="78" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#fff" font-weight="800">SIPA</text><text x="320" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#023E8A" font-weight="700">Sistema Integrado</text><text x="320" y="128" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#023E8A" font-weight="700">Previsional Argentino</text><text x="320" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0077B6">Vigente desde 2008</text><rect x="450" y="150" width="150" height="40" rx="8" fill="#00C853"/><text x="525" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">Sistema único</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">El SIPA reemplazó a las AFJP como sistema único desde 2008</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#FFF1D6"/><rect x="40" y="60" width="130" height="115" rx="8" fill="#0077B6"/><text x="105" y="88" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">BCRA</text><text x="105" y="130" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#DFF7FF">Bancos</text><rect x="185" y="60" width="130" height="115" rx="8" fill="#7CB518"/><text x="250" y="88" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">AFIP/ARCA</text><text x="250" y="130" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#EAFBD7">Impuestos</text><rect x="330" y="60" width="130" height="115" rx="8" fill="#E91E63"/><text x="395" y="88" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">CNV</text><text x="395" y="130" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#FFE0EE">Mercado capitales</text><rect x="470" y="50" width="135" height="135" rx="10" fill="#fff" stroke="#FF6B00" stroke-width="4"/><text x="537" y="82" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#E65100" font-weight="800">ANSES</text><text x="537" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7C2D12" font-weight="700">Jubilaciones</text><text x="537" y="128" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7C2D12" font-weight="700">y pensiones</text><text x="537" y="160" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#00C853">&#10003;</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#7C2D12" font-weight="800">ANSES es el organismo que administra jubilaciones y pensiones</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#FFE0EE"/><circle cx="170" cy="90" r="30" fill="#FFC94A"/><rect x="135" y="122" width="70" height="65" rx="10" fill="#E91E63"/><rect x="145" y="180" width="50" height="18" rx="6" fill="#C2185B"/><text x="170" y="80" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#880E4F" font-weight="800">60</text><text x="170" y="206" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#880E4F" font-weight="800">MUJERES</text><circle cx="460" cy="90" r="30" fill="#FFC94A"/><rect x="425" y="122" width="70" height="65" rx="10" fill="#00B4D8"/><rect x="435" y="180" width="50" height="18" rx="6" fill="#0077B6"/><text x="460" y="80" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#023E8A" font-weight="800">65</text><text x="460" y="206" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">VARONES</text><circle cx="320" cy="130" r="26" fill="#fff" stroke="#7B2FF7" stroke-width="3"/><text x="320" y="138" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#4A0072" font-weight="800">+</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#880E4F" font-weight="800">Edad jubilatoria: 60 años mujeres, 65 años varones</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#EAFBD7"/><line x1="60" y1="130" x2="580" y2="130" stroke="#B7D98A" stroke-width="6" stroke-linecap="round"/><rect x="60" y="115" width="480" height="30" rx="15" fill="#7CB518"/><text x="300" y="136" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#fff" font-weight="800">30 AÑOS DE APORTES</text><circle cx="60" cy="130" r="18" fill="#4D7C0F"/><text x="60" y="136" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">1</text><circle cx="540" cy="130" r="18" fill="#4D7C0F"/><text x="540" y="136" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">30</text><rect x="250" y="55" width="140" height="40" rx="8" fill="#fff" stroke="#4D7C0F" stroke-width="2.5"/><text x="320" y="80" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#365314" font-weight="800">Requisito mínimo</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#365314" font-weight="800">Se necesitan 30 años de aportes en el régimen general</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#DFF7FF"/><rect x="60" y="55" width="220" height="130" rx="8" fill="#fff" stroke="#0077B6" stroke-width="2.5"/><text x="170" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#023E8A" font-weight="800">RECIBO DE SUELDO</text><rect x="80" y="95" width="180" height="14" rx="3" fill="#B3ECFF"/><rect x="80" y="115" width="180" height="14" rx="3" fill="#B3ECFF"/><rect x="80" y="135" width="180" height="22" rx="4" fill="#00B4D8"/><text x="170" y="151" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="800">Aporte jubilatorio 11%</text><path d="M 280 145 Q 340 145 380 130" stroke="#7B2FF7" stroke-width="3" fill="none" stroke-dasharray="6,4"/><polygon points="376,124 386,130 376,136" fill="#7B2FF7"/><circle cx="470" cy="110" r="55" fill="#FFC94A"/><rect x="450" y="140" width="40" height="12" rx="6" fill="#E65100"/><text x="470" y="118" text-anchor="middle" font-family="sans-serif" font-size="26" fill="#7C2D12" font-weight="800">$</text><text x="470" y="192" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#023E8A" font-weight="800">SISTEMA PREVISIONAL</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">El aporte jubilatorio se descuenta del sueldo del trabajador</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#FFF1D6"/><rect x="60" y="80" width="140" height="95" rx="6" fill="#FF9800"/><polygon points="130,48 50,80 210,80" fill="#E65100"/><text x="130" y="128" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">EMPRESA</text><circle cx="330" cy="95" r="24" fill="#FFC94A"/><rect x="305" y="122" width="50" height="55" rx="8" fill="#7B2FF7"/><text x="330" y="192" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#4A0072" font-weight="800">TRABAJADOR</text><path d="M 200 120 Q 265 150 305 145" stroke="#00C853" stroke-width="3" fill="none" stroke-dasharray="6,4"/><polygon points="300,140 312,145 302,150" fill="#00C853"/><text x="230" y="165" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#00693E" font-weight="800">Contribución patronal</text><rect x="470" y="90" width="120" height="80" rx="10" fill="#fff" stroke="#00C853" stroke-width="3"/><text x="530" y="120" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#00693E" font-weight="800">SISTEMA</text><text x="530" y="138" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#00693E" font-weight="800">PREVISIONAL</text><path d="M 355 140 Q 410 150 470 140" stroke="#7B2FF7" stroke-width="3" fill="none" stroke-dasharray="6,4"/><polygon points="465,135 477,140 465,145" fill="#7B2FF7"/><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#7C2D12" font-weight="800">Trabajador y empleador aportan juntos al sistema previsional</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#EAFBD7"/><circle cx="200" cy="105" r="60" fill="#fff" stroke="#00C853" stroke-width="4"/><rect x="188" y="70" width="24" height="70" rx="6" fill="#00C853"/><rect x="165" y="93" width="70" height="24" rx="6" fill="#00C853"/><text x="200" y="192" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#365314" font-weight="800">PAMI</text><circle cx="440" cy="95" r="26" fill="#FFC94A"/><rect x="415" y="122" width="50" height="55" rx="8" fill="#7CB518"/><rect x="500" y="70" width="90" height="100" rx="8" fill="#fff" stroke="#7CB518" stroke-width="2.5"/><text x="545" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#365314" font-weight="800">Cobertura</text><text x="545" y="114" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#365314" font-weight="800">de salud</text><text x="545" y="150" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#00C853">&#10084;</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#365314" font-weight="800">PAMI brinda cobertura de salud a jubilados y pensionados</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#F3E8FF"/><rect x="40" y="55" width="255" height="130" rx="10" fill="#fff" stroke="#00C853" stroke-width="3"/><rect x="40" y="55" width="255" height="32" rx="10" fill="#00C853"/><text x="167" y="77" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">JUBILACIÓN</text><text x="167" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#00693E">Se gana con aportes propios</text><text x="167" y="130" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#00693E">Requiere edad + años</text><text x="167" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#00693E">de aportes</text><rect x="345" y="55" width="255" height="130" rx="10" fill="#fff" stroke="#E91E63" stroke-width="3"/><rect x="345" y="55" width="255" height="32" rx="10" fill="#E91E63"/><text x="472" y="77" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="800">PENSIÓN</text><text x="472" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#880E4F">Derivada de otra persona</text><text x="472" y="130" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#880E4F">(fallecimiento) o</text><text x="472" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#880E4F">asistencial</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4A0072" font-weight="800">Jubilación: aportes propios. Pensión: derivada o asistencial</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#FFF1D6"/><circle cx="150" cy="95" r="28" fill="#FFC94A"/><rect x="120" y="125" width="60" height="60" rx="9" fill="#FF9800"/><text x="150" y="80" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#7C2D12" font-weight="800">65+</text><rect x="235" y="70" width="150" height="110" rx="10" fill="#fff" stroke="#FF6B00" stroke-width="3"/><text x="310" y="98" text-anchor="middle" font-family="sans-serif" font-size="30" fill="#E65100" font-weight="800">80%</text><text x="310" y="122" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7C2D12" font-weight="700">del haber</text><text x="310" y="138" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7C2D12" font-weight="700">mínimo</text><text x="310" y="162" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7C2D12">Sin 30 años de aportes</text><circle cx="480" cy="110" r="48" fill="#fff" stroke="#00C853" stroke-width="4"/><text x="480" y="105" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#00693E" font-weight="800">+ PAMI</text><text x="480" y="125" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#00C853">&#10084;</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#7C2D12" font-weight="800">La PUAM da 80% del haber mínimo a los 65 años sin aportes completos</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#F3E8FF"/><circle cx="150" cy="115" r="60" fill="#fff" stroke="#7B2FF7" stroke-width="4" stroke-dasharray="10,6"/><text x="150" y="123" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#4A0072" font-weight="800">AÑOS</text><text x="150" y="140" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#4A0072" font-weight="800">FALTANTES</text><rect x="280" y="90" width="90" height="50" rx="8" fill="#7CB518"/><text x="325" y="120" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">PAGO</text><path d="M 210 115 Q 245 115 278 115" stroke="#4A0072" stroke-width="3" fill="none" stroke-dasharray="6,4"/><polygon points="274,110 284,115 274,120" fill="#4A0072"/><rect x="410" y="70" width="180" height="100" rx="10" fill="#fff" stroke="#00C853" stroke-width="3"/><text x="500" y="100" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#00693E" font-weight="800">30 AÑOS</text><text x="500" y="122" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#00693E" font-weight="800">COMPLETOS</text><text x="500" y="148" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#00C853">&#10003;</text><path d="M 375 115 Q 390 115 405 115" stroke="#00C853" stroke-width="3" fill="none"/><polygon points="400,110 410,115 400,120" fill="#00C853"/><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4A0072" font-weight="800">La moratoria permite regularizar años de aportes faltantes</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#DFF7FF"/><rect x="40" y="55" width="255" height="130" rx="10" fill="#fff" stroke="#0077B6" stroke-width="3"/><text x="167" y="82" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">1994 - 2008</text><rect x="65" y="100" width="90" height="30" rx="6" fill="#00B4D8"/><text x="110" y="120" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">Reparto</text><rect x="180" y="100" width="90" height="30" rx="6" fill="#FF9800"/><text x="225" y="120" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">AFJP</text><text x="167" y="160" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#023E8A">Cuenta individual, capitalización</text><rect x="345" y="55" width="255" height="130" rx="10" fill="#fff" stroke="#00C853" stroke-width="3"/><text x="472" y="82" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#00693E" font-weight="800">DESDE 2008</text><rect x="400" y="100" width="215" height="30" rx="6" fill="#00C853"/><text x="507" y="120" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="800">SIPA - un solo sistema</text><text x="472" y="160" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#00693E">Todos los fondos vuelven al Estado</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">Las AFJP administraban cuentas individuales hasta 2008</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#EAFBD7"/><rect x="70" y="55" width="220" height="135" rx="8" fill="#fff" stroke="#7CB518" stroke-width="2.5"/><text x="180" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#365314" font-weight="800">FACTURA MONOTRIBUTO</text><rect x="90" y="95" width="180" height="14" rx="3" fill="#D9F2B0"/><rect x="90" y="115" width="180" height="14" rx="3" fill="#D9F2B0"/><rect x="90" y="135" width="180" height="24" rx="5" fill="#7CB518"/><text x="180" y="152" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="800">Componente previsional</text><path d="M 300 140 Q 360 140 400 125" stroke="#4D7C0F" stroke-width="3" fill="none" stroke-dasharray="6,4"/><polygon points="396,119 406,125 396,131" fill="#4D7C0F"/><circle cx="480" cy="105" r="55" fill="#FFC94A"/><rect x="460" y="135" width="40" height="12" rx="6" fill="#E65100"/><text x="480" y="113" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#7C2D12" font-weight="800">SIPA</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#365314" font-weight="800">La cuota del monotributo incluye aporte previsional</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#FFE0EE"/><polygon points="150,55 90,165 210,165" fill="#FF5252"/><text x="150" y="140" text-anchor="middle" font-family="sans-serif" font-size="30" fill="#fff" font-weight="800">!</text><text x="150" y="190" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#880E4F" font-weight="800">TRABAJO EN NEGRO</text><rect x="290" y="90" width="60" height="60" rx="8" fill="#E0E0E0"/><rect x="360" y="90" width="60" height="60" rx="8" fill="#E0E0E0"/><rect x="430" y="90" width="60" height="60" rx="8" fill="#E0E0E0"/><line x1="290" y1="90" x2="490" y2="150" stroke="#D32F2F" stroke-width="4"/><line x1="490" y1="90" x2="290" y2="150" stroke="#D32F2F" stroke-width="4"/><text x="390" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#880E4F" font-weight="700">Sin aportes = sin años computados</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#880E4F" font-weight="800">El trabajo no registrado no genera años de aportes</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#DFF7FF"/><line x1="50" y1="60" x2="50" y2="180" stroke="#B3ECFF" stroke-width="2"/><line x1="50" y1="180" x2="600" y2="180" stroke="#B3ECFF" stroke-width="2"/><rect x="90" y="150" width="70" height="30" rx="4" fill="#00B4D8"/><rect x="200" y="130" width="70" height="50" rx="4" fill="#00B4D8"/><rect x="310" y="110" width="70" height="70" rx="4" fill="#00B4D8"/><rect x="420" y="85" width="70" height="95" rx="4" fill="#00B4D8"/><rect x="530" y="60" width="70" height="120" rx="4" fill="#00B4D8"/><text x="125" y="165" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">T1</text><text x="235" y="155" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">T2</text><text x="345" y="145" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">T3</text><text x="455" y="125" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">T4</text><text x="565" y="100" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="800">T5</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#023E8A" font-weight="800">La movilidad actualiza el haber jubilatorio cada trimestre</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#F3E8FF"/><rect x="60" y="60" width="230" height="125" rx="10" fill="#fff" stroke="#7B2FF7" stroke-width="3"/><rect x="105" y="80" width="140" height="60" rx="6" fill="#7B2FF7"/><rect x="120" y="92" width="110" height="8" rx="2" fill="#fff" opacity=".8"/><rect x="120" y="106" width="90" height="8" rx="2" fill="#fff" opacity=".8"/><rect x="120" y="120" width="100" height="8" rx="2" fill="#fff" opacity=".8"/><text x="175" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#4A0072" font-weight="800">DOCENCIA</text><rect x="350" y="60" width="230" height="125" rx="10" fill="#fff" stroke="#FF6B00" stroke-width="3"/><polygon points="465,80 425,140 505,140" fill="#FF6B00"/><text x="465" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#7C2D12" font-weight="800">TAREAS INSALUBRES</text><text x="320" y="205" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#4A0072" font-weight="700">Edad o años de aportes reducidos</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4A0072" font-weight="800">Los regímenes diferenciales permiten jubilarse antes</text></svg>`,
+`<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"><rect width="640" height="220" fill="#EAFBD7"/><line x1="320" y1="55" x2="320" y2="90" stroke="#365314" stroke-width="5"/><line x1="150" y1="90" x2="490" y2="90" stroke="#365314" stroke-width="5"/><line x1="150" y1="90" x2="150" y2="130" stroke="#365314" stroke-width="4"/><line x1="490" y1="90" x2="490" y2="130" stroke="#365314" stroke-width="4"/><rect x="90" y="130" width="120" height="40" rx="6" fill="#7CB518"/><text x="150" y="155" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">2 años edad</text><rect x="430" y="130" width="120" height="40" rx="6" fill="#4D7C0F"/><text x="490" y="155" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fff" font-weight="800">1 año aportes</text><circle cx="320" cy="50" r="14" fill="#365314"/><text x="320" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#365314" font-weight="700">Ley 24.241, artículo 19</text><text x="320" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#365314" font-weight="800">Cada 2 años de edad excedente compensan 1 año de aportes</text></svg>`
+];
+
+var S={
+  phase:"setup",
+  numTeams:4,
+  teams:["Equipo 1","Equipo 2","Equipo 3","Equipo 4"],
+  scores:[0,0,0,0],
+  coins:[["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"]],
+  ri:0,
+  bets:[1,1,1,1],
+  activeCoins:[null,null,null,null],
+  teamAnswers:[null,null,null,null],
+  revealed:false,
+  postCorrect:null,
+  impSub:0,
+  impVotes:{},
+  impPhase:"show",
+  explainImg:null,
+  explainQ:null
+};
+
+var CLABELS={vida:"Vida",cambio:"Cambio",x2:"x2"};
+
+function R(){
+  var root=document.getElementById("root");
+  if(S.phase==="setup") root.innerHTML=renderSetup();
+  else if(S.phase==="question") root.innerHTML=renderQuestion();
+  else if(S.phase==="postcorrect") root.innerHTML=renderPostCorrect();
+  else if(S.phase==="explain") root.innerHTML=renderExplain();
+  else if(S.phase==="scores") root.innerHTML=renderScores();
+  else if(S.phase==="impostor") root.innerHTML=renderImpostor();
+  else if(S.phase==="end") root.innerHTML=renderEnd();
+}
+
+function renderSetup(){
+  var h='<div class="card">';
+  h+='<div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">¿Cuántos equipos juegan?</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:1.25rem">';
+  for(var n=2;n<=4;n++){
+    var sel=S.numTeams===n;
+    h+='<button style="flex:1;padding:10px;border-radius:10px;border:2px solid '+(sel?'#7B2FF7':'#E0DDD8')+';background:'+(sel?'#F0E6FF':'#fff')+';color:'+(sel?'#4A0072':'#555')+';font-size:15px;font-weight:800;cursor:pointer;font-family:inherit" onclick="setNumTeams('+n+')">'+n+' equipos</button>';
+  }
+  h+='</div>';
+  h+='<div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Nombres de los equipos</div>';
+  for(var i=0;i<S.numTeams;i++){
+    var c=TC[i];
+    h+='<input class="setup-input" style="border-color:'+c.border+'" value="'+S.teams[i]+'" oninput="S.teams['+i+']=this.value" placeholder="Equipo '+(i+1)+'">';
+  }
+  h+='</div><button class="btn btn-purple" onclick="startGame()">&#9654; Empezar juego</button>';
+  return h;
+}
+
+function setNumTeams(n){S.numTeams=n;R();}
+
+function shuffle(arr){
+  for(var i=arr.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;
+  }
+}
+
+function startGame(){
+  var n=S.numTeams;
+  S.scores=[];S.coins=[];S.bets=[];S.activeCoins=[];S.teamAnswers=[];
+  for(var i=0;i<n;i++){S.scores.push(0);S.coins.push(["vida","cambio","x2"]);S.bets.push(1);S.activeCoins.push(null);S.teamAnswers.push(null);}
+  // Shuffle questions so each game is different, preserving each question's own illustration
+  var pool=ALL_QS.slice();
+  shuffle(pool);
+  QS=pool.slice(0,17);
+  IMP=[];
+  S.phase="question";S.ri=0;R();
+}
+
+function renderQuestion(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  var pct=Math.round((S.ri/ROUNDS.length)*100);
+  var badgeClass="badge-normal",badgeText="Ronda normal";
+  if(isA){badgeClass="badge-apuesta";badgeText="Ronda apuesta — todos ven las opciones primero";}
+  if(isD){badgeClass="badge-doble";badgeText="&#9733; Doble puntaje";}
+
+  var h='<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">';
+  h+='<span style="font-size:12px;font-weight:700;color:#fff">PREGUNTA '+(S.ri+1)+' DE '+ROUNDS.length+'</span>';
+  var pts=S.teams.slice(0,S.numTeams).map(function(t,i){return t.split(" ")[0]+":"+S.scores[i];}).join(" · ");
+  h+='<span style="font-size:11px;color:#FFE9A8;font-weight:600">'+pts+'</span></div>';
+  h+='<div class="card"><span class="badge '+badgeClass+'">'+badgeText+'</span><div class="q-text">'+q.t+'</div>';
+
+  if(isA&&!S.revealed){
+    h+='<div style="font-size:13px;font-weight:700;color:#555;margin-bottom:.75rem">Apuesta de cada equipo (1-30):</div><div class="bet-row">';
+    for(var i=0;i<S.numTeams;i++){
+      var c=TC[i];
+      h+='<div class="bet-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="bet-label" style="color:'+c.dark+'">'+S.teams[i]+'</div>';
+      h+='<input class="bet-input" style="border-color:'+c.border+'" type="number" min="1" max="30" step="1" value="'+S.bets[i]+'" oninput="S.bets['+i+']=Math.min(30,Math.max(1,parseInt(this.value)||1))">';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+
+  for(var i=0;i<q.o.length;i++){
+    var cls="opt";
+    if(S.revealed&&i===q.c) cls="opt opt-correct";
+    else if(S.revealed) cls="opt opt-wrong";
+    h+='<div class="'+cls+'">'+q.o[i]+'</div>';
+  }
+  h+='</div>';
+
+  if(!S.revealed){
+    h+='<div class="card"><div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Comodines</div><div class="teams-grid">';
+    for(var i=0;i<S.numTeams;i++){
+      var c=TC[i];
+      h+='<div class="tcard" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="tname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="coins-row">';
+      var ckeys=["vida","cambio","x2"];
+      for(var k=0;k<ckeys.length;k++){
+        var co=ckeys[k];
+        var has=S.coins[i].indexOf(co)>=0;
+        var act=S.activeCoins[i]===co;
+        var cls2="coin"+(has?"":" coin-used")+(act?" coin-active":"");
+        h+='<button class="'+cls2+'" onclick="toggleCoin('+i+',\''+co+'\')" '+(has?"":"disabled")+'>'+CLABELS[co]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+
+    h+='<div class="card"><div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Respuesta de cada equipo</div><div class="ans-grid">';
+    for(var i=0;i<S.numTeams;i++){
+      var c=TC[i];
+      h+='<div class="ans-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="ans-teamname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="ans-btns">';
+      var letters=["A","B","C","D"];
+      for(var k=0;k<4;k++){
+        var sel=S.teamAnswers[i]===k;
+        var cls2="ans-opt-btn"+(sel?" ans-opt-pending":"");
+        h+='<button class="'+cls2+'" onclick="setAns('+i+','+k+')">'+letters[k]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+    h+='<button class="btn btn-green" onclick="doReveal()">&#128065; Revelar respuesta</button>';
+  }
+
+  if(S.revealed){
+    h+='<div class="card"><div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Lo que eligió cada equipo</div><div class="ans-grid">';
+    for(var i=0;i<S.numTeams;i++){
+      var c=TC[i];
+      var chosen=S.teamAnswers[i];
+      var correct=chosen===q.c;
+      h+='<div class="ans-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="ans-teamname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="ans-btns">';
+      var letters=["A","B","C","D"];
+      for(var k=0;k<4;k++){
+        var isSel=chosen===k;
+        var cls2="ans-opt-btn";
+        if(isSel) cls2+=(correct?" ans-opt-correct":" ans-opt-wrong");
+        h+='<button class="'+cls2+'" disabled>'+letters[k]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+    h+='<div class="reveal-box"><strong>&#10003; Respuesta correcta: '+q.o[q.c]+'</strong><p>'+q.exp+'</p></div>';
+    h+='<button class="btn btn-purple" onclick="goPostCorrect()">Ver resultados &#8594;</button>';
+  }
+  return h;
+}
+
+function toggleCoin(t,c){
+  if(S.coins[t].indexOf(c)<0) return;
+  S.activeCoins[t]=S.activeCoins[t]===c?null:c;
+  R();
+}
+
+function setAns(t,v){S.teamAnswers[t]=v;R();}
+
+function doReveal(){
+  for(var i=0;i<S.numTeams;i++){if(S.teamAnswers[i]===null){alert("Registrá la respuesta de todos los equipos.");return;}}
+  var q=QS[ROUNDS[S.ri].qi];
+  for(var i=0;i<S.numTeams;i++){
+    if(S.teamAnswers[i]!==q.c&&S.activeCoins[i]==="cambio"){
+      S.coins[i]=S.coins[i].filter(function(x){return x!=="cambio";});
+      S.activeCoins[i]=null;
+      S.teamAnswers[i]=null;
+      alert(S.teams[i]+" usó Cambio — registrá su nueva respuesta.");
+      R();return;
+    }
+  }
+  S.revealed=true;R();
+}
+
+function goPostCorrect(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  var winners=[];
+  for(var i=0;i<S.numTeams;i++){
+    if(S.teamAnswers[i]===q.c){
+      var pts=isA?S.bets[i]:(isD?20:10);
+      if(S.activeCoins[i]==="x2"){pts*=2;S.coins[i]=S.coins[i].filter(function(x){return x!=="x2";});}
+      winners.push({i:i,pts:pts});
+    }
+  }
+  if(winners.length===0){calcLosers();return;}
+  S.postCorrect={winners:winners,cur:0};
+  S.phase="postcorrect";R();
+}
+
+function renderPostCorrect(){
+  var w=S.postCorrect.winners[S.postCorrect.cur];
+  var c=TC[w.i];
+  var h='<div class="card">';
+  h+='<div style="font-size:16px;font-weight:800;color:'+c.dark+';margin-bottom:4px">&#10003; '+S.teams[w.i]+' acertó</div>';
+  h+='<div style="font-size:13px;color:#777;margin-bottom:1rem">Ganó '+w.pts+' puntos. ¿Qué hace?</div>';
+  h+='<button class="btn btn-green" onclick="chooseAction('+w.i+','+w.pts+',\'sumar\',-1)">+ Sumar '+w.pts+' puntos</button>';
+  h+='<div style="font-size:13px;color:#999;text-align:center;margin:.5rem 0">— o robar 10 puntos a —</div>';
+  for(var j=0;j<S.numTeams;j++){
+    if(j===w.i) continue;
+    var tc=TC[j];
+    h+='<button class="action-btn" style="background:'+tc.bg+';border-color:'+tc.border+';color:'+tc.dark+'" onclick="chooseAction('+w.i+','+w.pts+',\'robar\','+j+')">&#9876; Robar 10 pts de '+S.teams[j]+' ('+S.scores[j]+' pts)</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function chooseAction(team,pts,action,target){
+  if(action==="sumar") S.scores[team]+=pts;
+  else{S.scores[team]+=pts;S.scores[target]-=10;}
+  S.postCorrect.cur++;
+  if(S.postCorrect.cur<S.postCorrect.winners.length){R();return;}
+  calcLosers();
+}
+
+function calcLosers(){
+  var rnd=ROUNDS[S.ri];
+  var q=QS[rnd.qi];
+  var isA=rnd.type==="apuesta";
+  var isD=rnd.type==="doble";
+  for(var i=0;i<S.numTeams;i++){
+    if(S.teamAnswers[i]!==q.c){
+      if(S.activeCoins[i]==="vida") S.coins[i]=S.coins[i].filter(function(x){return x!=="vida";});
+      else{var pts=isA?S.bets[i]:(isD?20:10);S.scores[i]-=pts;}
+    }
+    S.activeCoins[i]=null;
+  }
+  S.explainQ=q;
+  S.explainNext="scores";
+  S.phase="explain";S.explainImg=null;R();
+}
+
+
+function renderExplain(){
+  var q=S.explainQ;
+  var h='<div style="text-align:center;margin-bottom:.5rem">';
+  h+='<div style="display:inline-block;background:#1a1a1a;color:#fff;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:.5px">EXPLICACIÓN</div></div>';
+
+  // Illustration
+  if(q.svi!==undefined){
+    h+='<div style="margin-bottom:.875rem;border-radius:14px;overflow:hidden;border:2px solid #EDE9FE;background:#F0EEF8">'+SVGS[q.svi]+'</div>';
+  }
+
+  // Question + all options highlighted
+  h+='<div class="card">';
+  h+='<div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem;line-height:1.5">'+q.t+'</div>';
+  var correctIdx=(q.c!==undefined)?q.c:(-1);
+  var wrongIdx=(q.wrong!==undefined)?q.wrong:(-1);
+  for(var i=0;i<q.o.length;i++){
+    var isCorrect=(wrongIdx>=0)?(i!==wrongIdx):(i===correctIdx);
+    var isWrong=(wrongIdx>=0)?(i===wrongIdx):(i!==correctIdx);
+    var bg=isCorrect?"#00C853":isWrong?"#FFE0E0":"#fff";
+    var border=isCorrect?"#00C853":isWrong?"#FF5252":"#E0DDD8";
+    var color=isCorrect?"#fff":isWrong?"#B71C1C":"#1a1a1a";
+    var weight=isCorrect?"800":"400";
+    var icon=isCorrect?"✓ ":isWrong?"✗ ":"";
+    h+='<div style="padding:9px 13px;border-radius:9px;border:1.5px solid '+border+';background:'+bg+';color:'+color+';font-size:12px;font-weight:'+weight+';margin-bottom:5px;line-height:1.4">'+icon+q.o[i]+'</div>';
+  }
+  h+='</div>';
+
+  // Explanation
+  h+='<div class="reveal-box"><strong>💡 ¿Por qué?</strong><p>'+q.exp+'</p></div>';
+  var btnLabel=(S.explainNext==="afterImp"||( S.explainNext&&S.explainNext.indexOf("nextImpSub_")===0))?"Siguiente &#8594;":"Ver tabla de puntajes &#8594;";
+  h+='<button class="btn btn-purple" onclick="goFromExplain()">'+btnLabel+'</button>';
+  return h;
+}
+
+function goFromExplain(){
+  var next=S.explainNext;
+  S.explainNext=null;
+  if(next==="afterImp"){afterImp();}
+  else if(next&&next.indexOf("nextImpSub_")===0){nextImpSub();}
+  else{S.phase="scores";R();}
+}
+
+
+function renderScores(){
+  var sorted=S.scores.map(function(s,i){return{s:s,i:i};}).sort(function(a,b){return b.s-a.s;});
+  var h='<div class="card"><div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Tabla de posiciones</div>';
+  for(var k=0;k<sorted.length;k++){
+    var x=sorted[k];
+    var c=TC[x.i];
+    var crown=k===0?"&#128081; ":"";
+    h+='<div class="rank-row">';
+    h+='<div class="rank-num">'+(k+1)+'</div>';
+    h+='<span class="dot" style="background:'+c.border+'"></span>';
+    h+='<div class="rank-name">'+crown+S.teams[x.i]+'</div>';
+    h+='<div class="rank-score" style="color:'+c.dark+'">'+x.s+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  var nextRnd=ROUNDS[S.ri+1];
+  var isLast=S.ri===ROUNDS.length-1;
+  h+='<div style="margin-top:1rem">';
+  if(isLast) h+='<button class="btn btn-purple" onclick="goEnd()">&#127942; Ver ganador final</button>';
+  else if(nextRnd&&nextRnd.type==="impostor") h+='<button class="btn btn-orange" onclick="goImpostor()">&#11088; Ronda especial</button>';
+  else h+='<button class="btn btn-green" onclick="nextRound()">Siguiente pregunta &#8594;</button>';
+  h+='</div>';
+  return h;
+}
+
+function nextRound(){
+  S.ri++;
+  S.teamAnswers=Array(S.numTeams).fill(null);
+  S.bets=Array(S.numTeams).fill(1);
+  S.activeCoins=Array(S.numTeams).fill(null);
+  S.revealed=false;S.phase="question";R();
+}
+
+function goImpostor(){S.phase="impostor";S.impSub=0;S.impPhase="show";S.impVotes={};R();}
+
+function renderImpostor(){
+  var sub=S.impSub;
+  var q=IMP[sub];
+  var letters=["A","B","C","D"];
+
+  if(S.impPhase==="show"){
+    var h='<div class="progress-bar"><div class="progress-fill" style="width:'+Math.round((S.ri/ROUNDS.length)*100)+'%"></div></div>';
+    h+='<span class="badge badge-impostor">&#11088; Ronda especial — '+(sub+1)+' de 4</span>';
+    h+='<div class="card"><div class="q-text">'+q.t+'</div>';
+    h+='<div style="font-size:12px;color:#7D5A00;font-weight:700;margin-bottom:.75rem">&#9888;&#65039; 3 opciones son correctas — 1 es incorrecta. Encontrá la incorrecta.</div>';
+    for(var i=0;i<q.o.length;i++) h+='<div class="opt">'+q.o[i]+'</div>';
+    h+='</div>';
+    // Answer grid
+    h+='<div class="card"><div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:.75rem">Respuesta de cada equipo</div><div class="ans-grid">';
+    for(var i=0;i<S.numTeams;i++){
+      var c=TC[i];
+      h+='<div class="ans-card" style="background:'+c.bg+';border-color:'+c.border+'">';
+      h+='<div class="ans-teamname" style="color:'+c.dark+'">'+S.teams[i]+'</div><div class="ans-btns">';
+      for(var k=0;k<4;k++){
+        var sel=S.impVotes[i]===k;
+        h+='<button class="ans-opt-btn'+(sel?" ans-opt-pending":"")+'" onclick="setImpVote('+i+','+k+')">'+letters[k]+'</button>';
+      }
+      h+='</div></div>';
+    }
+    h+='</div></div>';
+    h+='<button class="btn btn-purple" onclick="resolveImp()">&#128065; Revelar respuesta</button>';
+    return h;
+  }
+
+  if(S.impPhase==="results"){
+    var h='<span class="badge badge-impostor">&#11088; Resultado ronda especial '+(sub+1)+' de 4</span>';
+    h+='<div class="card" style="margin-bottom:.75rem">';
+    h+='<div style="font-size:13px;color:#555;margin-bottom:.5rem">La opción INCORRECTA era:</div>';
+    h+='<div style="background:#FFE0E0;border:1.5px solid #FF5252;border-radius:8px;padding:.75rem;font-size:14px;font-weight:800;color:#B71C1C">'+letters[q.wrong]+') '+q.o[q.wrong]+'</div></div>';
+    h+='<div class="ans-grid">';
+    for(var j=0;j<S.numTeams;j++){
+      var jc=TC[j];
+      var voted=S.impVotes[j];
+      var correct=(voted!==undefined&&voted===q.wrong);
+      h+='<div class="imp-vote-card" style="border-color:'+jc.border+';background:'+jc.bg+'">';
+      h+='<div style="font-size:12px;font-weight:800;color:'+jc.dark+';margin-bottom:4px">'+S.teams[j]+'</div>';
+      h+='<div style="font-size:13px;font-weight:700;color:'+(correct?"#00693E":"#A32D2D")+'">';
+      if(voted===undefined) h+='Sin respuesta';
+      else h+=(correct?'&#10003; +10 pts':'&#10007; -10 pts')+' — eligió '+letters[voted];
+      h+='</div></div>';
+    }
+    h+='</div>';
+    h+='<div class="reveal-box" style="margin-top:.75rem"><strong>&#10003; Explicación</strong><p>'+q.exp+'</p></div>';
+    h+='<button class="btn btn-green" onclick="explainImp('+sub+')">Ver explicación &#8594;</button>';
+    return h;
+  }
+  return "";
+}
+
+function explainImp(sub){
+  var q=IMP[sub];
+  S.explainQ=q;
+  var isLast=sub===3;
+  S.explainNext=isLast?"afterImp":"nextImpSub_"+sub;
+  S.phase="explain";S.explainImg=null;R();
+}
+
+function setImpVote(j,k){S.impVotes[j]=k;R();}
+
+function resolveImp(){
+  var q=IMP[S.impSub];
+  for(var j=0;j<S.numTeams;j++){
+    var v=S.impVotes[j];
+    if(v===undefined) continue;
+    if(v===q.wrong) S.scores[j]+=10;
+    else S.scores[j]-=10;
+  }
+  S.impPhase="results";R();
+}
+
+function nextImpSub(){S.impSub++;S.impPhase="show";S.impVotes={};R();}
+
+function afterImp(){
+  S.ri++;
+  S.teamAnswers=Array(S.numTeams).fill(null);
+  S.bets=Array(S.numTeams).fill(1);
+  S.activeCoins=Array(S.numTeams).fill(null);
+  S.revealed=false;S.phase="question";R();
+}
+
+function goEnd(){S.phase="end";R();}
+
+function renderEnd(){
+  var sorted=S.scores.map(function(s,i){return{s:s,i:i};}).sort(function(a,b){return b.s-a.s;});
+  var w=sorted[0];
+  var wc=TC[w.i];
+  var h='<div class="card" style="text-align:center;border-color:'+wc.border+';margin-bottom:.875rem">';
+  h+='<div style="font-size:13px;font-weight:700;color:#999;margin-bottom:4px">GANADOR</div>';
+  h+='<div style="font-size:28px;font-weight:800;color:'+wc.dark+'">&#127942; '+S.teams[w.i]+'</div>';
+  h+='<div style="font-size:20px;color:'+wc.dark+'">'+w.s+' puntos</div></div>';
+  h+='<div class="card">';
+  var medals=["&#129351;","&#129352;","&#129353;","4."];
+  for(var k=0;k<sorted.length;k++){
+    var x=sorted[k];
+    var c=TC[x.i];
+    h+='<div class="rank-row">';
+    h+='<div class="rank-num">'+medals[k]+'</div>';
+    h+='<span class="dot" style="background:'+c.border+'"></span>';
+    h+='<div class="rank-name">'+S.teams[x.i]+'</div>';
+    h+='<div class="rank-score" style="color:'+c.dark+'">'+x.s+' pts</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<button class="btn btn-gray" onclick="restartGame()">&#8635; Jugar de nuevo</button>';
+  return h;
+}
+
+function restartGame(){
+  S={phase:"setup",numTeams:4,teams:["Equipo 1","Equipo 2","Equipo 3","Equipo 4"],scores:[0,0,0,0],
+  coins:[["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"],["vida","cambio","x2"]],
+  ri:0,bets:[1,1,1,1],activeCoins:[null,null,null,null],teamAnswers:[null,null,null,null],
+  revealed:false,postCorrect:null,impSub:0,impVotes:{},impPhase:"show",explainImg:null,explainQ:null,explainNext:null};
+  // Re-shuffle questions for the new game
+  var pool=ALL_QS.slice();
+  shuffle(pool);
+  QS=pool.slice(0,17);
+  IMP=[];
+  R();
+}
+
+R();
+</script>
+</body>
+</html>
