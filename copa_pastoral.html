@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa Pastoral ⚽</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#2D5016;min-height:100vh;padding:1rem}
+.wrap{max-width:720px;margin:0 auto}
+
+.header{text-align:center;padding:1.5rem 0 1rem}
+.header h1{font-size:28px;font-weight:800;color:#F5E642;text-shadow:2px 2px 0 #1A3009;letter-spacing:1px}
+.header p{font-size:13px;color:#A8D878;margin-top:4px}
+
+.card{background:#fff;border-radius:14px;border:1px solid #D8E8C4;padding:1.25rem;margin-bottom:.875rem;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.card-dark{background:#1A3009;border-radius:14px;padding:1.25rem;margin-bottom:.875rem}
+
+.btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:inherit;display:block}
+.btn:active{opacity:.8}
+.btn-verde{background:#27500A;color:#fff}
+.btn-amarillo{background:#F5E642;color:#1A3009}
+.btn-rojo{background:#A32D2D;color:#fff}
+.btn-gris{background:#E0E8D0;color:#444}
+
+/* Setup */
+.team-setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.team-setup-card{border-radius:12px;padding:.875rem;border:2px solid}
+.team-setup-card input{width:100%;border:none;background:rgba(255,255,255,.6);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;font-family:inherit;outline:none;margin-bottom:6px}
+.team-setup-card select{width:100%;border:none;background:rgba(255,255,255,.6);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+.setup-label{font-size:10px;font-weight:800;margin-bottom:6px;opacity:.7;letter-spacing:.5px}
+
+/* Partido - dos columnas */
+.match-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem}
+.match-team-card{border-radius:12px;padding:.875rem;border:2px solid;text-align:center}
+.match-flag{font-size:32px;line-height:1}
+.match-tname{font-size:12px;font-weight:700;margin-top:4px}
+.match-score{font-size:48px;font-weight:800;line-height:1.1}
+.match-opts{margin-top:.75rem;display:flex;flex-direction:column;gap:6px}
+.opt-btn{width:100%;padding:9px 10px;border-radius:9px;border:1.5px solid #ccc;font-size:12px;font-weight:600;background:#fff;text-align:left;font-family:inherit;cursor:pointer;line-height:1.3}
+.opt-btn:active{opacity:.7}
+.opt-correct{background:#27500A!important;border-color:#27500A!important;color:#fff!important}
+.opt-wrong{background:#FCEBEB!important;border-color:#E24B4A!important;color:#791F1F!important}
+.opt-selected{background:#EAF3DE!important;border-color:#3B6D11!important}
+.opt-disabled{pointer-events:none}
+
+/* Pregunta central */
+.q-center{background:#fff;border-radius:12px;padding:1rem;margin-bottom:.75rem;text-align:center}
+.q-text{font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.5}
+.q-badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:.5rem;background:#EAF3DE;color:#27500A}
+
+/* Reveal */
+.reveal-box{background:#EAF3DE;border:1.5px solid #3B6D11;border-radius:10px;padding:.875rem;margin-bottom:.75rem}
+.reveal-box strong{color:#27500A;font-size:13px;display:block;margin-bottom:4px}
+.reveal-box p{font-size:12px;color:#27500A;line-height:1.5}
+
+/* Bracket */
+.bracket-match{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.08);border-radius:10px;padding:.75rem;margin-bottom:.5rem}
+.bracket-team{font-size:13px;font-weight:700;color:#fff;text-align:center;flex:1}
+.bracket-vs{font-size:12px;color:#A8D878;padding:0 8px}
+.bracket-winner{color:#F5E642!important}
+
+/* Tabla grupo */
+.group-table{background:rgba(255,255,255,.08);border-radius:10px;padding:.75rem;margin-bottom:.5rem}
+.group-table-title{font-size:11px;font-weight:800;color:#F5E642;margin-bottom:.5rem;letter-spacing:1px}
+.group-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:12px}
+.group-row:last-child{border:none}
+
+/* Pelotas animadas */
+.balls-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+.ball{position:absolute;font-size:28px;animation:ballfly 1.4s ease-out forwards}
+@keyframes ballfly{
+  0%{transform:translate(0,0) rotate(0deg) scale(0.5);opacity:1}
+  60%{opacity:1;transform:translate(var(--tx),var(--ty)) rotate(360deg) scale(1.2)}
+  100%{transform:translate(var(--tx2),var(--ty2)) rotate(720deg) scale(0.3);opacity:0}
+}
+
+/* Penal dots */
+.penal-dot{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;display:inline-block;margin:2px}
+.penal-dot-ok{background:#27500A;border-color:#27500A}
+.penal-dot-fail{background:#E24B4A;border-color:#E24B4A}
+
+/* Champion */
+.champion-wrap{text-align:center;padding:1.5rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="font-size:40px">🏆</div>
+    <h1>Copa Pastoral</h1>
+    <p>Torneo de Inflación — 6to año</p>
+  </div>
+  <div id="root"></div>
+</div>
+
+<div class="balls-overlay" id="ballsOverlay"></div>
+
+<script>
+var PAISES = [
+  {name:"Argentina",flag:"🇦🇷"},{name:"Brasil",flag:"🇧🇷"},{name:"Francia",flag:"🇫🇷"},
+  {name:"Alemania",flag:"🇩🇪"},{name:"España",flag:"🇪🇸"},{name:"Italia",flag:"🇮🇹"},
+  {name:"Portugal",flag:"🇵🇹"},{name:"Inglaterra",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},{name:"Holanda",flag:"🇳🇱"},
+  {name:"Uruguay",flag:"🇺🇾"},{name:"Colombia",flag:"🇨🇴"},{name:"México",flag:"🇲🇽"},
+  {name:"Estados Unidos",flag:"🇺🇸"},{name:"Japón",flag:"🇯🇵"},{name:"Marruecos",flag:"🇲🇦"},
+  {name:"Croacia",flag:"🇭🇷"},{name:"Senegal",flag:"🇸🇳"},{name:"Ecuador",flag:"🇪🇨"},
+  {name:"Chile",flag:"🇨🇱"},{name:"Paraguay",flag:"🇵🇾"}
+];
+
+var TC = [
+  {bg:"#EEEDFE",border:"#534AB7",text:"#26215C"},
+  {bg:"#EAF3DE",border:"#3B6D11",text:"#27500A"},
+  {bg:"#FAECE7",border:"#993C1D",text:"#4A1B0C"},
+  {bg:"#E6F1FB",border:"#185FA5",text:"#042C53"},
+  {bg:"#FAEEDA",border:"#854F0B",text:"#412402"},
+  {bg:"#FCEBEB",border:"#A32D2D",text:"#501313"}
+];
+
+var QS = [
+  {t:"¿Qué es el sistema previsional?",o:["a) Un sistema de créditos bancarios para jubilados","b) Un conjunto de reglas que garantiza un ingreso a las personas cuando dejan de trabajar por edad, invalidez o fallecimiento de quien las mantenía","c) Un impuesto que pagan solo las empresas grandes","d) Un seguro privado obligatorio para menores de 18 años"],c:1,exp:"El sistema previsional cubre tres contingencias centrales: vejez (jubilación), invalidez y muerte del sostén de familia (pensión). No es un banco ni un impuesto empresarial — es la protección social para cuando alguien deja de generar ingresos por sí mismo."},
+  {t:"¿Cómo se llama el sistema previsional argentino actual, vigente desde 2008?",o:["a) AFJP","b) SIPA (Sistema Integrado Previsional Argentino)","c) SIJP","d) PAMI"],c:1,exp:"El SIPA reemplazó en 2008 al sistema mixto que incluía a las AFJP (administradoras privadas de fondos de jubilación). Desde entonces, todos los aportes van a un único sistema público de reparto."},
+  {t:"¿Qué organismo estatal administra las jubilaciones y pensiones en Argentina?",o:["a) BCRA","b) AFIP/ARCA","c) ANSES","d) CNV"],c:2,exp:"ANSES (Administración Nacional de la Seguridad Social) gestiona jubilaciones, pensiones y asignaciones familiares como la AUH. El BCRA regula bancos, la AFIP/ARCA recauda impuestos y la CNV regula el mercado de capitales."},
+  {t:"En el régimen general, ¿a qué edad se pueden jubilar las mujeres?",o:["a) 55 años","b) 60 años","c) 65 años","d) 70 años"],c:1,exp:"Las mujeres pueden jubilarse a los 60 años (y pueden optar por seguir trabajando hasta los 65). Los varones se jubilan a los 65 años. Ambos necesitan además 30 años de aportes."},
+  {t:"¿Cuántos años de aportes se necesitan como mínimo para jubilarse en el régimen general?",o:["a) 10 años","b) 20 años","c) 25 años","d) 30 años"],c:3,exp:"El requisito general es de 30 años de aportes computables, sumado a la edad mínima (60 mujeres, 65 varones). Sin esos años, existen mecanismos como la moratoria o la PUAM para acceder a un ingreso igual."},
+  {t:"Cuando un trabajador en relación de dependencia cobra su sueldo, ¿qué es el aporte jubilatorio?",o:["a) Un bono extra que paga el Estado","b) Un porcentaje del sueldo que se descuenta y va al sistema previsional","c) Una multa por faltar al trabajo","d) Un seguro de vida obligatorio"],c:1,exp:"El aporte jubilatorio es un descuento sobre el sueldo bruto del trabajador (visible en el recibo de sueldo) que se destina al sistema previsional. Es plata del trabajador, no un regalo del Estado."},
+  {t:"Además del aporte del trabajador, ¿quién más contribuye al sistema previsional por cada empleado en relación de dependencia?",o:["a) Nadie más, solo aporta el trabajador","b) El empleador, con una contribución patronal adicional","c) Los jubilados actuales","d) El sindicato"],c:1,exp:"El empleador también aporta un porcentaje sobre el sueldo (contribución patronal), además de lo que se le descuenta al trabajador. Entre ambos aportes se financia el sistema de reparto."},
+  {t:"¿Qué es PAMI?",o:["a) Un banco para jubilados","b) El instituto que brinda cobertura de salud a jubilados, pensionados y algunos otros beneficiarios","c) Un impuesto que pagan los jubilados","d) Una AFJP que todavía existe"],c:1,exp:"PAMI (Instituto Nacional de Servicios Sociales para Jubilados y Pensionados) da cobertura médica a quienes cobran jubilación, pensión, o beneficios como la PUAM. No es un banco ni un impuesto."},
+  {t:"¿Cuál es la diferencia principal entre una jubilación y una pensión?",o:["a) Son exactamente lo mismo, cambia solo el nombre","b) La jubilación se gana con los propios aportes; la pensión se recibe por el fallecimiento de otra persona o por una situación de vulnerabilidad","c) La pensión la paga el empleador y la jubilación el Estado","d) La jubilación es solo para mujeres y la pensión solo para varones"],c:1,exp:"La jubilación es una prestación contributiva que se gana con los años de aportes propios. La pensión suele ser derivada — por ejemplo, la que reciben los hijos o el cónyuge de una persona fallecida — o asistencial, sin exigir aportes previos."},
+  {t:"¿Qué es la PUAM (Pensión Universal para el Adulto Mayor)?",o:["a) Un beneficio para menores de 30 años","b) Una prestación para personas de 65 años que no llegan a los 30 años de aportes, equivalente al 80% del haber mínimo","c) Un aumento extra para todos los jubilados en diciembre","d) Un préstamo que ANSES otorga a los jubilados"],c:1,exp:"La PUAM permite que alguien de 65 años sin los 30 años de aportes completos acceda igual a un ingreso (80% de la jubilación mínima) y a la cobertura de PAMI, aunque con una evaluación socioeconómica previa."},
+  {t:"¿Qué es una moratoria previsional?",o:["a) Un descuento en el sueldo de los jubilados","b) Un mecanismo para regularizar o completar años de aportes faltantes y así cumplir el requisito para jubilarse","c) La fecha límite para presentar el trámite de jubilación","d) Un aumento automático de la jubilación mínima"],c:1,exp:"La moratoria (hoy bajo distintas normas, como el Plan de Pago de Deuda Previsional) permite a quienes tienen años de aportes incompletos regularizar esos períodos con un plan de pagos, para poder acceder a la jubilación ordinaria."},
+  {t:"Entre 1994 y 2008, en Argentina coexistió el sistema de reparto estatal con otro sistema. ¿Cómo se llamaban las administradoras de ese sistema privado?",o:["a) ANSES","b) AFJP (Administradoras de Fondos de Jubilaciones y Pensiones)","c) FCI","d) ART"],c:1,exp:"Durante ese período, cada trabajador podía elegir entre el sistema de reparto estatal o una AFJP, que invertía sus aportes en una cuenta individual (capitalización). En 2008 este sistema mixto se eliminó y todos los fondos volvieron al Estado, dando origen al SIPA."},
+  {t:"Un monotributista, ¿aporta al sistema previsional?",o:["a) No, el monotributo no incluye ningún aporte jubilatorio","b) Sí, la cuota mensual del monotributo incluye un componente previsional","c) Solo si factura más de cierto monto","d) Solo los monotributistas sociales aportan"],c:1,exp:"La cuota del monotributo incluye, además del componente impositivo, un aporte al Sistema Integrado Previsional Argentino y a la obra social. Por eso pagar el monotributo también construye la futura jubilación."},
+  {t:"Un trabajador que cobra en negro (sin registrar), ¿qué consecuencia tiene para su futura jubilación?",o:["a) Ninguna, igual se le cuentan esos años","b) Esos períodos no generan aportes, por lo que no cuentan como años trabajados para jubilarse","c) Se jubila antes que los trabajadores registrados","d) Recibe automáticamente la PUAM"],c:1,exp:"El trabajo no registrado no genera aportes previsionales, así que esos años no suman para los 30 años requeridos. Es una de las razones por las que existen mecanismos como la moratoria: para compensar años sin aportes reales."},
+  {t:"¿Qué es la movilidad jubilatoria?",o:["a) La posibilidad de mudarse de provincia sin perder la jubilación","b) El mecanismo por el cual se actualiza periódicamente el monto de los haberes jubilatorios","c) Un descuento que se aplica a los jubilados que trabajan","d) El límite de edad para jubilarse"],c:1,exp:"La movilidad es el ajuste periódico (hoy trimestral) que actualiza el monto que cobran los jubilados, para que no pierda valor frente a la inflación y los cambios en los salarios."},
+  {t:"Algunas actividades (como la docencia o tareas insalubres) tienen regímenes previsionales diferenciales. ¿Qué característica suelen tener?",o:["a) Exigen más años de aportes que el régimen general","b) Permiten jubilarse con menor edad o menos años de aportes, por el desgaste de la tarea","c) No dan derecho a jubilación, solo a pensión","d) Solo aplican a trabajadores estatales"],c:1,exp:"Los regímenes diferenciales reconocen que ciertas tareas (docencia, trabajos insalubres, mineros, etc.) generan un desgaste físico mayor, por lo que permiten acceder antes al retiro, con edades o años de aportes reducidos respecto del régimen general."},
+  {t:"Si una persona llega a la edad jubilatoria pero le faltan algunos años de aportes, la ley permite compensar esa falta con exceso de edad. ¿Cómo funciona esa compensación?",o:["a) Por cada año de más que trabaje, se descuenta un año de aportes exigido","b) Por cada 2 años de edad que exceda el mínimo, se computa 1 año de aportes","c) No existe ninguna compensación posible","d) Se descuentan directamente los años faltantes del haber final"],c:1,exp:"El artículo 19 de la Ley 24.241 permite compensar años de aportes faltantes con edad excedente: por cada 2 años que superen la edad jubilatoria mínima, se reconoce 1 año de servicios. Es una opción además de la moratoria."},
+  {t:"¿Qué es un instrumento financiero?",o:["a) Un objeto físico que el banco entrega como garantía de un préstamo","b) Un contrato que mueve dinero en el tiempo entre quien lo necesita y quien lo tiene disponible","c) Un impuesto que cobra la CNV por operar en el mercado","d) Un tipo de cuenta bancaria exclusiva para empresas"],c:1,exp:"Un instrumento financiero es, ante todo, un contrato: fija cuánto, cuándo y a qué precio se mueve el dinero entre dos partes. No es un objeto físico, ni un impuesto, ni un tipo de cuenta — es el papel que formaliza el trato."},
+  {t:"¿Qué representa la tasa de interés?",o:["a) El precio del dinero: lo que se cobra por prestarlo o se paga por pedirlo prestado","b) El porcentaje de IVA que se cobra en toda operación financiera","c) La comisión fija que cobra la CNV por cada instrumento emitido","d) El tipo de cambio oficial entre el peso y el dólar"],c:0,exp:"La tasa de interés compensa tres cosas: la inflación esperada, el riesgo de que no te paguen, y el tiempo que vas a estar sin esa plata. No tiene que ver con el IVA, ni con la CNV, ni con el tipo de cambio."},
+  {t:"¿Qué significa 'riesgo' en una inversión?",o:["a) Que la inversión seguro va a perder valor","b) La incertidumbre sobre si vas a cobrar lo esperado, cuándo lo esperabas","c) El monto mínimo que exige la CNV para invertir","d) La cantidad de impuestos que paga un instrumento"],c:1,exp:"Riesgo no es sinónimo de 'te va a ir mal': es no saber con certeza qué va a pasar. Por eso a mayor riesgo asumido, mayor rendimiento se exige a cambio — es la forma de compensar esa incertidumbre."},
+  {t:"¿Para qué sirve una ALyC?",o:["a) Es el organismo que cobra los impuestos sobre las inversiones","b) Es el intermediario habilitado para comprar y vender instrumentos en tu nombre en el mercado","c) Es una cuenta bancaria especial que paga más intereses","d) Es el seguro que cubre tu dinero si el mercado cae"],c:1,exp:"ALyC significa Agente de Liquidación y Compensación. Es la puerta de entrada al mercado: no se puede operar directo en la bolsa, hace falta un intermediario habilitado que ejecute las operaciones en tu nombre."},
+  {t:"¿Quién autoriza y supervisa a las ALyC?",o:["a) El BCRA","b) La SSN","c) La CNV","d) ANSES"],c:2,exp:"La CNV (Comisión Nacional de Valores) es quien autoriza, supervisa y puede sancionar a las ALyC. El BCRA regula bancos, la SSN regula seguros, y ANSES administra la jubilación."},
+  {t:"¿Qué es BYMA?",o:["a) Un tipo de Fondo Común de Inversión","b) El organismo que regula los seguros de vida","c) Donde efectivamente se cruzan las puntas de compra y venta del mercado","d) Una billetera virtual para pagar servicios"],c:2,exp:"BYMA (Bolsas y Mercados Argentinos) es el mercado en sí: el lugar donde se ejecutan las operaciones que tu ALyC manda. La CNV regula; BYMA opera."},
+  {t:"¿Qué es un Plazo Fijo?",o:["a) Comprar una parte de una empresa que cotiza en bolsa","b) Depositar tu dinero en un banco por un plazo pactado a cambio de una tasa de interés fija","c) Un contrato para comprar dólares a futuro","d) Un préstamo de un día entre dos inversores con garantía"],c:1,exp:"El Plazo Fijo es el instrumento de renta fija más conocido: depositás, el banco te paga una tasa pactada de antemano, y al vencimiento recuperás capital más intereses. La opción a describe una acción, la c un futuro, la d una caución."},
+  {t:"¿Qué diferencia al Plazo Fijo UVA del tradicional?",o:["a) El UVA paga en dólares directamente","b) El UVA ajusta el capital por inflación y además paga una tasa adicional","c) El UVA no tiene plazo mínimo de 30 días","d) El UVA lo emite la CNV en vez de un banco"],c:1,exp:"El plazo fijo UVA actualiza el capital según la inflación (a través de la Unidad de Valor Adquisitivo) y le suma una tasa extra. El tradicional paga una tasa fija en pesos, sin ese ajuste."},
+  {t:"¿Qué es una Letra del Tesoro, como una LECAP?",o:["a) Un préstamo de corto plazo a una empresa privada","b) Un préstamo de corto plazo al Estado Nacional para financiarse","c) Una acción preferencial sin derecho a voto","d) Un certificado que representa una acción extranjera"],c:1,exp:"Las Letras del Tesoro son deuda de corto plazo (semanas o meses) que emite el Estado Nacional. La LECAP paga una tasa fija en pesos; la LECER ajusta por inflación a través del CER."},
+  {t:"¿Qué son las Cauciones Bursátiles?",o:["a) Un préstamo de muy corto plazo entre dos inversores, con instrumentos como garantía","b) Un impuesto que se paga al vender una acción","c) El seguro obligatorio que exige la CNV para operar en bolsa","d) Una comisión que cobra BYMA por cada operación"],c:0,exp:"La caución es como un plazo fijo express del mercado: un inversor pone el dinero, el otro entrega una garantía (acciones o bonos), y en pocos días se devuelve el capital más un interés. Es de las opciones más líquidas y de menor riesgo que existen."},
+  {t:"¿Qué es un CEDEAR?",o:["a) Un bono que emite el Estado en dólares","b) Un certificado que representa una acción extranjera, pero se compra y vende en pesos en el mercado local","c) Un Fondo Común de Inversión que solo invierte en plazos fijos","d) Una obligación negociable emitida en el exterior"],c:1,exp:"El CEDEAR permite invertir en empresas que cotizan afuera (como grandes tecnológicas) sin abrir una cuenta en el exterior. Como representa algo que cotiza en otro país, también expone al tipo de cambio."},
+  {t:"¿Para qué se usan los Futuros y Opciones?",o:["a) Para abrir una cuenta en una ALyC","b) Para cubrirse de un riesgo de precio futuro o para especular sobre hacia dónde va a ir ese precio","c) Para depositar dinero a un plazo fijo en dólares","d) Para calcular el impuesto a las ganancias de una inversión"],c:1,exp:"Son contratos para comprar o vender algo (el dólar, un índice, una acción) a un precio fijado hoy, pero en una fecha futura. Sirven para cobertura (protegerse) o para especulación (apostar a un movimiento de precio). Son instrumentos avanzados, de riesgo muy alto."},
+  {t:"Comprás $10.000 de una acción con una comisión del 0,5% + IVA. ¿Sobre qué se aplica el 21% de IVA?",o:["a) Sobre los $10.000 de la operación completa","b) Sobre la comisión que cobra la ALyC, no sobre el monto de la operación","c) Sobre las ganancias que tuviste con la inversión","d) El IVA no se aplica nunca en el mercado de capitales"],c:1,exp:"Comprar el instrumento en sí no tiene IVA. Lo que sí tiene IVA es el servicio que cobra la ALyC: la comisión. Por eso el 21% sobre $50 de comisión son apenas $10,50 — no 21% sobre los $10.000."},
+  {t:"¿Cuál es la diferencia entre tasa fija y tasa variable?",o:["a) La tasa fija solo existe en dólares; la variable solo en pesos","b) Con tasa fija sabés de antemano cuánto vas a cobrar; con tasa variable depende del precio de mercado","c) La tasa variable siempre rinde más que la fija","d) La tasa fija la fija el BCRA y la variable la fija la CNV"],c:1,exp:"En renta fija (plazo fijo, ON, bono a tasa fija) sabés desde el día uno cuánto vas a cobrar si llegás al vencimiento. En renta variable (acciones, FCI de renta variable) el resultado depende del mercado: podés ganar más, o perder."},
+  {t:"¿Qué diferencia hay entre TNA y TEA?",o:["a) Son exactamente lo mismo, solo cambia el nombre","b) La TNA es la tasa de cartel sin reinversión; la TEA sí contempla el interés compuesto, por eso suele ser mayor","c) La TNA se usa para dólares y la TEA para pesos","d) La TEA la regula la CNV y la TNA el BCRA"],c:1,exp:"La Tasa Nominal Anual (TNA) es la tasa publicada, sin considerar que los intereses se reinviertan. La Tasa Efectiva Anual (TEA) sí suma ese efecto de interés compuesto — por eso, para el mismo instrumento, la TEA casi siempre es un poco más alta que la TNA."},
+  {t:"En la jerga de una ALyC, ¿qué es el 'comitente'?",o:["a) El nombre del instrumento que más se opera ese día","b) El número de cuenta que te identifica como cliente de la ALyC","c) El impuesto que se paga al abrir una cuenta","d) El gerente que administra un Fondo Común de Inversión"],c:1,exp:"Cuando abrís una cuenta en una ALyC, te asignan un número de comitente: es tu identificación como cliente dentro de esa cuenta. Lo vas a ver en cada boleto y en el estado de cuenta."},
+  {t:"¿Qué es el 'spread' de un instrumento?",o:["a) La ganancia total que tuvo un fondo en el último año","b) La diferencia entre el precio al que alguien quiere comprar y al que alguien quiere vender","c) El porcentaje de comisión que cobra la ALyC por cada operación","d) El tiempo que tarda en liquidarse una operación (T+1, T+2)"],c:1,exp:"El spread es la brecha entre la punta compradora (lo máximo que alguien ofrece pagar) y la punta vendedora (lo mínimo que alguien acepta cobrar). Cuanto más líquido es un instrumento, más chico suele ser ese spread."},
+  // --- INFLACION ---
+  {t:"Que es la inflacion",o:["a) La suba del precio de un solo producto","b) El aumento sostenido y generalizado del nivel de precios","c) La devaluacion del peso frente al dolar","d) La suba de los salarios"],c:1,exp:"La inflacion es cuando suben los precios de casi todo, de forma sostenida. Si sube solo un producto, no es inflacion es un cambio de precio relativo."},
+  {t:"Que mide el IPC",o:["a) El precio del dolar oficial","b) Cuanto producen las empresas por mes","c) La variacion de precios de una canasta de bienes y servicios representativa","d) El total de exportaciones del pais"],c:2,exp:"El IPC (Indice de Precios al Consumidor) sigue el precio de una canasta que representa lo que consume una familia tipica."},
+  {t:"Quien publica el IPC en Argentina",o:["a) El Banco Central","b) El Ministerio de Economia","c) El INDEC","d) La CNV"],c:2,exp:"El INDEC (Instituto Nacional de Estadistica y Censos) es el organismo oficial que mide y publica el IPC en Argentina."},
+  {t:"Que le pasa al poder adquisitivo cuando hay inflacion y el salario no sube igual",o:["a) Sube, porque hay mas dinero en circulacion","b) No cambia","c) Baja, porque con el mismo dinero compras menos","d) Depende del tipo de cambio"],c:2,exp:"El poder adquisitivo mide lo que podes comprar con tu plata. Si los precios suben mas que tu salario, con el mismo dinero compras menos."},
+  {t:"Que es la inflacion nucleo",o:["a) La inflacion del sector agropecuario","b) La suba de las tarifas de luz y gas","c) La inflacion que excluye precios regulados y estacionales para ver la tendencia real","d) La inflacion de productos importados"],c:2,exp:"La inflacion nucleo saca del calculo las tarifas que fija el gobierno y los productos estacionales. Asi muestra mejor la tendencia real de los precios."},
+  {t:"Que es la hiperinflacion",o:["a) Inflacion mayor al 5% mensual","b) Una inflacion extremadamente alta y acelerada, fuera de control","c) Cuando los precios suben solo en algunos sectores","d) La inflacion que viene del exterior"],c:1,exp:"La hiperinflacion es inflacion descontrolada. Argentina vivio una en 1989: los precios subian mas del 100% por mes y la gente corria al supermercado antes de que aumenten."},
+  {t:"Para que sirve la UVA",o:["a) Es un tipo de dolar oficial para importaciones","b) Es un bono del Estado que paga en dolares","c) Es una unidad que actualiza valores segun la inflacion","d) Es el indice que usa el BCRA para fijar tasas"],c:2,exp:"La UVA (Unidad de Valor Adquisitivo) sigue la inflacion del IPC. Se usa en creditos hipotecarios y plazos fijos para mantener el valor real del dinero."},
+  {t:"Que significa indexar un precio",o:["a) Publicarlo en internet","b) Actualizarlo automaticamente segun un indice de inflacion","c) Fijarlo por ley para que no suba","d) Importar el producto mas barato"],c:1,exp:"Indexar es atar un valor a un indice. Si tu alquiler esta indexado al IPC, sube automaticamente con la inflacion para mantener el valor real."},
+  {t:"Que efecto tiene la inflacion en las deudas en pesos que no se ajustan",o:["a) Las agranda, porque los intereses se acumulan","b) Las achica en terminos reales, porque el valor del dinero cae","c) No las afecta, la deuda siempre vale lo mismo","d) Las convierte automaticamente a dolares"],c:1,exp:"Si debes pesos y hay inflacion, en terminos reales debes menos: tu deuda compra cada vez menos cosas. La inflacion licua las deudas en pesos fijos."},
+  {t:"Que son las expectativas de inflacion",o:["a) Lo que el INDEC proyecta para el proximo mes","b) La prediccion del FMI","c) Lo que empresas y trabajadores creen que va a pasar con los precios","d) El porcentaje ya descontado en los bonos"],c:2,exp:"Si todos esperan inflacion, suben los precios y piden aumentos de salario anticipandose. Eso genera la inflacion que esperaban, se cumple sola. Por eso las expectativas son clave."},
+  {t:"Que es la canasta basica alimentaria",o:["a) Una lista de productos premium importados","b) El costo minimo de alimentos para que una familia no pase hambre","c) El presupuesto de comedores escolares","d) Los precios del supermercado mas barato"],c:1,exp:"La canasta basica alimentaria mide cuanto cuesta alimentar a una familia con lo minimo. Si una familia no puede comprarla, se la considera en situacion de indigencia."},
+  {t:"Que politica puede usar el Banco Central para intentar frenar la inflacion",o:["a) Imprimir mas billetes","b) Bajar los impuestos a las exportaciones","c) Subir el gasto publico","d) Subir las tasas de interes para que circule menos dinero"],c:3,exp:"Si la tasa de interes sube, pedir prestado sale mas caro y ahorrar rinde mas. Eso frena el consumo, y con menos demanda los precios suben menos."},
+  {t:"Que diferencia hay entre inflacion y devaluacion",o:["a) Son exactamente lo mismo","b) La inflacion sube precios internos; la devaluacion es cuando el peso vale menos frente al dolar","c) La devaluacion la mide el INDEC","d) La inflacion siempre es mayor que la devaluacion"],c:1,exp:"La inflacion es la suba de precios internos. La devaluacion es la caida del valor del peso frente a otras monedas. En Argentina suelen ir juntas porque muchos precios se referencian al dolar."},
+  {t:"Que significa que el salario real bajo",o:["a) Que el salario en pesos bajo","b) Que el salario subio menos que la inflacion y se compra menos con el","c) Que el gobierno recorto salarios publicos","d) Que los sindicatos no firmaron paritarias"],c:1,exp:"El salario real mide tu poder de compra, no los pesos que cobras. Si te subieron el sueldo pero la inflacion fue mayor, podes comprar menos, tu salario real bajo."},
+  {t:"Que es la inflacion importada",o:["a) Cuando Argentina exporta inflacion a otros paises","b) Cuando la suba de precios del exterior se traslada a los precios internos","c) El precio del dolar en paises vecinos","d) La inflacion que mide el FMI"],c:1,exp:"Cuando sube el precio del petroleo o los insumos en el mundo, las empresas que los usan pagan mas. Ese costo extra se traslada a los precios locales."},
+  {t:"Que es el efecto segunda vuelta en inflacion",o:["a) La inflacion del segundo semestre","b) Cuando la suba de precios en un sector se propaga a otros por costos y salarios","c) La inflacion del turismo en temporada alta","d) La segunda ronda de paritarias"],c:1,exp:"Ejemplo: sube el gas, suben costos industriales, suben precios, trabajadores piden mas salario, suben costos laborales, vuelven a subir los precios. Asi la inflacion se propaga en cadena."},
+  {t:"Que diferencia hay entre inflacion mensual y anual",o:["a) Son lo mismo","b) La mensual mide la suba en 30 dias; la anual acumula los 12 meses","c) La anual la mide el Banco Central","d) La mensual siempre es mayor"],c:1,exp:"La inflacion mensual mide cuanto subieron los precios en un mes. La anual acumula todos los meses. Por el interes compuesto, la anual no es la mensual multiplicada por 12."},
+  {t:"Por que la inflacion muy alta es perjudicial para la economia",o:["a) Porque baja el precio del dolar","b) Porque hace que la gente ahorre mas","c) Porque genera incertidumbre, licua ahorros y dificulta planificar","d) Porque sube el precio de las exportaciones"],c:2,exp:"Con inflacion alta nadie sabe cuanto van a valer sus ahorros ni que van a costar las cosas. Eso frena la inversion y hace muy dificil planificar a futuro."},
+  {t:"Que es la puja distributiva en el contexto de la inflacion",o:["a) La discusion entre el INDEC y el Banco Central","b) El conflicto entre empresas y trabajadores por ver quien captura mas del ingreso","c) La negociacion del presupuesto nacional","d) La disputa entre importadores y exportadores"],c:1,exp:"La puja distributiva es cuando empresas suben precios para mantener ganancias y trabajadores piden mas salario para mantener poder de compra. Ese tira y afloja puede alimentar la inflacion."},
+  {t:"Cual de estos es un ejemplo de bien de la canasta basica",o:["a) Un auto nuevo","b) Una notebook","c) Pan, leche y transporte publico","d) Un viaje al exterior"],c:2,exp:"La canasta basica incluye bienes y servicios esenciales: alimentos basicos, ropa, transporte, salud, vivienda. No bienes de lujo ni articulos caros."}
+];
+
+var S = null;
+
+function init() {
+  S = {
+    phase:"setup",
+    teams:["","","","","",""],
+    paises:[0,1,2,3,4,5],
+    standings:[
+      {pts:0,gf:0,ga:0},{pts:0,gf:0,ga:0},{pts:0,gf:0,ga:0},
+      {pts:0,gf:0,ga:0},{pts:0,gf:0,ga:0},{pts:0,gf:0,ga:0}
+    ],
+    groupMatches:[
+      {t1:0,t2:1,group:"A",done:false,s1:0,s2:0},
+      {t1:0,t2:2,group:"A",done:false,s1:0,s2:0},
+      {t1:1,t2:2,group:"A",done:false,s1:0,s2:0},
+      {t1:3,t2:4,group:"B",done:false,s1:0,s2:0},
+      {t1:3,t2:5,group:"B",done:false,s1:0,s2:0},
+      {t1:4,t2:5,group:"B",done:false,s1:0,s2:0}
+    ],
+    semis:[],
+    final:null,
+    champion:null,
+    match:null,
+    qPool:[],
+    usedInTournament:[],
+    currentQ:null,
+    // Respuestas simultaneas: {t1:null, t2:null} índice de opción elegida
+    answers:{t1:null,t2:null},
+    revealed:false,
+    roundsPlayed:0,
+    // Penales
+    penalMode:false,
+    penalScores:[0,0],
+    penalShots:[[],[]],
+    penalTurn:0,
+    penalQ:null,
+    penalAnswered:false
+  };
+  shuffleQ();
+}
+
+function shuffleQ(){
+  S.qPool = QS.slice().sort(function(){return Math.random()-.5});
+}
+
+function shuffleOpts(q){
+  var opts = q.o.slice();
+  var correctText = opts[q.c];
+  for(var i=opts.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=opts[i]; opts[i]=opts[j]; opts[j]=tmp;
+  }
+  return {t:q.t, o:opts, c:opts.indexOf(correctText), exp:q.exp};
+}
+
+function nextQ(){
+  // Pool global del campeonato — no se resetea entre partidos, solo cuando se agotaron todas
+  if(S.qPool.length===0){
+    shuffleQ();
+    // Si el pool de penales también está vacío, recargarlo
+    S.penalPool=[];
+  }
+  var raw = S.qPool.pop();
+  S.currentQ = shuffleOpts(raw);
+  S.usedInTournament.push(raw);
+  S.answers = {t1:null,t2:null};
+  S.revealed = false;
+}
+
+function flag(i){ return PAISES[S.paises[i]].flag; }
+function pname(i){ return PAISES[S.paises[i]].name; }
+function tname(i){ return S.teams[i]||("Equipo "+(i+1)); }
+function tlabel(i){ return flag(i)+" "+tname(i); }
+
+
+function goFixture(){ S.prevPhase=S.phase; S.phase='fixture'; R(); }
+function backFromFixture(){ S.phase=S.prevPhase||'groups'; R(); }
+
+function renderFixture(){
+  var h='<div class="card-dark" style="margin-bottom:.875rem">';
+  h+='<div style="text-align:center;font-size:11px;font-weight:800;color:#A8D878;letter-spacing:2px;margin-bottom:1rem">FIXTURE — COPA PASTORAL</div>';
+
+  // GRUPOS
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">';
+  var grupos=[['A',[0,1,2]],['B',[3,4,5]]];
+  grupos.forEach(function(g){
+    var grp=g[0], idxs=g[1];
+    var matches=S.groupMatches.filter(function(m){return m.group===grp;});
+    h+='<div style="background:rgba(255,255,255,.07);border-radius:10px;padding:.75rem">';
+    h+='<div style="font-size:10px;font-weight:800;color:#F5E642;margin-bottom:.5rem;letter-spacing:1px">GRUPO '+grp+'</div>';
+    matches.forEach(function(m){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:11px">';
+      h+='<span style="color:'+(m.done&&m.s1>m.s2?'#F5E642':'#ccc')+'">'+flag(m.t1)+' '+tname(m.t1)+'</span>';
+      h+=m.done?'<span style="color:#F5E642;font-weight:700;padding:0 4px">'+m.s1+'-'+m.s2+'</span>':'<span style="color:#555;padding:0 6px">vs</span>';
+      h+='<span style="color:'+(m.done&&m.s2>m.s1?'#F5E642':'#ccc')+'">'+tname(m.t2)+' '+flag(m.t2)+'</span>';
+      h+='</div>';
+    });
+    // Tabla del grupo
+    var sorted=idxs.slice().sort(function(a,b){
+      var sa=S.standings[a],sb=S.standings[b];
+      return sb.pts!==sa.pts?sb.pts-sa.pts:(sb.gf-sb.ga)-(sa.gf-sa.ga);
+    });
+    h+='<div style="margin-top:.5rem;border-top:1px solid rgba(255,255,255,.1);padding-top:.5rem">';
+    sorted.forEach(function(i,pos){
+      var st=S.standings[i];
+      var medals=['🥇','🥈',''];
+      h+='<div style="display:flex;justify-content:space-between;font-size:10px;color:'+(pos<2?'#fff':'#888')+'">'+medals[pos]+flag(i)+' '+tname(i)+'<span style="color:#F5E642">'+st.pts+'pts</span></div>';
+    });
+    h+='</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+
+  // SEMIFINALES
+  h+='<div style="font-size:10px;font-weight:800;color:#F5E642;letter-spacing:1px;margin-bottom:.5rem">SEMIFINALES</div>';
+  var topA=getTop2([0,1,2]), topB=getTop2([3,4,5]);
+  var expectedSemis=[
+    {t1:topA[0],t2:topB[1]},
+    {t1:topB[0],t2:topA[1]}
+  ];
+  expectedSemis.forEach(function(es,i){
+    var played=S.semis.length>i?S.semis[i]:null;
+    var t1=played?played.t1:es.t1, t2=played?played.t2:es.t2;
+    var winner=played&&played.done?played.winner:null;
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.07);border-radius:8px;padding:6px 10px;margin-bottom:4px;font-size:12px">';
+    h+='<span style="color:'+(winner===t1?'#F5E642':'#fff')+'">'+flag(t1)+' '+tname(t1)+'</span>';
+    if(winner) h+='<span style="font-size:10px;color:#27500A;font-weight:700">✅ '+flag(winner)+tname(winner)+'</span>';
+    else h+='<span style="color:#555;font-size:10px">SF'+(i+1)+'</span>';
+    h+='<span style="color:'+(winner===t2?'#F5E642':'#fff')+'">'+tname(t2)+' '+flag(t2)+'</span>';
+    h+='</div>';
+  });
+
+  // FINAL
+  h+='<div style="font-size:10px;font-weight:800;color:#F5E642;letter-spacing:1px;margin:.75rem 0 .5rem">GRAN FINAL</div>';
+  var sf1done=S.semis.length>0&&S.semis[0].done, sf2done=S.semis.length>1&&S.semis[1].done;
+  var ft1=sf1done?S.semis[0].winner:null, ft2=sf2done?S.semis[1].winner:null;
+  var fw=S.final&&S.final.done?S.final.winner:null;
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(245,230,66,.1);border:1px solid rgba(245,230,66,.25);border-radius:8px;padding:8px 12px;font-size:12px">';
+  h+='<span style="color:'+(fw&&fw===ft1?'#F5E642':ft1?'#fff':'#444')+'">'+( ft1?flag(ft1)+' '+tname(ft1):'Ganador SF1')+'</span>';
+  if(fw) h+='<span style="color:#F5E642;font-weight:800;font-size:11px">🏆 '+flag(fw)+tname(fw)+'</span>';
+  else h+='<span style="color:#555;font-size:10px">FINAL</span>';
+  h+='<span style="color:'+(fw&&fw===ft2?'#F5E642':ft2?'#fff':'#444')+'">'+( ft2?tname(ft2)+' '+flag(ft2):'Ganador SF2')+'</span>';
+  h+='</div>';
+
+  h+='</div>';
+  h+='<button class="btn btn-gris" onclick="backFromFixture()">← Volver</button>';
+  return h;
+}
+
+function R(){ document.getElementById("root").innerHTML = render(); }
+
+function render(){
+  if(!S||S.phase==="setup") return renderSetup();
+  if(S.phase==="groups") return renderGroups();
+  if(S.phase==="match") return renderMatch();
+  if(S.phase==="match_result") return renderMatchResult();
+  if(S.phase==="semis") return renderSemis();
+  if(S.phase==="final") return renderFinalBracket();
+  if(S.phase==="champion") return renderChampion();
+  if(S.phase==="fixture") return renderFixture();
+  return "";
+}
+
+// ---- SETUP ----
+function renderSetup(){
+  var h='<div class="card">';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:1rem">⚽ Configurar los 6 equipos</div>';
+  h+='<div class="team-setup-grid">';
+  for(var i=0;i<6;i++){
+    var tc=TC[i];
+    var grp=i<3?"Grupo A":"Grupo B";
+    h+='<div class="team-setup-card" style="background:'+tc.bg+';border-color:'+tc.border+';color:'+tc.text+'">';
+    h+='<div class="setup-label">'+grp+' · '+(i+1)+'</div>';
+    h+='<input placeholder="Nombre del alumno/a" value="'+esc(S.teams[i])+'" oninput="S.teams['+i+']=this.value;R()" style="color:'+tc.text+';font-size:13px"/>';
+    h+='<select onchange="S.paises['+i+']=parseInt(this.value);R()" style="color:'+tc.text+'">';
+    PAISES.forEach(function(p,j){
+      h+='<option value="'+j+'"'+(S.paises[i]===j?' selected':'')+'>'+p.flag+' '+p.name+'</option>';
+    });
+    h+='</select>';
+    h+='</div>';
+  }
+  h+='</div>';
+  var ok=S.teams.every(function(t){return t.trim()!==""});
+  if(ok) h+='<button class="btn btn-amarillo" onclick="startTournament()">🏆 ¡Arrancar la Copa Pastoral!</button>';
+  else h+='<div style="text-align:center;font-size:13px;color:#888">Completá los 6 nombres para empezar</div>';
+  h+='</div>';
+  return h;
+}
+
+function startTournament(){ shuffleQ(); S.phase="groups"; R(); }
+
+// ---- GRUPOS ----
+function renderGroups(){
+  var h='<div class="card-dark">';
+  h+='<button class="btn btn-gris" style="margin-bottom:.5rem;font-size:12px" onclick="goFixture()">📋 Ver fixture</button>';
+
+  h+='<div style="text-align:center;font-size:11px;font-weight:800;color:#A8D878;letter-spacing:2px;margin-bottom:1rem">FASE DE GRUPOS</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">';
+  h+=renderGroupTable([0,1,2],"A");
+  h+=renderGroupTable([3,4,5],"B");
+  h+='</div>';
+  var done=S.groupMatches.filter(function(m){return m.done});
+  if(done.length){
+    h+='<div style="margin-bottom:.75rem">';
+    h+='<div style="font-size:10px;font-weight:800;color:#A8D878;letter-spacing:1px;margin-bottom:6px">PARTIDOS JUGADOS</div>';
+    done.forEach(function(m){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.08);border-radius:8px;padding:5px 10px;margin-bottom:4px;font-size:12px;color:#fff">';
+      h+=flag(m.t1)+' '+tname(m.t1)+'<span style="color:#F5E642;font-weight:700;padding:0 8px">'+m.s1+' - '+m.s2+'</span>'+tname(m.t2)+' '+flag(m.t2);
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  var pending=S.groupMatches.filter(function(m){return !m.done});
+  if(pending.length){
+    var nxt=pending[0];
+    h+='<div style="text-align:center;font-size:12px;color:#A8D878;margin-bottom:.75rem">Próximo: <strong style="color:#F5E642">'+flag(nxt.t1)+' '+tname(nxt.t1)+' vs '+flag(nxt.t2)+' '+tname(nxt.t2)+'</strong></div>';
+    h+='<button class="btn btn-amarillo" onclick="playGroupMatch()">⚽ Jugar partido</button>';
+  } else {
+    h+='<button class="btn btn-amarillo" onclick="goSemis()">🏆 ¡A las Semifinales!</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function renderGroupTable(idxs,grp){
+  var sorted=idxs.slice().sort(function(a,b){
+    var sa=S.standings[a],sb=S.standings[b];
+    if(sb.pts!==sa.pts) return sb.pts-sa.pts;
+    return (sb.gf-sb.ga)-(sa.gf-sa.ga);
+  });
+  var h='<div class="group-table">';
+  h+='<div class="group-table-title">GRUPO '+grp+'</div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:10px;color:#A8D878;font-weight:700;margin-bottom:4px"><span>Equipo</span><span>Pts GF GA</span></div>';
+  sorted.forEach(function(i,pos){
+    var st=S.standings[i];
+    var medals=["🥇","🥈",""];
+    h+='<div class="group-row">';
+    h+='<span style="color:#fff;font-weight:'+(pos<2?'700':'400')+'">'+medals[pos]+flag(i)+' '+tname(i)+'</span>';
+    h+='<span style="color:#F5E642;font-weight:700;font-size:11px">'+st.pts+' '+st.gf+' '+st.ga+'</span>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function playGroupMatch(){
+  var pending=S.groupMatches.filter(function(m){return !m.done});
+  var m=pending[0];
+  S.match={t1:m.t1,t2:m.t2,s1:0,s2:0,maxRounds:3,type:"group",ref:m,rounds:0};
+  S.penalMode=false; S.roundsPlayed=0;
+  S.phase="match"; nextQ(); R();
+}
+
+// ---- PARTIDO ----
+function renderMatch(){
+  if(S.penalMode) return renderPenales();
+  var m=S.match;
+  var tc1=TC[m.t1],tc2=TC[m.t2];
+  var q=S.currentQ;
+  var phaseName = m.type==="group"?"GRUPO "+m.ref.group:m.type==="semi"?"SEMIFINAL":"⭐ GRAN FINAL ⭐";
+
+  var h='<div class="card-dark" style="margin-bottom:.5rem">';
+  h+='<div style="text-align:center;font-size:10px;font-weight:800;color:#A8D878;letter-spacing:2px;margin-bottom:.75rem">'+phaseName+'</div>';
+  // Marcador
+  h+='<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:.5rem">';
+  h+='<div style="text-align:center"><div style="font-size:52px;line-height:1">'+flag(m.t1)+'</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:4px">'+tname(m.t1)+'</div><div style="font-size:44px;font-weight:800;color:#F5E642;line-height:1.1">'+m.s1+'</div></div>';
+  h+='<div style="font-size:18px;color:#A8D878;font-weight:800">VS</div>';
+  h+='<div style="text-align:center"><div style="font-size:52px;line-height:1">'+flag(m.t2)+'</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:4px">'+tname(m.t2)+'</div><div style="font-size:44px;font-weight:800;color:#F5E642;line-height:1.1">'+m.s2+'</div></div>';
+  h+='</div>';
+  h+='<div style="text-align:center;font-size:11px;color:#A8D878">Ronda '+(m.rounds+1)+' de '+m.maxRounds+' — Mejor de 3</div>';
+  h+='</div>';
+
+  // Pregunta y opciones simultáneas
+  h+='<div class="q-center"><div class="q-badge">⚽ Respondan juntos</div><div class="q-text">'+q.t+'</div></div>';
+
+  if(!S.revealed){
+    h+='<div class="match-cols">';
+    h+=renderTeamOpts(m.t1,'t1',tc1);
+    h+=renderTeamOpts(m.t2,'t2',tc2);
+    h+='</div>';
+    // Si los dos respondieron, mostrar botón revelar
+    if(S.answers.t1!==null && S.answers.t2!==null){
+      h+='<button class="btn btn-amarillo" onclick="reveal()">👀 ¡Revelar respuestas!</button>';
+    } else {
+      h+='<div style="text-align:center;font-size:12px;color:#A8D878;background:rgba(255,255,255,.08);border-radius:8px;padding:.5rem;margin-bottom:.5rem">';
+      if(S.answers.t1===null && S.answers.t2===null) h+='Esperando que los dos equipos respondan...';
+      else if(S.answers.t1!==null) h+='✅ '+flag(m.t1)+' '+tname(m.t1)+' listo — esperando a '+flag(m.t2)+' '+tname(m.t2);
+      else h+='✅ '+flag(m.t2)+' '+tname(m.t2)+' listo — esperando a '+flag(m.t1)+' '+tname(m.t1);
+      h+='</div>';
+    }
+  } else {
+    // Mostrar resultados
+    h+='<div class="match-cols">';
+    h+=renderTeamOptsRevealed(m.t1,tc1,S.answers.t1,q.c);
+    h+=renderTeamOptsRevealed(m.t2,tc2,S.answers.t2,q.c);
+    h+='</div>';
+    // Goles
+    var g1=S.answers.t1===q.c, g2=S.answers.t2===q.c;
+    var golMsg='';
+    if(g1&&g2) golMsg='⚽ ¡Los dos metieron gol!';
+    else if(g1) golMsg='⚽ ¡Gol de '+flag(m.t1)+' '+tname(m.t1)+'!';
+    else if(g2) golMsg='⚽ ¡Gol de '+flag(m.t2)+' '+tname(m.t2)+'!';
+    else golMsg='😅 Nadie marcó en esta pregunta';
+    h+='<div style="text-align:center;font-size:15px;font-weight:700;color:#F5E642;background:rgba(245,230,66,.1);border-radius:8px;padding:.5rem;margin-bottom:.5rem">'+golMsg+'</div>';
+    h+='<div class="reveal-box"><strong>✅ Explicación</strong><p>'+q.exp+'</p></div>';
+
+    var done=checkMatchDone();
+    if(done){
+      if(m.s1===m.s2){
+        h+='<div style="text-align:center;font-weight:700;color:#E24B4A;margin-bottom:.5rem">⚠️ ¡Empate! Vamos a penales</div>';
+        h+='<button class="btn btn-rojo" onclick="startPenales()">🥅 Ir a penales</button>';
+      } else {
+        h+='<button class="btn btn-amarillo" onclick="finishMatch()">🏁 Ver resultado del partido</button>';
+      }
+    } else {
+      h+='<button class="btn btn-verde" onclick="nextRound()">▶ Siguiente pregunta</button>';
+    }
+  }
+  return h;
+}
+
+function renderTeamOpts(tIdx,key,tc){
+  var q=S.currentQ;
+  var h='<div style="background:'+tc.bg+';border:2px solid '+tc.border+';border-radius:12px;padding:.75rem">';
+  h+='<div style="text-align:center;font-size:40px;line-height:1">'+flag(tIdx)+'</div>';
+  h+='<div style="text-align:center;font-size:11px;font-weight:700;color:'+tc.text+';margin-top:4px;margin-bottom:.5rem">'+tname(tIdx)+'</div>';
+  q.o.forEach(function(opt,i){
+    var sel=S.answers[key]===i;
+    h+='<button class="opt-btn'+(sel?' opt-selected':'')+'" style="border-color:'+tc.border+';color:'+tc.text+'" onclick="pickAnswer(\''+key+'\','+i+')">'+opt+'</button>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function renderTeamOptsRevealed(tIdx,tc,chosen,correct){
+  var q=S.currentQ;
+  var h='<div style="background:'+tc.bg+';border:2px solid '+tc.border+';border-radius:12px;padding:.75rem">';
+  h+='<div style="text-align:center;font-size:20px">'+flag(tIdx)+'</div>';
+  h+='<div style="text-align:center;font-size:11px;font-weight:700;color:'+tc.text+';margin-bottom:.5rem">'+tname(tIdx)+'</div>';
+  q.o.forEach(function(opt,i){
+    var cls='opt-btn opt-disabled';
+    if(i===correct) cls+=' opt-correct';
+    else if(i===chosen) cls+=' opt-wrong';
+    h+='<div class="'+cls+'">'+opt+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function pickAnswer(key,opt){
+  if(S.revealed) return;
+  S.answers[key]=opt;
+  R();
+}
+
+function reveal(){
+  var m=S.match; var q=S.currentQ;
+  var g1=S.answers.t1===q.c, g2=S.answers.t2===q.c;
+  if(g1) m.s1++;
+  if(g2) m.s2++;
+  m.rounds++;
+  S.revealed=true;
+  if(g1||g2) shootBalls(g1,g2);
+  R();
+}
+
+function checkMatchDone(){
+  var m=S.match;
+  // Mejor de 3: gana quien llega a 2, o se juegan las 3 rondas
+  if(m.s1>=2||m.s2>=2) return true;
+  if(m.rounds>=m.maxRounds) return true;
+  return false;
+}
+
+function nextRound(){ nextQ(); R(); }
+
+function finishMatch(){
+  var m=S.match;
+  var winner=m.s1>m.s2?m.t1:m.t2;
+  var loser=m.s1>m.s2?m.t2:m.t1;
+  if(m.type==="group"){
+    var ref=m.ref; ref.done=true; ref.s1=m.s1; ref.s2=m.s2;
+    S.standings[winner].pts+=3;
+    S.standings[m.t1].gf+=m.s1; S.standings[m.t1].ga+=m.s2;
+    S.standings[m.t2].gf+=m.s2; S.standings[m.t2].ga+=m.s1;
+  } else if(m.type==="semi"){
+    var si=S.semis.findIndex(function(s){return s.t1===m.t1&&s.t2===m.t2});
+    S.semis[si].done=true; S.semis[si].winner=winner;
+  } else {
+    S.final.done=true; S.final.winner=winner; S.champion=winner;
+  }
+  S.phase="match_result"; R();
+}
+
+// ---- PENALES ----
+function startPenales(){
+  S.penalMode=true; S.penalScores=[0,0]; S.penalShots=[[],[]]; S.penalTurn=0;
+  // Pool de penales = lo que queda sin usar en el torneo
+  var usedTexts = S.usedInTournament.map(function(q){return q.t});
+  S.penalPool = S.qPool.filter(function(q){return usedTexts.indexOf(q.t)===-1});
+  if(S.penalPool.length===0){
+    S.penalPool = QS.filter(function(q){return usedTexts.indexOf(q.t)===-1}).sort(function(){return Math.random()-.5});
+  }
+  if(S.penalPool.length===0) S.penalPool = QS.slice().sort(function(){return Math.random()-.5});
+  var rawP0=S.penalPool.pop(); S.usedInTournament.push(rawP0); S.penalQ=shuffleOpts(rawP0); S.penalAnswered=false; R();
+}
+
+function renderPenales(){
+  var m=S.match;
+  var tc1=TC[m.t1],tc2=TC[m.t2];
+  var tIdx=S.penalTurn===0?m.t1:m.t2;
+  var tc=TEAMS_COLORS_by(tIdx);
+  var key=S.penalTurn===0?'t1':'t2';
+  var q=S.penalQ;
+
+  var winner=checkPenalWinner();
+
+  var h='<div class="card-dark" style="margin-bottom:.5rem">';
+  h+='<div style="text-align:center;font-size:11px;font-weight:800;color:#E24B4A;letter-spacing:2px;margin-bottom:.75rem">🥅 PENALES</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center">';
+  h+='<div style="text-align:center"><div style="font-size:44px;line-height:1">'+flag(m.t1)+'</div><div style="font-size:11px;font-weight:700;color:#fff;margin-top:4px">'+tname(m.t1)+'</div>';
+  h+='<div style="font-size:36px;font-weight:800;color:#F5E642">'+S.penalScores[0]+'</div>';
+  h+='<div>'+S.penalShots[0].map(function(ok){return '<span class="penal-dot '+(ok?'penal-dot-ok':'penal-dot-fail')+'"></span>';}).join('')+'</div>';
+  h+='</div><div style="color:#A8D878;font-size:14px;font-weight:800">🥅</div>';
+  h+='<div style="text-align:center"><div style="font-size:44px;line-height:1">'+flag(m.t2)+'</div><div style="font-size:11px;font-weight:700;color:#fff;margin-top:4px">'+tname(m.t2)+'</div>';
+  h+='<div style="font-size:36px;font-weight:800;color:#F5E642">'+S.penalScores[1]+'</div>';
+  h+='<div>'+S.penalShots[1].map(function(ok){return '<span class="penal-dot '+(ok?'penal-dot-ok':'penal-dot-fail')+'"></span>';}).join('')+'</div>';
+  h+='</div></div></div>';
+
+  if(winner!==null){
+    var winIdx=winner===0?m.t1:m.t2;
+    h+='<div class="card" style="text-align:center">';
+    h+='<div style="font-size:32px">🥅</div>';
+    h+='<div style="font-size:18px;font-weight:800;color:#27500A;margin:.5rem 0">¡'+flag(winIdx)+' '+tname(winIdx)+' gana en penales!</div>';
+    h+='<button class="btn btn-amarillo" onclick="finishPenal('+winner+')">Ver resultado ▶</button>';
+    h+='</div>';
+    return h;
+  }
+
+  h+='<div class="card">';
+  h+='<div style="font-size:11px;font-weight:700;color:'+TC[tIdx].text+';background:'+TC[tIdx].bg+';border-radius:6px;padding:4px 10px;display:inline-block;margin-bottom:.75rem">🥅 Patea '+flag(tIdx)+' '+tname(tIdx)+'</div>';
+  h+='<div class="q-text" style="margin-bottom:.75rem">'+q.t+'</div>';
+
+  if(!S.penalAnswered){
+    q.o.forEach(function(opt,i){
+      h+='<button class="opt-btn" style="border-color:'+TC[tIdx].border+';color:'+TC[tIdx].text+';margin-bottom:6px" onclick="penalPick('+i+')">'+opt+'</button>';
+    });
+  } else {
+    var chosen=S.penalChosen;
+    q.o.forEach(function(opt,i){
+      var cls='opt-btn opt-disabled';
+      if(i===q.c) cls+=' opt-correct';
+      else if(i===chosen) cls+=' opt-wrong';
+      h+='<div class="'+cls+'" style="margin-bottom:6px">'+opt+'</div>';
+    });
+    h+='<div class="reveal-box"><strong>✅ Explicación</strong><p>'+q.exp+'</p></div>';
+    h+='<button class="btn btn-rojo" onclick="nextPenal()">Siguiente penal ▶</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function TEAMS_COLORS_by(i){ return TC[i]; }
+
+function penalPick(opt){
+  if(S.penalAnswered) return;
+  var q=S.penalQ;
+  var ok=opt===q.c;
+  S.penalShots[S.penalTurn].push(ok);
+  if(ok){S.penalScores[S.penalTurn]++; shootBalls(S.penalTurn===0,S.penalTurn===1);}
+  S.penalChosen=opt; S.penalAnswered=true; R();
+}
+
+function nextPenal(){
+  S.penalTurn=S.penalTurn===0?1:0;
+  if(!S.penalPool||S.penalPool.length===0){
+    S.penalPool=QS.slice().sort(function(){return Math.random()-.5});
+  }
+  var rawP=S.penalPool.pop(); S.usedInTournament.push(rawP); S.penalQ=shuffleOpts(rawP);
+  S.penalAnswered=false; S.penalChosen=null; R();
+}
+
+function checkPenalWinner(){
+  var s0=S.penalShots[0],s1=S.penalShots[1];
+  var n0=s0.length,n1=s1.length;
+  if(n0<1||n1<1) return null;
+  // 5 rondas mínimo
+  var minRounds=5;
+  if(n0>=minRounds&&n1>=minRounds){
+    var sc0=S.penalScores[0],sc1=S.penalScores[1];
+    // ¿Hay ganador matemáticamente asegurado?
+    if(n0===n1){
+      var rem=0;
+      if(sc0!==sc1) return sc0>sc1?0:1;
+    }
+    // Muerte súbita en ronda 6+
+    if(n0>minRounds&&n0===n1){
+      var r=n0-1;
+      if(s0[r]!==s1[r]) return s0[r]?0:1;
+    }
+  }
+  // Dentro de 5 rondas: si es imposible alcanzar
+  if(n0===n1&&n0<minRounds){
+    var rem=minRounds-n0;
+    var sc0=S.penalScores[0],sc1=S.penalScores[1];
+    if(sc0-sc1>rem) return 0;
+    if(sc1-sc0>rem) return 1;
+  }
+  return null;
+}
+
+function finishPenal(penalWinner){
+  var m=S.match;
+  var winner=penalWinner===0?m.t1:m.t2;
+  m.penalWinner=winner;  // guardamos para que renderMatchResult lo use
+  if(m.type==="group"){
+    var ref=m.ref; ref.done=true; ref.s1=m.s1; ref.s2=m.s2;
+    S.standings[m.t1].pts+=1; S.standings[m.t2].pts+=1;
+    S.standings[winner].pts+=1;
+    S.standings[m.t1].gf+=m.s1; S.standings[m.t1].ga+=m.s2;
+    S.standings[m.t2].gf+=m.s2; S.standings[m.t2].ga+=m.s1;
+  } else if(m.type==="semi"){
+    var si=S.semis.findIndex(function(s){return s.t1===m.t1&&s.t2===m.t2});
+    S.semis[si].done=true; S.semis[si].winner=winner;
+  } else {
+    S.final.done=true; S.final.winner=winner; S.champion=winner;
+  }
+  S.penalMode=false; S.phase="match_result"; R();
+}
+
+// ---- RESULTADO ----
+function renderMatchResult(){
+  var m=S.match;
+  var winner;
+  if(m.type==="group") winner=m.penalWinner!==undefined?m.penalWinner:(m.s1>m.s2?m.t1:m.t2);
+  else if(m.type==="semi"){
+    var si=S.semis.findIndex(function(s){return s.t1===m.t1&&s.t2===m.t2});
+    winner=S.semis[si].winner;
+  } else winner=S.final.winner;
+  var wc=TC[winner];
+
+  var h='<div class="card" style="text-align:center">';
+  h+='<div style="font-size:40px">🏆</div>';
+  h+='<div style="font-size:22px;font-weight:800;margin:.5rem 0">'+flag(m.t1)+' '+tname(m.t1)+' <span style="color:#27500A">'+m.s1+' - '+m.s2+'</span> '+tname(m.t2)+' '+flag(m.t2)+'</div>';
+  h+='<div style="background:'+wc.bg+';border:2px solid '+wc.border+';border-radius:10px;padding:.75rem;margin:.75rem 0">';
+  h+='<div style="font-size:11px;font-weight:700;color:'+wc.text+';opacity:.7">GANADOR</div>';
+  h+='<div style="font-size:22px;font-weight:800;color:'+wc.text+'">'+flag(winner)+' '+tname(winner)+'</div>';
+  h+='</div>';
+
+  if(m.type==="group"){
+    var pending=S.groupMatches.filter(function(x){return !x.done});
+    if(pending.length) h+='<button class="btn btn-verde" onclick="S.phase=\'groups\';R()">📋 Volver al grupo</button>';
+    else h+='<button class="btn btn-amarillo" onclick="goSemis()">🏆 ¡A las Semifinales!</button>';
+  } else if(m.type==="semi"){
+    var doneSemis=S.semis.filter(function(s){return s.done});
+    if(doneSemis.length<2) h+='<button class="btn btn-verde" onclick="S.phase=\'semis\';R()">📋 Volver a semis</button>';
+    else h+='<button class="btn btn-amarillo" onclick="S.phase=\'final\';setupFinal();R()">⭐ ¡A la Final!</button>';
+  } else {
+    h+='<button class="btn btn-amarillo" onclick="S.phase=\'champion\';R()">🏆 ¡Ver campeón!</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+// ---- SEMIS ----
+function getTop2(idxs){
+  return idxs.slice().sort(function(a,b){
+    var sa=S.standings[a],sb=S.standings[b];
+    if(sb.pts!==sa.pts) return sb.pts-sa.pts;
+    return (sb.gf-sb.ga)-(sa.gf-sa.ga);
+  }).slice(0,2);
+}
+
+function goSemis(){
+  var topA=getTop2([0,1,2]), topB=getTop2([3,4,5]);
+  S.semis=[
+    {t1:topA[0],t2:topB[1],done:false,winner:null},
+    {t1:topB[0],t2:topA[1],done:false,winner:null}
+  ];
+  S.phase="semis"; R();
+}
+
+function renderSemis(){
+  var h='<div class="card-dark">';
+  h+='<button class="btn btn-gris" style="margin-bottom:.5rem;font-size:12px" onclick="goFixture()">📋 Ver fixture</button>';
+
+  h+='<div style="text-align:center;font-size:11px;font-weight:800;color:#A8D878;letter-spacing:2px;margin-bottom:1rem">SEMIFINALES</div>';
+  S.semis.forEach(function(s,i){
+    h+='<div class="bracket-match">';
+    h+='<span class="bracket-team'+(s.done&&s.winner===s.t1?' bracket-winner':'')+'">'+flag(s.t1)+' '+tname(s.t1)+'</span>';
+    h+=s.done?'<span style="color:#F5E642;font-weight:800;padding:0 8px">✅ '+flag(s.winner)+' '+tname(s.winner)+'</span>':'<span class="bracket-vs">vs</span>';
+    h+='<span class="bracket-team'+(s.done&&s.winner===s.t2?' bracket-winner':'')+'">'+tname(s.t2)+' '+flag(s.t2)+'</span>';
+    h+='</div>';
+  });
+  var pending=S.semis.filter(function(s){return !s.done});
+  if(pending.length){
+    var nxt=pending[0];
+    h+='<div style="text-align:center;font-size:12px;color:#A8D878;margin:.75rem 0">Próximo: <strong style="color:#F5E642">'+flag(nxt.t1)+' '+tname(nxt.t1)+' vs '+flag(nxt.t2)+' '+tname(nxt.t2)+'</strong></div>';
+    h+='<button class="btn btn-amarillo" onclick="playSemi('+S.semis.indexOf(nxt)+')">⚽ Jugar semifinal</button>';
+  } else {
+    h+='<button class="btn btn-amarillo" onclick="S.phase=\'final\';setupFinal();R()">⭐ ¡A la Final!</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function playSemi(idx){
+  var s=S.semis[idx];
+  S.match={t1:s.t1,t2:s.t2,s1:0,s2:0,maxRounds:3,type:"semi",ref:null,rounds:0};
+  S.penalMode=false; S.phase="match"; nextQ(); R();
+}
+
+// ---- FINAL ----
+function setupFinal(){
+  var ws=S.semis.map(function(s){return s.winner});
+  S.final={t1:ws[0],t2:ws[1],done:false,winner:null};
+}
+
+function renderFinalBracket(){
+  var f=S.final;
+  var h='<div class="card-dark">';
+  h+='<div style="text-align:center;font-size:14px;font-weight:800;color:#F5E642;margin-bottom:1rem">⭐ GRAN FINAL ⭐</div>';
+  h+='<div style="display:flex;justify-content:space-around;align-items:center;background:rgba(245,230,66,.1);border:1px solid #F5E642;border-radius:12px;padding:1rem;margin-bottom:1rem">';
+  h+='<div style="text-align:center"><div style="font-size:56px;line-height:1">'+flag(f.t1)+'</div><div style="color:#fff;font-weight:700;margin-top:6px">'+tname(f.t1)+'</div></div>';
+  h+='<div style="color:#F5E642;font-size:20px;font-weight:800">VS</div>';
+  h+='<div style="text-align:center"><div style="font-size:56px;line-height:1">'+flag(f.t2)+'</div><div style="color:#fff;font-weight:700;margin-top:6px">'+tname(f.t2)+'</div></div>';
+  h+='</div>';
+  h+='<button class="btn btn-amarillo" onclick="playFinal()">⭐ ¡Jugar la Final!</button>';
+  h+='</div>';
+  return h;
+}
+
+function playFinal(){
+  var f=S.final;
+  S.match={t1:f.t1,t2:f.t2,s1:0,s2:0,maxRounds:3,type:"final",ref:null,rounds:0};
+  S.penalMode=false; S.phase="match"; nextQ(); R();
+}
+
+// ---- CAMPEÓN ----
+function renderChampion(){
+  var c=S.champion; var tc=TC[c];
+  var second=S.final.t1===c?S.final.t2:S.final.t1;
+  var third=S.semis.map(function(s){return s.t1===s.winner?s.t2:s.t1});
+
+  var h='<div class="card" style="text-align:center;border:3px solid #F5E642">';
+  h+='<div style="font-size:56px">🏆</div>';
+  h+='<div style="font-size:11px;font-weight:800;color:#888;letter-spacing:2px;margin-bottom:.5rem">CAMPEÓN DE LA COPA PASTORAL</div>';
+  h+='<div style="font-size:60px;line-height:1">'+flag(c)+'</div>';
+  h+='<div style="font-size:24px;font-weight:800;color:'+tc.text+';background:'+tc.bg+';border:2px solid '+tc.border+';border-radius:10px;padding:.75rem;margin:.5rem 0">'+tname(c)+'</div>';
+  h+='<div style="font-size:11px;color:#888;margin-bottom:1rem">'+pname(c)+'</div>';
+  h+='<div style="text-align:left;border-top:1px solid #eee;padding-top:.75rem">';
+  h+='<div style="font-size:11px;font-weight:800;color:#888;margin-bottom:.5rem">PODIO FINAL</div>';
+  h+='<div style="padding:5px 0;font-size:14px">🥇 '+flag(c)+' '+tname(c)+'</div>';
+  h+='<div style="padding:5px 0;font-size:14px">🥈 '+flag(second)+' '+tname(second)+'</div>';
+  third.forEach(function(t){h+='<div style="padding:5px 0;font-size:13px;color:#888">🥉 '+flag(t)+' '+tname(t)+'</div>';});
+  h+='</div>';
+  h+='<button class="btn btn-gris" style="margin-top:.75rem" onclick="init();R()">🔄 Nueva Copa</button>';
+  h+='</div>';
+  return h;
+}
+
+// ---- PELOTAS ANIMADAS ----
+function shootBalls(left, right){
+  var overlay=document.getElementById('ballsOverlay');
+  if(!overlay) return;
+  var count = (left&&right)?12:7;
+  for(var i=0;i<count;i++){
+    (function(delay){
+      setTimeout(function(){
+        var b=document.createElement('div');
+        b.className='ball';
+        b.textContent='⚽';
+        var startX = left&&right ? Math.random()*window.innerWidth : left ? Math.random()*(window.innerWidth/2) : window.innerWidth/2+Math.random()*(window.innerWidth/2);
+        var startY = window.innerHeight*0.5 + (Math.random()-0.5)*200;
+        var tx = (Math.random()-0.5)*300+'px';
+        var ty = (-200-Math.random()*300)+'px';
+        var tx2 = (Math.random()-0.5)*500+'px';
+        var ty2 = (100+Math.random()*200)+'px';
+        b.style.cssText='left:'+startX+'px;top:'+startY+'px;--tx:'+tx+';--ty:'+ty+';--tx2:'+tx2+';--ty2:'+ty2;
+        overlay.appendChild(b);
+        setTimeout(function(){b.remove();},1500);
+      },delay);
+    })(i*80);
+  }
+}
+
+function esc(s){return (s||'').replace(/"/g,'&quot;');}
+
+init();
+R();
+</script>
+</body>
+</html>
