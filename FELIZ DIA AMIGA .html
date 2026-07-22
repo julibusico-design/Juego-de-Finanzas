@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sopa de letras misteriosa</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.game{background:#fff;border-radius:20px;border:1px solid #e8e6e0;max-width:480px;width:100%;padding:2rem 1.5rem}
+.tag{display:inline-block;background:#e6f1fb;color:#185fa5;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:1rem}
+h1{font-size:20px;font-weight:600;color:#1a1a18;margin-bottom:.25rem}
+.sub{font-size:14px;color:#6b6b67;margin-bottom:.5rem;line-height:1.5}
+.hint{font-size:13px;color:#9b9b97;margin-bottom:1.25rem;font-style:italic}
+.found-words{min-height:32px;margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:8px}
+.found-pill{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transform:scale(.8);transition:all .4s}
+.found-pill.show{opacity:1;transform:scale(1)}
+.pill-0{background:#e1f5ee;color:#085041;border:1px solid #5dcaa5}
+.pill-1{background:#eeedfe;color:#3c3489;border:1px solid #afa9ec}
+.pill-2{background:#faece7;color:#712b13;border:1px solid #f0997b}
+.grid-wrap{display:block;border:1px solid #e8e6e0;border-radius:14px;overflow:hidden;margin-bottom:1rem;user-select:none;touch-action:none}
+table{border-collapse:collapse;width:100%}
+td{width:36px;height:36px;text-align:center;vertical-align:middle;font-size:15px;font-weight:500;color:#1a1a18;cursor:pointer;border:0.5px solid #eeede8;transition:background .08s}
+td:hover{background:#f0f7ff}
+td.selecting{background:#faeeda;color:#633806}
+td.found-0{background:#e1f5ee;color:#085041;font-weight:700}
+td.found-1{background:#eeedfe;color:#3c3489;font-weight:700}
+td.found-2{background:#faece7;color:#712b13;font-weight:700}
+.status{font-size:13px;color:#9b9b97;margin-bottom:.75rem}
+.final{display:none;background:#eaf3de;border:1px solid #c0dd97;border-radius:14px;padding:1.25rem;text-align:center;margin-top:.75rem}
+.final.show{display:block}
+.final-emoji{font-size:28px;margin-bottom:.5rem}
+.final-title{font-size:18px;font-weight:700;color:#27500a;margin-bottom:.5rem}
+.final-msg{font-size:14px;color:#3b6d11;line-height:1.6}
+.reset{margin-top:1rem;background:none;border:1px solid #dddbd5;border-radius:20px;padding:6px 18px;font-size:13px;color:#6b6b67;cursor:pointer;font-family:inherit}
+.reset:hover{background:#f5f4f0}
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="tag">Día del amigo</div>
+  <h1>Sopa de letras misteriosa</h1>
+  <p class="sub">Hay 3 palabras escondidas que tienen algo en común. Encontralas todas para descubrir el mensaje.</p>
+  <p class="hint">Las palabras van al revés, en diagonal y cruzadas. Seleccioná arrastrando.</p>
+
+  <div class="found-words">
+    <div class="found-pill pill-0" id="pill-0"></div>
+    <div class="found-pill pill-1" id="pill-1"></div>
+    <div class="found-pill pill-2" id="pill-2"></div>
+  </div>
+
+  <div class="status" id="status">Encontradas: 0 / 3 — ¿qué tendrán en común?</div>
+
+  <div class="grid-wrap">
+    <table id="grid"></table>
+  </div>
+
+  <div class="final" id="final">
+    <div class="final-emoji">🎉</div>
+    <div class="final-title">¡Las encontraste todas!</div>
+    <div class="final-msg">
+      Saturno, Romeo, Actuaria...<br>
+      ¿Qué tienen en común?<br><br>
+      <strong>Saturno</strong> es un planeta con anillos ✨<br>
+      <strong>Romeo</strong> es el perro de tu amiga 🐾<br>
+      <strong>Actuaria</strong> es su profesión 📊<br><br>
+      ¿Ya sabés quién es? <strong>¡Es Julieta!</strong> 💛<br>
+      Feliz Día del Amigo.
+    </div>
+  </div>
+
+  <button class="reset" onclick="init()">Volver a jugar</button>
+</div>
+
+<script>
+const WORDS=['SATURNO','ROMEO','ACTUARIA'];
+const SIZE=12;
+let grid=[],placed=[],foundSets=[],selecting=false,startCell=null,currentCells=[];
+
+function init(){
+  grid=[];placed=[];foundSets=[];
+  for(let r=0;r<SIZE;r++) grid.push(Array(SIZE).fill(''));
+
+  const hardDirs=[[-1,0],[0,-1],[-1,-1],[-1,1],[1,-1],[1,1]];
+
+  WORDS.forEach((word,wi)=>{
+    let ok=false,attempts=0;
+    while(!ok&&attempts<800){
+      attempts++;
+      const dir=hardDirs[Math.floor(Math.random()*hardDirs.length)];
+      const dr=dir[0],dc=dir[1];
+      const minR=dr<0?word.length-1:0;
+      const maxR=dr<0?SIZE-1:dr>0?SIZE-word.length:SIZE-1;
+      const minC=dc<0?word.length-1:0;
+      const maxC=dc<0?SIZE-1:dc>0?SIZE-word.length:SIZE-1;
+      if(minR>maxR||minC>maxC) continue;
+      const r=minR+Math.floor(Math.random()*(maxR-minR+1));
+      const c=minC+Math.floor(Math.random()*(maxC-minC+1));
+      let valid=true,cells=[];
+      for(let i=0;i<word.length;i++){
+        const nr=r+dr*i,nc=c+dc*i;
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE){valid=false;break;}
+        if(grid[nr][nc]!==''&&grid[nr][nc]!==word[i]){valid=false;break;}
+        cells.push([nr,nc]);
+      }
+      if(valid){
+        cells.forEach(([nr,nc],i)=>grid[nr][nc]=word[i]);
+        placed.push({word,cells,idx:wi});
+        ok=true;
+      }
+    }
+  });
+
+  const abc='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++)
+    if(!grid[r][c]) grid[r][c]=abc[Math.floor(Math.random()*abc.length)];
+
+  renderGrid();
+  document.getElementById('final').classList.remove('show');
+  document.getElementById('status').textContent='Encontradas: 0 / 3 — ¿qué tendrán en común?';
+  WORDS.forEach((_,i)=>{
+    const p=document.getElementById(`pill-${i}`);
+    p.textContent='';
+    p.classList.remove('show');
+  });
+}
+
+function renderGrid(){
+  const tbl=document.getElementById('grid');
+  tbl.innerHTML='';
+  for(let r=0;r<SIZE;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<SIZE;c++){
+      const td=document.createElement('td');
+      td.textContent=grid[r][c];
+      td.dataset.r=r;td.dataset.c=c;
+      td.addEventListener('mousedown',onDown);
+      td.addEventListener('mouseenter',onEnter);
+      td.addEventListener('mouseup',onUp);
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+}
+
+function cell(r,c){return document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);}
+
+function onDown(e){
+  e.preventDefault();
+  selecting=true;
+  startCell=[+e.target.dataset.r,+e.target.dataset.c];
+  currentCells=[startCell];
+  highlight();
+}
+function onEnter(e){
+  if(!selecting)return;
+  const r=+e.target.dataset.r,c=+e.target.dataset.c;
+  const line=getLine(startCell,[r,c]);
+  currentCells=line||[startCell];
+  highlight();
+}
+function onUp(){
+  if(!selecting)return;
+  selecting=false;
+  checkWord();
+  clearSel();
+}
+document.addEventListener('mouseup',()=>{if(selecting){selecting=false;checkWord();clearSel();}});
+
+function getLine([r0,c0],[r1,c1]){
+  const dr=Math.sign(r1-r0),dc=Math.sign(c1-c0);
+  if(dr===0&&dc===0)return[[r0,c0]];
+  const lenR=Math.abs(r1-r0),lenC=Math.abs(c1-c0);
+  if(dr!==0&&dc!==0&&lenR!==lenC)return null;
+  const len=Math.max(lenR,lenC),cells=[];
+  for(let i=0;i<=len;i++) cells.push([r0+dr*i,c0+dc*i]);
+  return cells;
+}
+
+function highlight(){
+  document.querySelectorAll('td.selecting').forEach(t=>t.classList.remove('selecting'));
+  currentCells.forEach(([r,c])=>{
+    const t=cell(r,c);
+    if(t&&!t.className.includes('found')) t.classList.add('selecting');
+  });
+}
+function clearSel(){
+  document.querySelectorAll('td.selecting').forEach(t=>t.classList.remove('selecting'));
+  currentCells=[];
+}
+
+function checkWord(){
+  if(!currentCells.length)return;
+  const sel=currentCells.map(([r,c])=>grid[r][c]).join('');
+  for(const p of placed){
+    const match=p.cells.map(([r,c])=>grid[r][c]).join('');
+    const key=JSON.stringify(p.cells);
+    if(sel===match&&!foundSets.includes(key)){
+      foundSets.push(key);
+      p.cells.forEach(([r,c])=>{
+        const t=cell(r,c);
+        t.className=`found-${p.idx}`;
+      });
+      const pill=document.getElementById(`pill-${p.idx}`);
+      pill.textContent=p.word;
+      setTimeout(()=>pill.classList.add('show'),50);
+      const count=foundSets.length;
+      const msgs=['Encontradas: 1 / 3 — seguí buscando...','Encontradas: 2 / 3 — falta una...','¡Las encontraste todas! 🎉'];
+      document.getElementById('status').textContent=msgs[count-1];
+      if(count===3) setTimeout(()=>document.getElementById('final').classList.add('show'),400);
+      return;
+    }
+  }
+}
+
+// Touch support
+document.getElementById('grid').addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  if(el?.tagName==='TD'){selecting=true;startCell=[+el.dataset.r,+el.dataset.c];currentCells=[startCell];highlight();}
+},{passive:true});
+document.getElementById('grid').addEventListener('touchmove',e=>{
+  if(!selecting)return;
+  const t=e.touches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  if(el?.tagName==='TD'){
+    const line=getLine(startCell,[+el.dataset.r,+el.dataset.c]);
+    currentCells=line||[startCell];highlight();
+  }
+},{passive:true});
+document.getElementById('grid').addEventListener('touchend',()=>{
+  if(!selecting)return;selecting=false;checkWord();clearSel();
+},{passive:true});
+
+init();
+</script>
+</body>
+</html>
