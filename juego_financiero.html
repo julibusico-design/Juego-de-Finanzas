@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Me estabas escuchando? — Real Planning</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --t1:#f59e0b;--t2:#3b82f6;--t3:#10b981;--t4:#ef4444;
+  --t1l:rgba(245,158,11,.15);--t2l:rgba(59,130,246,.15);--t3l:rgba(16,185,129,.15);--t4l:rgba(239,68,68,.15);
+  --gold:#f59e0b;--white:#ffffff;--text:#1e1b4b;--muted:#6b7280;
+}
+body{font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* COINS */
+.money-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.coin{position:absolute;opacity:0.18;animation:floatC linear infinite;}
+@keyframes floatC{0%{transform:translateY(110vh) rotate(0deg);}100%{transform:translateY(-10vh) rotate(360deg);}}
+
+/* ── INTRO ── */
+#screen-intro{
+  align-items:center;justify-content:center;text-align:center;padding:40px 20px;
+  background:linear-gradient(135deg,#fef3c7 0%,#dbeafe 40%,#d1fae5 70%,#fee2e2 100%);
+  position:relative;
+}
+.intro-logo{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:#92400e;margin-bottom:20px;font-weight:700;}
+.intro-icons{font-size:52px;margin-bottom:12px;animation:pulse 2s ease infinite alternate;}
+@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.1);}}
+.intro-title{font-family:'Playfair Display',serif;font-size:clamp(34px,6vw,68px);line-height:1.05;margin-bottom:10px;color:#1e1b4b;background:linear-gradient(135deg,#1e1b4b,#7c3aed,#db2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.intro-sub{font-size:15px;color:#4b5563;margin-bottom:36px;}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:540px;margin-bottom:32px;}
+.team-card{border-radius:16px;padding:16px;border:3px solid transparent;}
+.tc1{background:#fef3c7;border-color:#f59e0b;}
+.tc2{background:#dbeafe;border-color:#3b82f6;}
+.tc3{background:#d1fae5;border-color:#10b981;}
+.tc4{background:#fee2e2;border-color:#ef4444;}
+.team-card-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:800;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.team-input{width:100%;background:white;border:2px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;outline:none;color:#1e1b4b;}
+.team-input:focus{border-color:var(--gold);}
+.team-input::placeholder{color:#9ca3af;font-weight:400;}
+.btn-start{background:linear-gradient(135deg,#f59e0b,#ef4444,#8b5cf6);color:white;border:none;border-radius:16px;padding:20px 60px;font-family:'Inter',sans-serif;font-size:18px;font-weight:900;cursor:pointer;letter-spacing:1px;box-shadow:0 8px 32px rgba(139,92,246,.4);transition:all .2s;position:relative;z-index:1;}
+.btn-start:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(139,92,246,.5);}
+
+/* ── GAME ── */
+#screen-game{position:relative;}
+.game-wrap{display:flex;flex-direction:column;min-height:100vh;transition:background .5s;}
+
+/* bg themes */
+.qbg-1{background:linear-gradient(135deg,#fef9c3 0%,#fde68a 50%,#fef3c7 100%);}
+.qbg-2{background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 50%,#ede9fe 100%);}
+.qbg-3{background:linear-gradient(135deg,#d1fae5 0%,#a7f3d0 50%,#ecfdf5 100%);}
+.qbg-4{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 50%,#fef2f2 100%);}
+.qbg-5{background:linear-gradient(135deg,#fef3c7 0%,#fed7aa 50%,#fff7ed 100%);}
+.qbg-6{background:linear-gradient(135deg,#cffafe 0%,#a5f3fc 50%,#ecfeff 100%);}
+.qbg-7{background:linear-gradient(135deg,#fae8ff 0%,#f0abfc 50%,#fdf4ff 100%);}
+.qbg-8{background:linear-gradient(135deg,#dcfce7 0%,#86efac 50%,#f0fdf4 100%);}
+.qbg-9{background:linear-gradient(135deg,#fff7ed 0%,#fed7aa 50%,#fef3c7 100%);}
+.qbg-10{background:linear-gradient(135deg,#ede9fe 0%,#c4b5fd 50%,#f5f3ff 100%);}
+.qbg-11{background:linear-gradient(135deg,#fce7f3 0%,#fbcfe8 50%,#fdf2f8 100%);}
+.qbg-12{background:linear-gradient(135deg,#ecfdf5 0%,#6ee7b7 50%,#d1fae5 100%);}
+
+/* header */
+.g-header{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:2px solid rgba(0,0,0,.08);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:10;}
+.round-pill{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:7px 18px;border-radius:20px;box-shadow:0 4px 12px rgba(245,158,11,.4);}
+.g-topic{font-size:13px;color:#4b5563;font-weight:700;text-align:center;}
+.progress-row{display:flex;gap:5px;}
+.pdot{width:9px;height:9px;border-radius:50%;background:#e5e7eb;transition:all .3s;}
+.pdot.done{background:#f59e0b;}
+.pdot.current{background:#ef4444;box-shadow:0 0 8px #ef4444;transform:scale(1.3);}
+
+/* scoreboard */
+.scoreboard{display:grid;grid-template-columns:repeat(4,1fr);}
+.sc{padding:12px 8px;text-align:center;border-right:2px solid rgba(255,255,255,.5);position:relative;overflow:hidden;}
+.sc:last-child{border-right:none;}
+.sc-bar{position:absolute;bottom:0;left:0;height:5px;transition:width .6s ease;}
+.sc-name{font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.sc-pts{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;transition:all .3s;}
+.sc-pts.neg{color:#dc2626;}
+.sc-delta{font-size:11px;height:14px;font-weight:800;transition:opacity .5s;}
+.sc0{background:linear-gradient(180deg,#fef3c7,#fde68a);}
+.sc1{background:linear-gradient(180deg,#dbeafe,#bfdbfe);}
+.sc2{background:linear-gradient(180deg,#d1fae5,#a7f3d0);}
+.sc3{background:linear-gradient(180deg,#fee2e2,#fecaca);}
+
+/* question area */
+.q-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;max-width:820px;margin:0 auto;width:100%;position:relative;}
+.q-bg-icon{font-size:100px;opacity:0.1;position:absolute;right:4%;top:50%;transform:translateY(-50%);pointer-events:none;}
+.q-type{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:white;background:linear-gradient(135deg,#7c3aed,#db2777);padding:5px 16px;border-radius:20px;margin-bottom:14px;font-weight:700;}
+.q-equipo{font-size:13px;margin-bottom:8px;font-weight:800;}
+.q-text{font-family:'Playfair Display',serif;font-size:clamp(18px,2.8vw,27px);line-height:1.45;text-align:center;margin-bottom:28px;color:#1e1b4b;max-width:680px;position:relative;z-index:1;}
+
+/* team selector */
+.team-row{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;justify-content:center;}
+.t-btn{padding:12px 22px;border-radius:12px;border:3px solid transparent;font-family:'Inter',sans-serif;font-size:13px;font-weight:900;cursor:pointer;transition:all .2s;color:white;}
+.t-btn.t0{background:var(--t1);}
+.t-btn.t1{background:var(--t2);}
+.t-btn.t2{background:var(--t3);}
+.t-btn.t3{background:var(--t4);}
+.t-btn.selected{transform:scale(1.12);box-shadow:0 6px 20px rgba(0,0,0,.25);border-color:white;}
+
+/* options */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:700px;margin-bottom:24px;position:relative;z-index:1;}
+.opt{background:white;border:3px solid #e5e7eb;border-radius:16px;padding:18px 20px;color:#1e1b4b;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:left;line-height:1.45;transition:all .2s;display:flex;align-items:flex-start;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.opt:hover:not(:disabled){border-color:#7c3aed;transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.2);}
+.opt-letter{background:#f3f4f6;color:#6b7280;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;transition:all .2s;}
+.opt.correct{background:#d1fae5;border-color:#10b981;}
+.opt.correct .opt-letter{background:#10b981;color:white;}
+.opt.wrong{background:#fee2e2;border-color:#ef4444;}
+.opt.wrong .opt-letter{background:#ef4444;color:white;}
+
+/* explanation */
+.expl{display:none;background:white;border-left:5px solid #f59e0b;border-radius:0 14px 14px 0;padding:16px 20px;width:100%;max-width:700px;margin-bottom:20px;font-size:13px;line-height:1.7;color:#374151;box-shadow:0 4px 16px rgba(0,0,0,.08);position:relative;z-index:1;}
+.expl.show{display:block;}
+.expl strong{color:#92400e;}
+
+/* steal */
+.steal{display:none;background:white;border:3px solid #fb923c;border-radius:16px;padding:18px 20px;width:100%;max-width:700px;margin-bottom:20px;position:relative;z-index:1;box-shadow:0 4px 16px rgba(251,146,60,.2);}
+.steal.show{display:block;}
+.steal-title{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#ea580c;font-weight:900;margin-bottom:6px;}
+.steal-desc{font-size:13px;color:#6b7280;margin-bottom:14px;}
+.steal-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.steal-btn{padding:10px 18px;border-radius:10px;border:2px solid #e5e7eb;background:#fff7ed;color:#ea580c;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;}
+.steal-btn:hover{background:#ea580c;color:white;border-color:#ea580c;}
+.steal-btn.skip{background:#f9fafb;color:#9ca3af;border-color:#e5e7eb;}
+.steal-btn.skip:hover{background:#6b7280;color:white;border-color:#6b7280;}
+
+.btn-next{background:linear-gradient(135deg,#7c3aed,#db2777);color:white;border:none;border-radius:14px;padding:16px 48px;font-family:'Inter',sans-serif;font-size:16px;font-weight:900;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(124,58,237,.35);position:relative;z-index:1;}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(124,58,237,.5);}
+
+/* FLASH */
+.flash{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .15s;}
+.flash.show{opacity:1;}
+.flash.gf{background:rgba(16,185,129,.92);}
+.flash.rf{background:rgba(220,38,38,.92);}
+.flash-icon{font-size:110px;animation:fb .4s ease;}
+.flash-text{font-family:'Playfair Display',serif;font-size:clamp(30px,6vw,64px);font-weight:900;color:white;margin-top:10px;text-shadow:0 4px 20px rgba(0,0,0,.2);animation:fb .4s .1s both;}
+.flash-sub{font-size:20px;color:rgba(255,255,255,.85);margin-top:8px;font-weight:700;}
+@keyframes fb{0%{transform:scale(.4);}65%{transform:scale(1.15);}100%{transform:scale(1);}}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(30,27,75,.7);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:24px;padding:36px;max-width:500px;width:92%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25);}
+.modal-title{font-family:'Playfair Display',serif;font-size:28px;color:#1e1b4b;margin-bottom:4px;}
+.modal-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:24px;font-weight:700;}
+.modal-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.modal-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;border-left:5px solid transparent;}
+.modal-rank{font-size:22px;margin-right:10px;}
+.modal-rname{font-weight:800;font-size:15px;}
+.modal-rpts{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;}
+.modal-rpts.neg{color:#dc2626;}
+.btn-continue{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;border:none;border-radius:14px;padding:16px 48px;font-family:'Inter',sans-serif;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(239,68,68,.35);transition:all .2s;}
+.btn-continue:hover{transform:translateY(-2px);}
+
+/* RESULTS */
+#screen-results{align-items:center;justify-content:center;padding:40px 24px;background:linear-gradient(135deg,#fef9c3 0%,#dbeafe 35%,#d1fae5 65%,#fce7f3 100%);text-align:center;position:relative;}
+.trophy{font-size:110px;display:block;margin-bottom:4px;animation:tf 1.5s ease infinite alternate;}
+@keyframes tf{from{transform:translateY(0) rotate(-6deg);}to{transform:translateY(-18px) rotate(6deg);}}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.cp{position:absolute;animation:cf linear infinite;}
+@keyframes cf{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+.winner-label{font-size:12px;letter-spacing:5px;text-transform:uppercase;color:#92400e;margin-bottom:6px;font-weight:800;}
+.winner-name{font-family:'Playfair Display',serif;font-size:clamp(36px,7vw,72px);font-weight:900;margin-bottom:36px;color:#1e1b4b;}
+.final-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:540px;width:100%;margin-bottom:32px;position:relative;z-index:1;}
+.final-card{background:white;border:3px solid #e5e7eb;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.final-card.win{box-shadow:0 8px 40px rgba(245,158,11,.35);}
+.final-medal{font-size:32px;margin-bottom:6px;}
+.final-rl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:3px;font-weight:700;}
+.final-tn{font-size:15px;font-weight:900;margin-bottom:4px;}
+.final-pts{font-family:'Playfair Display',serif;font-size:44px;font-weight:900;}
+.btn-restart{background:white;border:3px solid #e5e7eb;color:#6b7280;border-radius:12px;padding:12px 28px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;position:relative;z-index:1;}
+.btn-restart:hover{border-color:#1e1b4b;color:#1e1b4b;}
+
+@media(max-width:600px){
+  .opts,.team-grid,.final-grid{grid-template-columns:1fr;}
+  .scoreboard{grid-template-columns:repeat(2,1fr);}
+  .g-header{padding:10px 14px;}
+  .q-area{padding:20px 14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="money-bg" id="money-bg"></div>
+<div class="flash" id="flash"><div class="flash-icon" id="fi"></div><div class="flash-text" id="ft"></div><div class="flash-sub" id="fs"></div></div>
+<div class="modal-overlay" id="modal"><div class="modal">
+  <div class="modal-title">📊 Marcador</div>
+  <div class="modal-sub" id="modal-sub"></div>
+  <div class="modal-rows" id="modal-rows"></div>
+  <button class="btn-continue" onclick="closeModal()">Siguiente ronda →</button>
+</div></div>
+
+<!-- INTRO -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-logo">Real Planning · Educación Financiera</div>
+  <div class="intro-icons">💰📈🏦💎🪙📊</div>
+  <h1 class="intro-title">¿Me estabas<br>escuchando?</h1>
+  <p class="intro-sub">Escribí el nombre de cada equipo y ¡a jugar!</p>
+  <div class="team-grid">
+    <div class="team-card tc1"><div class="team-card-label" style="color:#92400e"><div class="dot" style="background:#f59e0b"></div>Equipo 1</div><input class="team-input" id="t1" placeholder="Ej: Los Ahorradores" maxlength="20"></div>
+    <div class="team-card tc2"><div class="team-card-label" style="color:#1e40af"><div class="dot" style="background:#3b82f6"></div>Equipo 2</div><input class="team-input" id="t2" placeholder="Ej: Team Inversión" maxlength="20"></div>
+    <div class="team-card tc3"><div class="team-card-label" style="color:#065f46"><div class="dot" style="background:#10b981"></div>Equipo 3</div><input class="team-input" id="t3" placeholder="Ej: Los Planificadores" maxlength="20"></div>
+    <div class="team-card tc4"><div class="team-card-label" style="color:#991b1b"><div class="dot" style="background:#ef4444"></div>Equipo 4</div><input class="team-input" id="t4" placeholder="Ej: Futuros Inversores" maxlength="20"></div>
+  </div>
+  <button class="btn-start" onclick="startGame()">💥 ¡Empezar el juego!</button>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="screen-game">
+<div class="game-wrap qbg-1" id="game-wrap">
+  <div class="g-header">
+    <div class="round-pill" id="round-pill">Ronda 1</div>
+    <div class="g-topic" id="g-topic"></div>
+    <div class="progress-row" id="progress-row"></div>
+  </div>
+  <div class="scoreboard" id="scoreboard"></div>
+  <div class="q-area">
+    <div class="q-bg-icon" id="q-bg-icon"></div>
+    <div class="q-type" id="q-type"></div>
+    <div class="q-equipo" id="q-equipo"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="team-row" id="team-row"></div>
+    <div class="opts" id="opts"></div>
+    <div class="expl" id="expl"></div>
+    <div class="steal" id="steal">
+      <div class="steal-title">⚡ ¿Querés robar puntos?</div>
+      <div class="steal-desc">Elegí: o <strong>cobrás tus +10 puntos</strong> o <strong>le restás 5 a un rival</strong>. No podés hacer las dos.</div>
+      <div class="steal-btns" id="steal-btns"></div>
+    </div>
+    <button class="btn-next" id="btn-next" style="display:none" onclick="nextQ()">Ver marcador →</button>
+  </div>
+</div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="screen-results">
+  <div class="confetti-wrap" id="confetti"></div>
+  <span class="trophy">🏆</span>
+  <div class="winner-label">¡CAMPEÓN!</div>
+  <div class="winner-name" id="winner-name"></div>
+  <div class="final-grid" id="final-grid"></div>
+  <button class="btn-restart" onclick="restart()">🔄 Jugar de nuevo</button>
+</div>
+
+<script>
+const Q=[
+  {round:1,topic:"Reguladores",type:"Opción Múltiple",bg:"qbg-1",icon:"🏛️",eq:0,
+   text:"¿Cuál es el nombre correcto del organismo que regula el mercado de capitales en Argentina?",
+   opts:["Comisión Negociable de Voluntades (CNV)","Convenio Nacional de Valores (CNV)","Comisión Nacional de Valores (CNV)","Convenio Negociable de Valores (CNV)"],
+   correct:2,
+   expl:"La <strong>CNV — Comisión Nacional de Valores</strong> — es el organismo autárquico del Estado que regula y supervisa el mercado de capitales argentino. Todas las otras opciones tienen la misma sigla pero el nombre incorrecto."},
+
+  {round:2,topic:"Arquitectura Financiera",type:"Opción Múltiple",bg:"qbg-2",icon:"🏗️",eq:1,
+   text:"¿Cuál de estas describe correctamente la Tríada Financiera?",
+   opts:["Ahorrar, invertir y gastar con criterio","Proteger, Construir y Multiplicar","Invertir, proteger y preservar","Construir capital, invertir y ahorrar"],
+   correct:1,
+   expl:"La Tríada Financiera es <strong>Proteger → Construir → Multiplicar</strong>. El orden no es arbitrario: sin protección no tiene sentido construir, y sin capital construido no hay nada que multiplicar."},
+
+  {round:3,topic:"Flujo de Efectivo",type:"Completar la frase",bg:"qbg-3",icon:"💸",eq:2,
+   text:"\"Si ganás más de lo que gastás tenés un _____, pero sin darle un destino claro ese excedente _____.\"",
+   opts:["superávit / se convierte automáticamente en ahorro","superávit / se diluye sin construir patrimonio","flujo positivo / debe ir todo a plazo fijo","déficit / igual puede reinvertirse"],
+   correct:1,
+   expl:"Tener <strong>superávit</strong> es condición necesaria pero no suficiente. Sin un destino claro — ahorro, protección, inversión — el dinero se diluye en gastos no planeados sin construir patrimonio."},
+
+  {round:4,topic:"Flujo de Efectivo",type:"Opción Múltiple",bg:"qbg-4",icon:"📊",eq:3,
+   text:"¿Cuánto capital se recomienda tener disponible según cada escenario?",
+   opts:[
+     "Lucro cesante: 3 a 6 meses de gasto fijo / Enfermedad: 2 años de gasto fijo / Fallecimiento: 5 años de gasto fijo",
+     "Lucro cesante: 3 a 6 meses de ingreso / Enfermedad: 2 meses de ingreso / Fallecimiento: 5 años de ingreso",
+     "Lucro cesante: 6 meses de ingreso / Enfermedad: 5 años de ingreso / Fallecimiento: 2 años de ingreso",
+     "Lucro cesante: 1 mes de ingreso / Enfermedad: 6 meses de ingreso / Fallecimiento: 1 año de ingreso"
+   ],
+   correct:0,
+   expl:"La correcta es la única que usa <strong>gasto fijo</strong> como parámetro. Las otras tres usan ingreso — que es incorrecto — y además tienen los plazos equivocados."},
+
+  {round:5,topic:"Fondos de Emergencia",type:"Opción Múltiple",bg:"qbg-5",icon:"🛡️",eq:0,
+   text:"Tu cliente sufre un ACV y no puede volver a trabajar. ¿Qué instrumento debería activar?",
+   opts:["El fondo de emergencia líquido porque está disponible de inmediato","El seguro de vida porque es el de mayor cobertura","La cobertura de incapacidad","Cualquiera de los tres, todos cubren este escenario"],
+   correct:2,
+   expl:"Un ACV que impide trabajar es exactamente el escenario que cubre la <strong>cobertura de incapacidad</strong> — largo plazo, reemplazo de ingreso. El fondo líquido es para lucro cesante corto. El seguro de vida es para fallecimiento."},
+
+  {round:6,topic:"Reguladores",type:"Verdadero / Falso",bg:"qbg-6",icon:"🏦",eq:1,
+   text:"Una cuenta comitente se puede abrir directamente en BYMA sin necesidad de intermediarios.",
+   opts:["Verdadero","Falso"],
+   correct:1,
+   expl:"<strong>FALSO.</strong> La cuenta comitente se abre en una <strong>ALyC</strong> — Agente de Liquidación y Compensación. BYMA es la bolsa donde se cruzan las operaciones, no donde el inversor abre su cuenta."},
+
+  {round:7,topic:"Instrumentos Financieros",type:"Verdadero / Falso",bg:"qbg-7",icon:"📈",eq:2,
+   text:"Invertir en renta fija es seguro porque el nombre lo dice: el rendimiento está fijo de antemano, así que no existen riesgos.",
+   opts:["Verdadero","Falso"],
+   correct:1,
+   expl:"<strong>FALSO.</strong> 'Fija' describe el flujo de pagos pactado, no la ausencia de riesgo. Un bono soberano argentino es renta fija y tiene riesgo medio-alto: si el Estado no paga, el inversor pierde. La historia argentina tiene varios defaults."},
+
+  {round:8,topic:"Instrumentos Financieros",type:"Asociar concepto",bg:"qbg-8",icon:"💼",eq:3,
+   text:"¿Cuál de estas asociaciones es INCORRECTA?",
+   opts:["Bono soberano → Renta fija, riesgo medio-alto, préstamo al Estado","CEDEAR → Exposición a acciones extranjeras con tipo de cambio implícito al dólar CCL","Obligación Negociable → Préstamo al Estado Nacional","FCI Money Market → Liquidez inmediata, riesgo bajo"],
+   correct:2,
+   expl:"La C es incorrecta. Una <strong>Obligación Negociable</strong> es un préstamo a una <strong>empresa privada</strong>, no al Estado. El préstamo al Estado es el bono soberano — que ya aparece en la opción A."},
+
+  {round:9,topic:"Instrumentos Financieros",type:"Completar la frase",bg:"qbg-9",icon:"🎯",eq:0,
+   text:"\"Un portafolio bien diversificado combina _____, en distintos _____ y _____.\"",
+   opts:["solo renta fija y renta variable / plazos / asesores","acciones, bonos y plazo fijo / bancos / asesores","renta fija, renta variable / plazos / países de origen del emisor","renta fija, renta variable / plazos / monedas"],
+   correct:3,
+   expl:"La clave de la diversificación es combinar distintos tipos de instrumentos, en distintos <strong>plazos</strong> y distintas <strong>monedas</strong>. Los países de origen o los asesores no son el criterio principal."},
+
+  {round:10,topic:"Arquitectura Financiera",type:"Verdadero / Falso",bg:"qbg-10",icon:"🏛️",eq:1,
+   text:"Para construir libertad financiera, lo primero es empezar a invertir cuanto antes para que el dinero trabaje.",
+   opts:["Verdadero","Falso"],
+   correct:1,
+   expl:"<strong>FALSO.</strong> El orden importa: primero los cimientos — flujo de efectivo ordenado. Después los pilares — protección. Recién entonces el techo — inversión. Invertir sin base es construir sobre arena."},
+
+  {round:11,topic:"Reguladores",type:"Opción Múltiple",bg:"qbg-11",icon:"⚖️",eq:2,
+   text:"¿Cuál de estas opciones describe correctamente quién regula qué en Argentina?",
+   opts:["El BCRA regula los seguros / la CNV regula el mercado de capitales","La SSN regula el mercado de capitales / la CNV regula los seguros","La SSN regula los seguros / la CNV regula el mercado de capitales","El BCRA regula el mercado de capitales / la SSN regula los seguros"],
+   correct:2,
+   expl:"Son dos organismos con jurisdicciones distintas: la <strong>SSN</strong> regula los seguros; la <strong>CNV</strong> regula el mercado de capitales. La trampa: la A usa siglas correctas pero invierte los roles."},
+
+  {round:12,topic:"Portafolio e Inversión",type:"Opción Múltiple",bg:"qbg-12",icon:"💎",eq:3,
+   text:"¿Cuáles son los perfiles de riesgo que existen en inversión?",
+   opts:["Conservador, Equilibrado y Dinámico","Conservador, Moderado y Agresivo","Defensivo, Moderado y Ofensivo","Bajo, Medio y Alto"],
+   correct:1,
+   expl:"Los tres perfiles reconocidos son <strong>Conservador, Moderado y Agresivo</strong>. Las otras opciones suenan plausibles pero son inventadas. Cada perfil define el mix de instrumentos y el nivel de riesgo que el inversor está dispuesto a asumir."}
+];
+
+const TC=['#f59e0b','#3b82f6','#10b981','#ef4444'];
+const TCL=['rgba(245,158,11,.15)','rgba(59,130,246,.15)','rgba(16,185,129,.15)','rgba(239,68,68,.15)'];
+const SCBG=['sc0','sc1','sc2','sc3'];
+const MEDALS=['🥇','🥈','🥉','4️⃣'];
+
+let teams=[],scores=[],cur=0,answered=false,selTeam=null;
+
+// coins
+(function(){
+  const bg=document.getElementById('money-bg');
+  const ic=['💰','💵','📈','💎','🏦','💳','📊','🪙','💴','💶','🤑'];
+  for(let i=0;i<28;i++){
+    const el=document.createElement('div');
+    el.className='coin';
+    el.textContent=ic[Math.floor(Math.random()*ic.length)];
+    el.style.cssText=`left:${Math.random()*100}%;font-size:${18+Math.random()*20}px;animation-duration:${9+Math.random()*14}s;animation-delay:${-Math.random()*14}s;`;
+    bg.appendChild(el);
+  }
+})();
+
+function startGame(){
+  teams=[
+    document.getElementById('t1').value.trim()||'Equipo 1',
+    document.getElementById('t2').value.trim()||'Equipo 2',
+    document.getElementById('t3').value.trim()||'Equipo 3',
+    document.getElementById('t4').value.trim()||'Equipo 4',
+  ];
+  scores=[0,0,0,0];
+  cur=0;
+  showScreen('screen-game');
+  buildSB();
+  buildPD();
+  loadQ();
+}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function buildSB(){
+  document.getElementById('scoreboard').innerHTML=teams.map((n,i)=>`
+    <div class="sc ${SCBG[i]}" id="sc${i}">
+      <div class="sc-bar" id="scb${i}" style="background:${TC[i]};width:0%"></div>
+      <div class="sc-name" style="color:${TC[i]}">${n}</div>
+      <div class="sc-pts" id="scp${i}">0</div>
+      <div class="sc-delta" id="scd${i}" style="color:${TC[i]};opacity:0"></div>
+    </div>`).join('');
+}
+
+function updSB(deltas){
+  const mx=Math.max(...scores,10);
+  teams.forEach((_,i)=>{
+    const el=document.getElementById(`scp${i}`);
+    el.textContent=scores[i];
+    el.className='sc-pts'+(scores[i]<0?' neg':'');
+    document.getElementById(`scb${i}`).style.width=Math.max(0,scores[i]/mx*100)+'%';
+    if(deltas&&deltas[i]!==0){
+      const d=document.getElementById(`scd${i}`);
+      d.textContent=(deltas[i]>0?'+':'')+deltas[i];
+      d.style.opacity='1';
+      setTimeout(()=>d.style.opacity='0',2000);
+    }
+  });
+}
+
+function buildPD(){
+  document.getElementById('progress-row').innerHTML=Q.map((_,i)=>`<div class="pdot" id="pd${i}"></div>`).join('');
+  updPD();
+}
+function updPD(){Q.forEach((_,i)=>{const d=document.getElementById(`pd${i}`);d.className='pdot'+(i<cur?' done':i===cur?' current':'');});}
+
+function loadQ(){
+  answered=false;selTeam=null;
+  const q=Q[cur];
+  document.getElementById('game-wrap').className='game-wrap '+q.bg;
+  document.getElementById('round-pill').textContent=`Ronda ${cur+1} de ${Q.length}`;
+  document.getElementById('g-topic').textContent=q.topic;
+  document.getElementById('q-bg-icon').textContent=q.icon;
+  document.getElementById('q-type').textContent=q.type;
+  document.getElementById('q-equipo').innerHTML=`<span style="background:${TC[q.eq]};color:white;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:900;letter-spacing:1px">▶ Turno de: ${teams[q.eq]}</span>`;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('expl').className='expl';
+  document.getElementById('steal').className='steal';
+  document.getElementById('btn-next').style.display='none';
+
+  document.getElementById('team-row').innerHTML=teams.map((n,i)=>`
+    <button class="t-btn t${i}" id="tb${i}" onclick="selT(${i})">${n}</button>`).join('');
+  selT(q.eq);
+
+  const isVF=q.opts.length===2;
+  document.getElementById('opts').style.gridTemplateColumns=isVF?'1fr 1fr':'1fr 1fr';
+  document.getElementById('opts').innerHTML=q.opts.map((o,i)=>`
+    <button class="opt" id="op${i}" onclick="answer(${i})">
+      <span class="opt-letter">${String.fromCharCode(65+i)}</span><span>${o}</span>
+    </button>`).join('');
+  updPD();updSB(null);
+}
+
+function selT(idx){
+  if(answered)return;
+  selTeam=idx;
+  teams.forEach((_,i)=>{
+    const b=document.getElementById(`tb${i}`);
+    b.className=`t-btn t${i}`+(i===idx?' selected':'');
+  });
+}
+
+function answer(idx){
+  if(answered)return;
+  if(selTeam===null){flash('⚠️','Seleccioná un equipo','',false,true);return;}
+  answered=true;
+  const q=Q[cur];
+  const ok=idx===q.correct;
+  q.opts.forEach((_,i)=>{
+    const b=document.getElementById(`op${i}`);
+    b.disabled=true;
+    if(i===q.correct)b.className='opt correct';
+    else if(i===idx&&!ok)b.className='opt wrong';
+  });
+  const expl=document.getElementById('expl');
+  expl.innerHTML=`<strong>💡 Explicación:</strong> ${q.expl}`;
+  expl.className='expl show';
+
+  if(ok){
+    flash('🎉','¡CORRECTO!','+10 puntos',true,false);
+    buildSteal();
+  } else {
+    const deltas=[0,0,0,0];
+    updSB(deltas);
+    flash('❌','¡INCORRECTO!',`La correcta era ${String.fromCharCode(65+q.correct)}`,false,false);
+    setTimeout(()=>document.getElementById('btn-next').style.display='inline-block',600);
+  }
+}
+
+function buildSteal(){
+  const others=teams.map((n,i)=>({n,i})).filter(t=>t.i!==selTeam);
+  document.getElementById('steal-btns').innerHTML=
+    `<button class="steal-btn" style="background:#d1fae5;border-color:#10b981;color:#065f46" onclick="keepPoints()">✅ Cobrar mis +10 puntos</button>`+
+    others.map(t=>`<button class="steal-btn" onclick="doSteal(${t.i})">🗡️ Robarle 5 pts a ${t.n}</button>`).join('');
+  document.getElementById('steal').className='steal show';
+}
+
+function keepPoints(){
+  const deltas=[0,0,0,0];
+  scores[selTeam]+=10;
+  deltas[selTeam]=10;
+  updSB(deltas);
+  document.getElementById('steal').className='steal';
+  setTimeout(()=>document.getElementById('btn-next').style.display='inline-block',300);
+}
+
+function doSteal(idx){
+  const deltas=[0,0,0,0];
+  scores[idx]-=5;
+  deltas[idx]=-5;
+  updSB(deltas);
+  flash('😈',`-5 pts para ${teams[idx]}`,'¡Robo exitoso!',false,false);
+  document.getElementById('steal').className='steal';
+  setTimeout(()=>document.getElementById('btn-next').style.display='inline-block',600);
+}
+
+function flash(icon,text,sub,green,warn){
+  const f=document.getElementById('flash');
+  document.getElementById('fi').textContent=icon;
+  document.getElementById('ft').textContent=text;
+  document.getElementById('fs').textContent=sub;
+  f.className='flash show '+(green?'gf':warn?'':'rf');
+  if(warn)f.style.background='rgba(245,158,11,.92)';
+  else f.style.background='';
+  setTimeout(()=>{f.className='flash';f.style.background='';},1800);
+}
+
+function nextQ(){showModal();}
+
+function showModal(){
+  document.getElementById('modal-sub').textContent=`Después de la ronda ${cur+1} de ${Q.length}`;
+  const sorted=[...teams.map((n,i)=>({n,i,p:scores[i]}))].sort((a,b)=>b.p-a.p);
+  document.getElementById('modal-rows').innerHTML=sorted.map((t,r)=>`
+    <div class="modal-row" style="border-left-color:${TC[t.i]};background:${TCL[t.i]}">
+      <div style="display:flex;align-items:center">
+        <span class="modal-rank">${MEDALS[r]}</span>
+        <span class="modal-rname" style="color:${TC[t.i]}">${t.n}</span>
+      </div>
+      <div class="modal-rpts${t.p<0?' neg':''}">${t.p>0?'+':''}${t.p} pts</div>
+    </div>`).join('');
+  document.getElementById('modal').className='modal-overlay show';
+}
+
+function closeModal(){
+  document.getElementById('modal').className='modal-overlay';
+  cur++;
+  if(cur>=Q.length)showResults();
+  else loadQ();
+}
+
+function showResults(){
+  showScreen('screen-results');
+  buildConfetti();
+  const sorted=[...teams.map((n,i)=>({n,i,p:scores[i]}))].sort((a,b)=>b.p-a.p);
+  document.getElementById('winner-name').textContent=sorted[0].n;
+  document.getElementById('winner-name').style.color=TC[sorted[0].i];
+  document.getElementById('final-grid').innerHTML=sorted.map((t,r)=>`
+    <div class="final-card${r===0?' win':''}" style="border-color:${TC[t.i]}">
+      <div class="final-medal">${MEDALS[r]}</div>
+      <div class="final-rl">#${r+1} lugar</div>
+      <div class="final-tn" style="color:${TC[t.i]}">${t.n}</div>
+      <div class="final-pts" style="color:${t.p<0?'#dc2626':TC[t.i]}">${t.p>0?'+':''}${t.p}</div>
+    </div>`).join('');
+}
+
+function buildConfetti(){
+  const wrap=document.getElementById('confetti');wrap.innerHTML='';
+  const cols=['#f59e0b','#3b82f6','#10b981','#ef4444','#8b5cf6','#ec4899','#fff','#06b6d4'];
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div');
+    el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}%;width:${7+Math.random()*10}px;height:${7+Math.random()*10}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${2+Math.random()*4}s;animation-delay:${-Math.random()*4}s;`;
+    wrap.appendChild(el);
+  }
+}
+
+function restart(){cur=0;scores=[0,0,0,0];showScreen('screen-intro');}
+</script>
+</body>
+</html>
