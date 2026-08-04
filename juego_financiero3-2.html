@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué Preferís? – Real Planning</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* INICIO */
+  #pantalla-inicio {
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+  }
+  #pantalla-inicio h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f5c518, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  #pantalla-inicio p { font-size: 1.1rem; color: #aaa; margin-bottom: 40px; }
+  .btn-inicio {
+    background: linear-gradient(135deg, #f5c518, #ff6b35);
+    color: #0a0a1a;
+    border: none;
+    padding: 20px 60px;
+    font-size: 1.4rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(245,197,24,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-inicio:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(245,197,24,0.6); }
+
+  /* JUEGO */
+  #pantalla-juego {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  /* progreso */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #888;
+  }
+  .barra { width: 100%; height: 6px; background: #1e1e3a; border-radius: 10px; margin-bottom: 24px; }
+  .barra-fill { height: 100%; background: linear-gradient(90deg, #f5c518, #ff6b35); border-radius: 10px; transition: width 0.5s ease; }
+
+  /* layout pregunta + imagen */
+  .juego-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 700px) {
+    .juego-layout { grid-template-columns: 1fr; }
+    .imagen-col { order: -1; }
+  }
+
+  /* columna izquierda */
+  .pregunta-col {}
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  .badge-opinion { background: #2a1f5e; color: #a78bfa; border: 1px solid #4c3a9e; }
+  .badge-conocimiento { background: #1a3a1a; color: #4ade80; border: 1px solid #2d6a2d; }
+
+  .texto-pregunta {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    color: #f0f0f0;
+  }
+
+  .opciones { display: flex; flex-direction: column; gap: 10px; }
+  .opcion {
+    background: #12122a;
+    border: 2px solid #1e1e40;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+  .opcion:hover:not(.disabled) { border-color: #f5c518; color: #fff; background: #1a1a35; transform: translateX(4px); }
+  .letra {
+    width: 30px; height: 30px; min-width: 30px;
+    border-radius: 50%;
+    background: #1e1e40;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.8rem; color: #888;
+    transition: all 0.2s;
+  }
+  .opcion:hover:not(.disabled) .letra { background: #f5c518; color: #0a0a1a; }
+  .opcion.correcta { border-color: #4ade80; background: #0d2a0d; color: #4ade80; }
+  .opcion.correcta .letra { background: #4ade80; color: #0a0a1a; }
+  .opcion.incorrecta { border-color: #ef4444; background: #2a0d0d; color: #ef4444; opacity: 0.6; }
+  .opcion.incorrecta .letra { background: #ef4444; color: #fff; }
+  .opcion.seleccionada { border-color: #a78bfa; background: #1a1030; color: #a78bfa; }
+  .opcion.seleccionada .letra { background: #a78bfa; color: #fff; }
+  .opcion.disabled { pointer-events: none; }
+
+  /* columna imagen */
+  .imagen-col {
+    background: #12122a;
+    border: 2px solid #1e1e40;
+    border-radius: 20px;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .imagen-col.activa { border-color: #f5c518; }
+  .imagen-placeholder {
+    text-align: center;
+    color: #333;
+  }
+  .imagen-placeholder .icono { font-size: 3rem; margin-bottom: 12px; }
+  .imagen-placeholder p { font-size: 0.9rem; }
+
+  .imagen-svg {
+    width: 100%;
+    max-width: 320px;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .caption-imagen {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: #a78bfa;
+    font-weight: 600;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* feedback y siguiente */
+  .feedback {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease;
+  }
+  .feedback.correcto { background: #0d2a0d; border: 1px solid #4ade80; color: #4ade80; }
+  .feedback.incorrecto { background: #2a0d0d; border: 1px solid #ef4444; color: #ef4444; }
+  .feedback.opinion { background: #1a1030; border: 1px solid #a78bfa; color: #a78bfa; }
+
+  .btn-siguiente {
+    display: none;
+    width: 100%;
+    margin-top: 14px;
+    background: linear-gradient(135deg, #f5c518, #ff6b35);
+    color: #0a0a1a;
+    border: none;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .btn-siguiente:hover { transform: translateY(-2px); }
+
+  /* FINAL */
+  #pantalla-final {
+    display: none;
+    text-align: center;
+    max-width: 600px;
+    animation: fadeIn 0.6s ease;
+  }
+  .trofeo-final { font-size: 5rem; margin-bottom: 16px; }
+  #pantalla-final h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f5c518, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .puntaje-grande { font-size: 4rem; font-weight: 900; color: #f5c518; }
+  .puntaje-sub { color: #888; font-size: 0.9rem; margin-bottom: 24px; }
+  .msg-final { color: #ccc; font-size: 1rem; line-height: 1.6; margin-bottom: 36px; }
+  .btn-reiniciar {
+    border: 2px solid #f5c518; color: #f5c518; background: transparent;
+    padding: 14px 40px; font-size: 1rem; font-weight: 700; border-radius: 50px;
+    cursor: pointer; transition: all 0.2s; margin-top: 10px;
+  }
+  .btn-reiniciar:hover { background: #f5c518; color: #0a0a1a; }
+
+  /* GRACIAS BOX */
+  .gracias-box {
+    margin: 28px auto 28px;
+    padding: 32px 40px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #1a0a3a, #0a1a3a, #0a2a1a);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+    text-align: center;
+    overflow: hidden;
+    max-width: 500px;
+  }
+  .gracias-box::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #f5c518, #ff6b35, #a78bfa, #4ade80, #38bdf8);
+    z-index: -1;
+    animation: rotarGradiente 4s linear infinite;
+  }
+  @keyframes rotarGradiente {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+  .gracias-emojis {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    animation: bounce 1s ease infinite alternate;
+  }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+  .gracias-titulo {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f5c518, #ff6b35, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .gracias-nombres {
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    font-weight: 800;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .nombre-belen {
+    color: #ff6b35;
+    text-shadow: 0 0 20px rgba(255,107,53,0.5);
+  }
+  .gracias-y {
+    color: #f5c518;
+    font-size: 1.2rem;
+  }
+  .nombre-julieta {
+    color: #a78bfa;
+    text-shadow: 0 0 20px rgba(167,139,250,0.5);
+  }
+  .gracias-empresa {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #aaa;
+    line-height: 1.8;
+  }
+  .rp { color: #4ade80; font-weight: 700; }
+  .separador { color: #555; }
+  .casa { color: #38bdf8; }
+
+  /* confeti */
+  .confeti-piece {
+    position: fixed; pointer-events: none; z-index: 999;
+    animation: caer linear forwards;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+  @keyframes caer {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INICIO -->
+<div id="pantalla-inicio">
+  <div style="font-size:3rem;margin-bottom:12px">🎯</div>
+  <h1>¿Qué<br>Preferís?</h1>
+  <p>10 preguntas · Finanzas con humor · Real Planning</p>
+  <button class="btn-inicio" onclick="iniciar()">Arrancar 🚀</button>
+  <div class="branding" style="margin-top:30px">Real Planning · La Casa de la Educación Financiera</div>
+</div>
+
+<!-- JUEGO -->
+<div id="pantalla-juego">
+  <div class="top-bar">
+    <span id="txt-progreso">Pregunta 1 de 11</span>
+    <span id="txt-puntaje" style="color:#f5c518;font-weight:700">0 pts</span>
+  </div>
+  <div class="barra"><div class="barra-fill" id="barra-fill" style="width:0%"></div></div>
+
+  <div class="juego-layout">
+    <div class="pregunta-col">
+      <div id="badge" class="badge badge-opinion">💬 Opinión</div>
+      <div class="texto-pregunta" id="texto-pregunta"></div>
+      <div class="opciones" id="opciones"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="btn-siguiente" id="btn-siguiente" onclick="siguiente()">Siguiente →</button>
+    </div>
+    <div class="imagen-col" id="imagen-col">
+      <div class="imagen-placeholder" id="placeholder">
+        <div class="icono">👆</div>
+        <p>Elegí una opción<br>para ver la imagen</p>
+      </div>
+      <div id="svg-container" style="display:none;width:100%;text-align:center"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="pantalla-final">
+  <div class="trofeo-final" id="trofeo-final">🏆</div>
+  <h2 id="titulo-final">¡Sos un crack!</h2>
+  <div class="puntaje-grande" id="puntaje-grande">0</div>
+  <div class="puntaje-sub">puntos de 40 posibles</div>
+  <p class="msg-final" id="msg-final"></p>
+
+  <div class="gracias-box">
+    <div class="gracias-emojis">🎉✨🎊</div>
+    <div class="gracias-titulo">¡Muchas gracias!</div>
+    <div class="gracias-nombres">
+      <span class="nombre-belen">Belén</span>
+      <span class="gracias-y">&amp;</span>
+      <span class="nombre-julieta">Julieta</span>
+    </div>
+    <div class="gracias-empresa">
+      <span class="rp">Real Planning</span>
+      <span class="separador"> · </span>
+      <span class="casa">La Casa de la Educación Financiera</span>
+    </div>
+  </div>
+
+  <button class="btn-reiniciar" onclick="reiniciar()">Jugar de nuevo 🔄</button>
+</div>
+
+<script>
+// ─── SVGs por pregunta y opción ───────────────────────────────────────────────
+const SVGS = {
+
+  // P1: billetera
+  p1_a: { caption: "¡Billetera orgullosa! 💪", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- fondo -->
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- billetera feliz -->
+    <rect x="60" y="80" width="180" height="110" rx="18" fill="#f5c518" />
+    <rect x="60" y="80" width="180" height="36" rx="18" fill="#e6b800" />
+    <!-- monedas adentro -->
+    <circle cx="110" cy="148" r="18" fill="#fff" opacity="0.9"/>
+    <text x="110" y="154" text-anchor="middle" font-size="16" fill="#f5c518">$</text>
+    <circle cx="155" cy="148" r="18" fill="#fff" opacity="0.9"/>
+    <text x="155" y="154" text-anchor="middle" font-size="16" fill="#f5c518">$</text>
+    <circle cx="200" cy="148" r="18" fill="#fff" opacity="0.9"/>
+    <text x="200" y="154" text-anchor="middle" font-size="16" fill="#f5c518">$</text>
+    <!-- cara feliz -->
+    <circle cx="150" cy="46" r="32" fill="#ffd166"/>
+    <circle cx="140" cy="40" r="4" fill="#333"/>
+    <circle cx="160" cy="40" r="4" fill="#333"/>
+    <path d="M138 52 Q150 62 162 52" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- estrellitas -->
+    <text x="38" y="100" font-size="20">⭐</text>
+    <text x="240" y="100" font-size="20">⭐</text>
+    <text x="130" y="220" font-size="13" fill="#aaa" text-anchor="middle">Me cuidás bien, crack 💪</text>
+  </svg>` },
+
+  p1_b: { caption: "¡Menos delivery, más ahorro! 🛵", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- moto delivery -->
+    <ellipse cx="90" cy="180" rx="28" ry="28" fill="none" stroke="#f5c518" stroke-width="6"/>
+    <ellipse cx="90" cy="180" rx="14" ry="14" fill="#f5c518" opacity="0.3"/>
+    <ellipse cx="210" cy="180" rx="28" ry="28" fill="none" stroke="#f5c518" stroke-width="6"/>
+    <ellipse cx="210" cy="180" rx="14" ry="14" fill="#f5c518" opacity="0.3"/>
+    <rect x="80" y="140" width="140" height="45" rx="10" fill="#ff6b35"/>
+    <!-- caja delivery -->
+    <rect x="155" y="110" width="55" height="45" rx="6" fill="#fff" opacity="0.9"/>
+    <text x="182" y="140" text-anchor="middle" font-size="20">🍕</text>
+    <!-- billetes volando -->
+    <rect x="30" y="80" width="40" height="22" rx="4" fill="#4ade80" transform="rotate(-15 50 91)"/>
+    <text x="50" y="96" text-anchor="middle" font-size="11" fill="#fff" transform="rotate(-15 50 91)">$$$</text>
+    <rect x="230" y="70" width="40" height="22" rx="4" fill="#4ade80" transform="rotate(10 250 81)"/>
+    <text x="250" y="86" text-anchor="middle" font-size="11" fill="#fff" transform="rotate(10 250 81)">$$$</text>
+    <text x="150" y="230" font-size="12" fill="#aaa" text-anchor="middle">¡Aflojale al delivery! 🛵</text>
+  </svg>` },
+
+  p1_c: { caption: "Billetera agotada 😩", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- billetera triste vacía -->
+    <rect x="60" y="90" width="180" height="110" rx="18" fill="#444"/>
+    <rect x="60" y="90" width="180" height="36" rx="18" fill="#333"/>
+    <!-- polvo adentro -->
+    <text x="150" y="158" text-anchor="middle" font-size="28">💨</text>
+    <!-- cara triste -->
+    <circle cx="150" cy="56" r="32" fill="#ffd166"/>
+    <circle cx="140" cy="50" r="4" fill="#333"/>
+    <circle cx="160" cy="50" r="4" fill="#333"/>
+    <!-- ojos cerrados cansados -->
+    <line x1="136" y1="49" x2="144" y2="49" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line x1="156" y1="49" x2="164" y2="49" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <path d="M138 63 Q150 57 162 63" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- zzzz -->
+    <text x="190" y="45" font-size="14" fill="#aaa">z</text>
+    <text x="202" y="33" font-size="16" fill="#aaa">z</text>
+    <text x="216" y="19" font-size="18" fill="#aaa">Z</text>
+    <text x="150" y="228" font-size="12" fill="#aaa" text-anchor="middle">Estoy cansado, jefe 😩</text>
+  </svg>` },
+
+  // P2: miedo
+  p2_a: { caption: "Un tiburón... bueno, da miedo 🦈", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#051020" rx="16"/>
+    <!-- agua -->
+    <rect x="0" y="150" width="300" height="110" rx="0" fill="#0d3a5c" opacity="0.8"/>
+    <!-- tiburón -->
+    <ellipse cx="150" cy="170" rx="90" ry="35" fill="#5a7fa0"/>
+    <!-- aleta -->
+    <polygon points="150,90 130,155 170,155" fill="#5a7fa0"/>
+    <!-- ojo -->
+    <circle cx="195" cy="165" r="7" fill="#fff"/>
+    <circle cx="197" cy="165" r="4" fill="#111"/>
+    <!-- dientes -->
+    <polygon points="105,185 115,200 125,185" fill="#fff"/>
+    <polygon points="120,185 130,202 140,185" fill="#fff"/>
+    <polygon points="135,185 145,202 155,185" fill="#fff"/>
+    <!-- persona asustada -->
+    <circle cx="150" cy="60" r="24" fill="#ffd166"/>
+    <circle cx="142" cy="55" r="3" fill="#333"/>
+    <circle cx="158" cy="55" r="3" fill="#333"/>
+    <path d="M140 68 Q150 63 160 68" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- pelo parado -->
+    <line x1="145" y1="37" x2="143" y2="22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line x1="150" y1="36" x2="150" y2="20" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line x1="155" y1="37" x2="157" y2="22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <text x="150" y="235" font-size="12" fill="#aaa" text-anchor="middle">Un tiburón... bueno 🦈</text>
+  </svg>` },
+
+  p2_b: { caption: "Un fantasma... bah 👻", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a0a1a" rx="16"/>
+    <!-- fantasma -->
+    <ellipse cx="150" cy="120" rx="60" ry="70" fill="white" opacity="0.9"/>
+    <rect x="90" y="120" width="120" height="60" fill="white" opacity="0.9"/>
+    <!-- borde ondulado abajo -->
+    <path d="M90 180 Q105 200 120 180 Q135 200 150 180 Q165 200 180 180 Q195 200 210 180 L210 120 L90 120 Z" fill="white" opacity="0.9"/>
+    <!-- ojos -->
+    <ellipse cx="133" cy="115" rx="12" ry="14" fill="#0a0a1a"/>
+    <ellipse cx="167" cy="115" rx="12" ry="14" fill="#0a0a1a"/>
+    <!-- boca -->
+    <ellipse cx="150" cy="140" rx="10" ry="8" fill="#0a0a1a"/>
+    <!-- destellos -->
+    <text x="40" y="80" font-size="22">✨</text>
+    <text x="230" y="80" font-size="22">✨</text>
+    <text x="60" y="200" font-size="18">✨</text>
+    <text x="218" y="200" font-size="18">✨</text>
+    <text x="150" y="238" font-size="12" fill="#aaa" text-anchor="middle">Un fantasma... bah 👻</text>
+  </svg>` },
+
+  p2_c: { caption: "EL RESUMEN DE LA TARJETA 😱", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#1a0000" rx="16"/>
+    <!-- tarjeta de crédito amenazante -->
+    <rect x="55" y="70" width="190" height="120" rx="14" fill="#222" stroke="#ef4444" stroke-width="3"/>
+    <rect x="55" y="100" width="190" height="25" fill="#ef4444" opacity="0.7"/>
+    <!-- número -->
+    <text x="150" y="150" text-anchor="middle" font-size="13" fill="#fff" letter-spacing="3">$$$$ $$$$</text>
+    <text x="150" y="170" text-anchor="middle" font-size="11" fill="#888">TOTAL A PAGAR</text>
+    <text x="150" y="186" text-anchor="middle" font-size="18" fill="#ef4444" font-weight="bold">$999.999</text>
+    <!-- cara de terror -->
+    <circle cx="150" cy="36" r="26" fill="#ffd166"/>
+    <ellipse cx="140" cy="31" rx="4" ry="5" fill="#111"/>
+    <ellipse cx="160" cy="31" rx="4" ry="5" fill="#111"/>
+    <path d="M136 45 Q150 38 164 45" stroke="#111" stroke-width="2.5" fill="none"/>
+    <!-- gotas de sudor -->
+    <ellipse cx="124" cy="26" rx="3" ry="5" fill="#38bdf8" opacity="0.8"/>
+    <ellipse cx="176" cy="26" rx="3" ry="5" fill="#38bdf8" opacity="0.8"/>
+    <!-- rayos de miedo -->
+    <line x1="150" y1="200" x2="120" y2="230" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+    <line x1="150" y1="200" x2="150" y2="235" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+    <line x1="150" y1="200" x2="180" y2="230" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+    <text x="150" y="248" font-size="11" fill="#ef4444" text-anchor="middle">El resumen de la tarjeta 😱</text>
+  </svg>` },
+
+  // P3: consejo a los 20
+  p3_a: { caption: "Terrenos > Netflix 🏡", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- tierra / terreno -->
+    <rect x="30" y="160" width="240" height="70" rx="8" fill="#5d4037"/>
+    <!-- pasto -->
+    <rect x="30" y="155" width="240" height="15" rx="4" fill="#4caf50"/>
+    <!-- cartel -->
+    <rect x="110" y="100" width="80" height="65" rx="6" fill="#fff"/>
+    <text x="150" y="122" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">SE VENDE</text>
+    <text x="150" y="138" text-anchor="middle" font-size="18">🏡</text>
+    <text x="150" y="158" text-anchor="middle" font-size="9" fill="#4caf50" font-weight="bold">¡COMPRALO!</text>
+    <line x1="150" y1="165" x2="150" y2="200" stroke="#8d6e63" stroke-width="4"/>
+    <!-- persona joven señalando -->
+    <circle cx="65" cy="110" r="22" fill="#ffd166"/>
+    <circle cx="57" cy="105" r="3" fill="#333"/>
+    <circle cx="73" cy="105" r="3" fill="#333"/>
+    <path d="M58 120 Q65 126 72 120" stroke="#333" stroke-width="2.5" fill="none"/>
+    <rect x="53" y="132" width="24" height="36" rx="8" fill="#ff6b35"/>
+    <line x1="77" y1="145" x2="105" y2="130" stroke="#ffd166" stroke-width="3" stroke-linecap="round"/>
+    <!-- texto -->
+    <text x="150" y="242" font-size="11" fill="#aaa" text-anchor="middle">Comprá terrenos, no Florecienta 🏡</text>
+  </svg>` },
+
+  p3_b: { caption: "No crezcas, es una trampa 🚫", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- flecha de crecer tachada -->
+    <line x1="80" y1="200" x2="220" y2="80" stroke="#4ade80" stroke-width="8" stroke-linecap="round"/>
+    <polygon points="220,80 195,85 215,105" fill="#4ade80"/>
+    <!-- tachado -->
+    <line x1="60" y1="60" x2="240" y2="210" stroke="#ef4444" stroke-width="10" stroke-linecap="round"/>
+    <line x1="240" y1="60" x2="60" y2="210" stroke="#ef4444" stroke-width="10" stroke-linecap="round"/>
+    <!-- niño feliz pequeño -->
+    <circle cx="75" cy="190" r="18" fill="#ffd166"/>
+    <circle cx="69" cy="186" r="3" fill="#333"/>
+    <circle cx="81" cy="186" r="3" fill="#333"/>
+    <path d="M68 197 Q75 203 82 197" stroke="#333" stroke-width="2" fill="none"/>
+    <!-- adulto cansado grande -->
+    <circle cx="225" cy="75" r="22" fill="#ffd166"/>
+    <circle cx="217" cy="70" r="3" fill="#333"/>
+    <circle cx="233" cy="70" r="3" fill="#333"/>
+    <path d="M219 84 Q225 79 231 84" stroke="#333" stroke-width="2" fill="none"/>
+    <!-- maletín adulto -->
+    <rect x="213" y="97" width="24" height="18" rx="4" fill="#555"/>
+    <text x="150" y="238" font-size="12" fill="#aaa" text-anchor="middle">No crezcas, es una trampa 🚫</text>
+  </svg>` },
+
+  p3_c: { caption: "50 dólares todos los meses 🙏", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- alcancía creciendo -->
+    <ellipse cx="150" cy="165" rx="65" ry="55" fill="#ff6b35"/>
+    <ellipse cx="150" cy="138" rx="28" ry="22" fill="#ff6b35"/>
+    <rect x="138" y="116" width="24" height="10" rx="4" fill="#e65c20"/>
+    <!-- moneda entrando -->
+    <ellipse cx="150" cy="112" rx="14" ry="6" fill="#f5c518"/>
+    <text x="150" y="116" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">USD</text>
+    <!-- orejita -->
+    <ellipse cx="215" cy="165" rx="12" ry="18" fill="#e65c20"/>
+    <!-- pie -->
+    <rect x="115" y="215" width="70" height="12" rx="6" fill="#e65c20"/>
+    <!-- flecha de crecimiento -->
+    <path d="M230 200 L230 100 L245 115 M230 100 L215 115" stroke="#4ade80" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- monto -->
+    <text x="150" y="175" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">$50 USD</text>
+    <text x="150" y="193" text-anchor="middle" font-size="10" fill="#ffd166">cada mes 🙏</text>
+    <text x="150" y="238" font-size="11" fill="#aaa" text-anchor="middle">Ahorrá $50 USD todos los meses</text>
+  </svg>` },
+
+  // P4: extraterrestre
+  p4_a: { caption: "¿Oficial o blue? 💵", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#020b18" rx="16"/>
+    <!-- estrellas fondo -->
+    <circle cx="30" cy="30" r="2" fill="white" opacity="0.6"/>
+    <circle cx="80" cy="15" r="1.5" fill="white" opacity="0.5"/>
+    <circle cx="260" cy="40" r="2" fill="white" opacity="0.7"/>
+    <circle cx="270" cy="15" r="1" fill="white" opacity="0.4"/>
+    <circle cx="20" cy="70" r="1" fill="white" opacity="0.5"/>
+    <!-- nave -->
+    <ellipse cx="150" cy="80" rx="70" ry="20" fill="#4a9eff" opacity="0.3"/>
+    <ellipse cx="150" cy="75" rx="45" ry="30" fill="#2a5fa0"/>
+    <ellipse cx="150" cy="90" rx="70" ry="15" fill="#1a3a70"/>
+    <!-- ventanas nave -->
+    <circle cx="120" cy="78" r="8" fill="#7ec8ff" opacity="0.8"/>
+    <circle cx="150" cy="72" r="10" fill="#7ec8ff" opacity="0.8"/>
+    <circle cx="180" cy="78" r="8" fill="#7ec8ff" opacity="0.8"/>
+    <!-- extraterrestre -->
+    <ellipse cx="150" cy="145" rx="25" ry="30" fill="#4ade80"/>
+    <ellipse cx="150" cy="128" rx="28" ry="25" fill="#4ade80"/>
+    <!-- ojos grandes -->
+    <ellipse cx="140" cy="122" rx="10" ry="13" fill="#111"/>
+    <ellipse cx="160" cy="122" rx="10" ry="13" fill="#111"/>
+    <circle cx="143" cy="119" r="4" fill="#7ec8ff"/>
+    <circle cx="163" cy="119" r="4" fill="#7ec8ff"/>
+    <!-- antenas -->
+    <line x1="140" y1="104" x2="132" y2="88" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="132" cy="86" r="5" fill="#f5c518"/>
+    <line x1="160" y1="104" x2="168" y2="88" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="168" cy="86" r="5" fill="#f5c518"/>
+    <!-- bocadillo -->
+    <rect x="170" y="125" width="105" height="40" rx="10" fill="#fff"/>
+    <polygon points="170,145 155,150 175,158" fill="#fff"/>
+    <text x="222" y="140" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">¿Oficial</text>
+    <text x="222" y="156" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">o blue? 💵</text>
+    <text x="150" y="238" font-size="11" fill="#aaa" text-anchor="middle">Lo primero que pregunta cualquiera 😅</text>
+  </svg>` },
+
+  p4_b: { caption: "La final... 🏆", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#020b18" rx="16"/>
+    <!-- extraterrestre conspiranoico -->
+    <ellipse cx="150" cy="160" rx="25" ry="28" fill="#4ade80"/>
+    <ellipse cx="150" cy="140" rx="28" ry="25" fill="#4ade80"/>
+    <ellipse cx="140" cy="134" rx="10" ry="12" fill="#111"/>
+    <ellipse cx="160" cy="134" rx="10" ry="12" fill="#111"/>
+    <circle cx="143" cy="131" r="4" fill="#ef4444"/>
+    <circle cx="163" cy="131" r="4" fill="#ef4444"/>
+    <!-- antenas -->
+    <line x1="140" y1="116" x2="128" y2="98" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="128" cy="96" r="5" fill="#ef4444"/>
+    <line x1="160" y1="116" x2="172" y2="98" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="172" cy="96" r="5" fill="#ef4444"/>
+    <!-- bocadillo conspiranoico -->
+    <rect x="25" y="50" width="175" height="60" rx="10" fill="#1a1a2e" stroke="#ef4444" stroke-width="2"/>
+    <polygon points="115,110 130,125 145,110" fill="#1a1a2e" stroke="#ef4444" stroke-width="2"/>
+    <text x="112" y="72" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="bold">En la final</text>
+    <text x="112" y="86" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="bold">hubo algo raro...</text>
+    <text x="112" y="100" text-anchor="middle" font-size="14">🏆🔍</text>
+    <!-- copa -->
+    <text x="240" y="180" font-size="50">🏆</text>
+    <text x="150" y="238" font-size="11" fill="#aaa" text-anchor="middle">Clásico argentino universal 🏆</text>
+  </svg>` },
+
+  p4_c: { caption: "¡Extraterrestre inversor! 👽📱", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#020b18" rx="16"/>
+    <!-- extraterrestre con celular -->
+    <ellipse cx="130" cy="160" rx="25" ry="30" fill="#4ade80"/>
+    <ellipse cx="130" cy="138" rx="28" ry="26" fill="#4ade80"/>
+    <ellipse cx="120" cy="132" rx="10" ry="12" fill="#111"/>
+    <ellipse cx="140" cy="132" rx="10" ry="12" fill="#111"/>
+    <circle cx="123" cy="129" r="4" fill="#4ade80" opacity="0.8"/>
+    <circle cx="143" cy="129" r="4" fill="#4ade80" opacity="0.8"/>
+    <!-- antenas -->
+    <line x1="120" y1="114" x2="108" y2="96" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="108" cy="94" r="5" fill="#f5c518"/>
+    <line x1="140" y1="114" x2="152" y2="96" stroke="#4ade80" stroke-width="3"/>
+    <circle cx="152" cy="94" r="5" fill="#f5c518"/>
+    <!-- brazo con celular -->
+    <line x1="155" y1="150" x2="185" y2="140" stroke="#4ade80" stroke-width="5" stroke-linecap="round"/>
+    <!-- celular -->
+    <rect x="183" y="118" width="44" height="72" rx="7" fill="#1a1a2e" stroke="#4ade80" stroke-width="2"/>
+    <rect x="187" y="124" width="36" height="54" rx="4" fill="#0a2a0a"/>
+    <text x="205" y="145" text-anchor="middle" font-size="9" fill="#4ade80">ALyC</text>
+    <text x="205" y="158" text-anchor="middle" font-size="9" fill="#f5c518">Cuenta</text>
+    <text x="205" y="169" text-anchor="middle" font-size="9" fill="#f5c518">Comitente</text>
+    <text x="205" y="180" text-anchor="middle" font-size="12">✅</text>
+    <!-- bocadillo -->
+    <rect x="30" y="48" width="155" height="44" rx="10" fill="#0d2a0d" stroke="#4ade80" stroke-width="2"/>
+    <polygon points="80,92 95,108 110,92" fill="#0d2a0d" stroke="#4ade80" stroke-width="2"/>
+    <text x="107" y="66" text-anchor="middle" font-size="9" fill="#4ade80" font-weight="bold">Hola, quisiera abrir</text>
+    <text x="107" y="80" text-anchor="middle" font-size="9" fill="#4ade80" font-weight="bold">mi cuenta comitente ✓</text>
+    <text x="150" y="238" font-size="10" fill="#4ade80" text-anchor="middle" font-weight="bold">¡CORRECTO! El más inteligente 👽</text>
+  </svg>` },
+
+  // P5: mascota
+  p5_a: { caption: "El perro fiel 🐕 = inversión que rinde", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- perro -->
+    <ellipse cx="150" cy="170" rx="60" ry="45" fill="#c8a96e"/>
+    <ellipse cx="150" cy="138" rx="40" ry="35" fill="#c8a96e"/>
+    <!-- orejas -->
+    <ellipse cx="118" cy="120" rx="18" ry="26" fill="#b8935a" transform="rotate(-15 118 120)"/>
+    <ellipse cx="182" cy="120" rx="18" ry="26" fill="#b8935a" transform="rotate(15 182 120)"/>
+    <!-- cara -->
+    <circle cx="138" cy="130" r="7" fill="#333"/>
+    <circle cx="162" cy="130" r="7" fill="#333"/>
+    <circle cx="140" cy="128" r="3" fill="#fff"/>
+    <circle cx="164" cy="128" r="3" fill="#fff"/>
+    <ellipse cx="150" cy="148" rx="14" ry="10" fill="#e8857a"/>
+    <ellipse cx="150" cy="145" rx="10" ry="6" fill="#c86860"/>
+    <!-- cola wagging -->
+    <path d="M210 175 Q240 150 230 130" stroke="#c8a96e" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <!-- monedas alrededor -->
+    <circle cx="55" cy="140" r="16" fill="#f5c518" opacity="0.9"/>
+    <text x="55" y="146" text-anchor="middle" font-size="12" fill="#333">$</text>
+    <circle cx="245" cy="140" r="16" fill="#f5c518" opacity="0.9"/>
+    <text x="245" y="146" text-anchor="middle" font-size="12" fill="#333">$</text>
+    <circle cx="75" cy="195" r="12" fill="#f5c518" opacity="0.7"/>
+    <text x="75" y="200" text-anchor="middle" font-size="10" fill="#333">$</text>
+    <text x="150" y="240" font-size="11" fill="#4ade80" text-anchor="middle">Inversión fiel que siempre vuelve 🐕</text>
+  </svg>` },
+
+  p5_b: { caption: "El gato hace lo que quiere 🐱", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- gato -->
+    <ellipse cx="150" cy="175" rx="55" ry="42" fill="#888"/>
+    <ellipse cx="150" cy="145" rx="38" ry="33" fill="#888"/>
+    <!-- orejas puntiagudas -->
+    <polygon points="122,120 112,90 138,118" fill="#888"/>
+    <polygon points="178,120 188,90 162,118" fill="#888"/>
+    <polygon points="124,118 116,96 136,116" fill="#e8857a"/>
+    <polygon points="176,118 184,96 164,116" fill="#e8857a"/>
+    <!-- cara indiferente -->
+    <ellipse cx="138" cy="138" rx="7" ry="8" fill="#2a5fa0"/>
+    <ellipse cx="162" cy="138" rx="7" ry="8" fill="#2a5fa0"/>
+    <ellipse cx="138" cy="138" rx="3" ry="7" fill="#111"/>
+    <ellipse cx="162" cy="138" rx="3" ry="7" fill="#111"/>
+    <!-- nariz -->
+    <polygon points="150,150 145,156 155,156" fill="#e8857a"/>
+    <!-- bigotes -->
+    <line x1="108" y1="152" x2="138" y2="155" stroke="#fff" stroke-width="1.5"/>
+    <line x1="108" y1="158" x2="138" y2="158" stroke="#fff" stroke-width="1.5"/>
+    <line x1="162" y1="155" x2="192" y2="152" stroke="#fff" stroke-width="1.5"/>
+    <line x1="162" y1="158" x2="192" y2="158" stroke="#fff" stroke-width="1.5"/>
+    <!-- cola enroscada -->
+    <path d="M205 185 Q240 175 235 210 Q230 230 210 220" stroke="#888" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- bocadillo indiferente -->
+    <rect x="30" y="50" width="120" height="36" rx="8" fill="#1e1e3a" stroke="#555" stroke-width="2"/>
+    <text x="90" y="66" text-anchor="middle" font-size="10" fill="#aaa">¿Invertir?</text>
+    <text x="90" y="80" text-anchor="middle" font-size="10" fill="#aaa">Meh. 🙄</text>
+    <text x="150" y="240" font-size="11" fill="#aaa" text-anchor="middle">El gato hace lo que quiere 🐱</text>
+  </svg>` },
+
+  p5_c: { caption: "El hámster en la rueda 🐹", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- rueda -->
+    <circle cx="150" cy="150" r="80" fill="none" stroke="#555" stroke-width="8"/>
+    <circle cx="150" cy="150" r="60" fill="none" stroke="#444" stroke-width="3"/>
+    <!-- radios rueda -->
+    <line x1="150" y1="70" x2="150" y2="230" stroke="#444" stroke-width="3"/>
+    <line x1="70" y1="150" x2="230" y2="150" stroke="#444" stroke-width="3"/>
+    <line x1="93" y1="93" x2="207" y2="207" stroke="#444" stroke-width="3"/>
+    <line x1="207" y1="93" x2="93" y2="207" stroke="#444" stroke-width="3"/>
+    <!-- hámster corriendo -->
+    <ellipse cx="150" cy="175" rx="28" ry="22" fill="#deb887"/>
+    <ellipse cx="150" cy="158" rx="22" ry="20" fill="#deb887"/>
+    <!-- cachetes gordos -->
+    <ellipse cx="132" cy="162" rx="12" ry="10" fill="#f0c8a0"/>
+    <ellipse cx="168" cy="162" rx="12" ry="10" fill="#f0c8a0"/>
+    <!-- cara -->
+    <circle cx="143" cy="154" r="4" fill="#333"/>
+    <circle cx="157" cy="154" r="4" fill="#333"/>
+    <ellipse cx="150" cy="164" rx="5" ry="3" fill="#c87060"/>
+    <!-- patitas -->
+    <line x1="130" y1="190" x2="118" y2="205" stroke="#deb887" stroke-width="5" stroke-linecap="round"/>
+    <line x1="170" y1="190" x2="182" y2="205" stroke="#deb887" stroke-width="5" stroke-linecap="round"/>
+    <!-- orejas -->
+    <circle cx="136" cy="140" r="8" fill="#deb887"/>
+    <circle cx="164" cy="140" r="8" fill="#deb887"/>
+    <circle cx="136" cy="140" r="5" fill="#f0c8a0"/>
+    <circle cx="164" cy="140" r="5" fill="#f0c8a0"/>
+    <!-- líneas de movimiento -->
+    <line x1="60" y1="145" x2="45" y2="148" stroke="#f5c518" stroke-width="2" opacity="0.6"/>
+    <line x1="58" y1="158" x2="42" y2="163" stroke="#f5c518" stroke-width="2" opacity="0.6"/>
+    <text x="150" y="250" font-size="10" fill="#aaa" text-anchor="middle">Corre sin avanzar 🐹</text>
+  </svg>` },
+
+  p5_d: { caption: "El pez que dura 3 días 🐟", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- pecera -->
+    <ellipse cx="150" cy="165" rx="90" ry="75" fill="#0d3a5c" opacity="0.7"/>
+    <ellipse cx="150" cy="165" rx="90" ry="75" fill="none" stroke="#4a9eff" stroke-width="4"/>
+    <!-- agua -->
+    <path d="M62 140 Q100 130 150 140 Q200 150 238 140" stroke="#4a9eff" stroke-width="2" fill="none" opacity="0.5"/>
+    <!-- pez muerto (boca arriba) -->
+    <ellipse cx="150" cy="170" rx="40" ry="22" fill="#ff8c42" transform="rotate(10 150 170)"/>
+    <!-- escamas -->
+    <ellipse cx="140" cy="168" rx="10" ry="7" fill="#ff6b20" transform="rotate(10 140 168)"/>
+    <ellipse cx="155" cy="165" rx="10" ry="7" fill="#ff6b20" transform="rotate(10 155 165)"/>
+    <!-- colita -->
+    <polygon points="188,160 210,148 210,172" fill="#ff8c42" transform="rotate(10 188 160)"/>
+    <!-- ojo X (muerto) -->
+    <line x1="163" y1="158" x2="171" y2="166" stroke="#fff" stroke-width="2.5"/>
+    <line x1="171" y1="158" x2="163" y2="166" stroke="#fff" stroke-width="2.5"/>
+    <!-- burbujitas -->
+    <circle cx="130" cy="115" r="5" fill="none" stroke="#4a9eff" stroke-width="2"/>
+    <circle cx="140" cy="100" r="4" fill="none" stroke="#4a9eff" stroke-width="2"/>
+    <circle cx="148" cy="87" r="3" fill="none" stroke="#4a9eff" stroke-width="2"/>
+    <!-- días contador -->
+    <rect x="210" y="90" width="65" height="55" rx="8" fill="#1a0a0a" stroke="#ef4444" stroke-width="2"/>
+    <text x="242" y="112" text-anchor="middle" font-size="10" fill="#ef4444">Día</text>
+    <text x="242" y="132" text-anchor="middle" font-size="22" fill="#ef4444" font-weight="bold">3</text>
+    <text x="150" y="252" font-size="11" fill="#ef4444" text-anchor="middle">El pez que dura 3 días 🐟</text>
+  </svg>` },
+
+  // P6: cuánto ganás / gastás
+  p6_a: { caption: "Cuánto gano, con orgullo 💪", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- persona orgullosa -->
+    <circle cx="150" cy="80" r="35" fill="#ffd166"/>
+    <circle cx="138" cy="73" r="5" fill="#333"/>
+    <circle cx="162" cy="73" r="5" fill="#333"/>
+    <path d="M136 92 Q150 103 164 92" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- cuerpo -->
+    <rect x="122" y="115" width="56" height="60" rx="12" fill="#4ade80"/>
+    <!-- brazos arriba victorioso -->
+    <line x1="122" y1="130" x2="88" y2="100" stroke="#ffd166" stroke-width="8" stroke-linecap="round"/>
+    <line x1="178" y1="130" x2="212" y2="100" stroke="#ffd166" stroke-width="8" stroke-linecap="round"/>
+    <!-- cartel con sueldo -->
+    <rect x="55" y="55" width="85" height="36" rx="8" fill="#f5c518"/>
+    <text x="97" y="71" text-anchor="middle" font-size="10" fill="#0a0a1a" font-weight="bold">MI SUELDO:</text>
+    <text x="97" y="84" text-anchor="middle" font-size="12" fill="#0a0a1a" font-weight="bold">$$$$ 💪</text>
+    <!-- gente mirando admirada -->
+    <circle cx="50" cy="175" r="16" fill="#c8a96e"/>
+    <text x="50" y="180" text-anchor="middle" font-size="14">😮</text>
+    <circle cx="250" cy="175" r="16" fill="#c8a96e"/>
+    <text x="250" y="180" text-anchor="middle" font-size="14">😮</text>
+    <text x="150" y="238" font-size="11" fill="#aaa" text-anchor="middle">Cuánto gano, con orgullo 💪</text>
+  </svg>` },
+
+  p6_b: { caption: "Cuánto gasto... me la banco 🤷", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- ticket de compras gigante -->
+    <rect x="85" y="50" width="130" height="170" rx="6" fill="#fff"/>
+    <text x="150" y="72" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">RESUMEN DE GASTOS</text>
+    <line x1="90" y1="78" x2="210" y2="78" stroke="#eee" stroke-width="1"/>
+    <text x="100" y="93" font-size="9" fill="#666">Delivery........</text><text x="205" y="93" text-anchor="end" font-size="9" fill="#333">$45.000</text>
+    <text x="100" y="107" font-size="9" fill="#666">Ropa................</text><text x="205" y="107" text-anchor="end" font-size="9" fill="#333">$82.000</text>
+    <text x="100" y="121" font-size="9" fill="#666">Netflix..............</text><text x="205" y="121" text-anchor="end" font-size="9" fill="#333">$18.000</text>
+    <text x="100" y="135" font-size="9" fill="#666">Salidas.............</text><text x="205" y="135" text-anchor="end" font-size="9" fill="#333">$120.000</text>
+    <text x="100" y="149" font-size="9" fill="#666">Café.................</text><text x="205" y="149" text-anchor="end" font-size="9" fill="#333">$28.000</text>
+    <text x="100" y="163" font-size="9" fill="#666">Gym..................</text><text x="205" y="163" text-anchor="end" font-size="9" fill="#333">$35.000</text>
+    <line x1="90" y1="170" x2="210" y2="170" stroke="#333" stroke-width="1"/>
+    <text x="100" y="185" font-size="10" fill="#ef4444" font-weight="bold">TOTAL</text>
+    <text x="205" y="185" text-anchor="end" font-size="10" fill="#ef4444" font-weight="bold">$328.000</text>
+    <!-- persona encogida de hombros -->
+    <circle cx="50" cy="130" r="22" fill="#ffd166"/>
+    <circle cx="42" cy="124" r="3.5" fill="#333"/>
+    <circle cx="58" cy="124" r="3.5" fill="#333"/>
+    <path d="M42 137 Q50 142 58 137" stroke="#333" stroke-width="2.5" fill="none"/>
+    <text x="50" y="162" text-anchor="middle" font-size="22">🤷</text>
+    <text x="150" y="240" font-size="11" fill="#aaa" text-anchor="middle">Me la banco 🤷</text>
+  </svg>` },
+
+  p6_c: { caption: "Me mudo del país ✈️", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#020b18" rx="16"/>
+    <!-- avión -->
+    <g transform="translate(50,100) rotate(-20)">
+      <ellipse cx="100" cy="30" rx="80" ry="22" fill="#4a9eff"/>
+      <polygon points="180,30 210,20 210,40" fill="#4a9eff"/>
+      <!-- ala -->
+      <polygon points="60,30 90,0 120,30" fill="#2a5fa0"/>
+      <polygon points="60,30 90,55 120,30" fill="#2a5fa0"/>
+      <!-- ventanitas -->
+      <circle cx="70" cy="26" r="6" fill="#7ec8ff" opacity="0.8"/>
+      <circle cx="90" cy="23" r="6" fill="#7ec8ff" opacity="0.8"/>
+      <circle cx="110" cy="23" r="6" fill="#7ec8ff" opacity="0.8"/>
+    </g>
+    <!-- estela -->
+    <path d="M100 160 Q70 175 40 195" stroke="#fff" stroke-width="3" fill="none" stroke-dasharray="8,6" opacity="0.5"/>
+    <!-- maleta -->
+    <rect x="180" y="175" width="70" height="55" rx="8" fill="#ff6b35"/>
+    <rect x="195" y="168" width="40" height="12" rx="4" fill="#e65c20"/>
+    <line x1="215" y1="175" x2="215" y2="230" stroke="#e65c20" stroke-width="2"/>
+    <line x1="180" y1="200" x2="250" y2="200" stroke="#e65c20" stroke-width="2"/>
+    <!-- persona corriendo -->
+    <circle cx="165" cy="178" r="18" fill="#ffd166"/>
+    <circle cx="158" cy="173" r="3" fill="#333"/>
+    <circle cx="172" cy="173" r="3" fill="#333"/>
+    <path d="M158 184 Q165 189 172 184" stroke="#333" stroke-width="2" fill="none"/>
+    <text x="150" y="250" font-size="11" fill="#aaa" text-anchor="middle">Ninguna, me mudo del país ✈️</text>
+  </svg>` },
+
+  // P7: estafa piramidal
+  p7_a: { caption: "Entró como un toro... 🐂💸", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#1a0505" rx="16"/>
+    <!-- toro -->
+    <ellipse cx="130" cy="170" rx="65" ry="48" fill="#8B4513"/>
+    <ellipse cx="130" cy="140" rx="42" ry="36" fill="#8B4513"/>
+    <!-- cuernos -->
+    <path d="M105 120 Q85 90 70 100" stroke="#8B4513" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M155 120 Q175 90 190 100" stroke="#8B4513" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- cara -->
+    <ellipse cx="120" cy="145" rx="9" ry="9" fill="#111"/>
+    <circle cx="123" cy="142" r="3" fill="#fff"/>
+    <ellipse cx="140" cy="145" rx="9" ry="9" fill="#111"/>
+    <circle cx="143" cy="142" r="3" fill="#fff"/>
+    <ellipse cx="130" cy="158" rx="16" ry="10" fill="#c87060"/>
+    <!-- humo de las narinas -->
+    <path d="M118 160 Q110 150 105 145" stroke="#aaa" stroke-width="3" fill="none" opacity="0.7"/>
+    <path d="M142 160 Q150 150 155 145" stroke="#aaa" stroke-width="3" fill="none" opacity="0.7"/>
+    <!-- trampa piramidal -->
+    <polygon points="240,220 200,140 280,140" fill="#ef4444" opacity="0.8"/>
+    <polygon points="240,140 215,90 265,90" fill="#ef4444" opacity="0.6"/>
+    <polygon points="240,90 225,60 255,60" fill="#ef4444" opacity="0.4"/>
+    <text x="240" y="175" text-anchor="middle" font-size="9" fill="#fff">ESTAFA</text>
+    <!-- billetes cayendo -->
+    <rect x="45" y="60" width="35" height="18" rx="3" fill="#4ade80" transform="rotate(-25 62 69)"/>
+    <text x="62" y="72" text-anchor="middle" font-size="9" fill="#fff" transform="rotate(-25 62 69)">$$$</text>
+    <rect x="55" y="90" width="35" height="18" rx="3" fill="#4ade80" transform="rotate(15 72 99)"/>
+    <text x="72" y="102" text-anchor="middle" font-size="9" fill="#fff" transform="rotate(15 72 99)">$$$</text>
+    <text x="150" y="248" font-size="11" fill="#ef4444" text-anchor="middle">Entró como un toro 🐂 (mal movimiento)</text>
+  </svg>` },
+
+  p7_b: { caption: "¡Alerta estafa! Salgo corriendo 🚨", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- pirámide roja -->
+    <polygon points="150,30 60,180 240,180" fill="#ef4444" opacity="0.3" stroke="#ef4444" stroke-width="3"/>
+    <text x="150" y="130" text-anchor="middle" font-size="28">🚨</text>
+    <text x="150" y="160" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">ESTAFA PIRAMIDAL</text>
+    <!-- persona corriendo lejos -->
+    <circle cx="245" cy="210" r="18" fill="#ffd166"/>
+    <circle cx="238" cy="204" r="3" fill="#333"/>
+    <circle cx="252" cy="204" r="3" fill="#333"/>
+    <path d="M238 216 Q245 220 252 216" stroke="#333" stroke-width="2" fill="none"/>
+    <!-- líneas de velocidad -->
+    <line x1="200" y1="208" x2="215" y2="208" stroke="#fff" stroke-width="2" opacity="0.6"/>
+    <line x1="198" y1="215" x2="213" y2="215" stroke="#fff" stroke-width="2" opacity="0.6"/>
+    <line x1="200" y1="222" x2="215" y2="222" stroke="#fff" stroke-width="2" opacity="0.6"/>
+    <text x="150" y="248" font-size="11" fill="#4ade80" text-anchor="middle">Buen instinto. ¡Corré! 🚨</text>
+  </svg>` },
+
+  p7_c: { caption: "La matrícula de la CNV 📋✅", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- logo CNV estilizado -->
+    <rect x="80" y="55" width="140" height="100" rx="12" fill="#1a3a70" stroke="#4a9eff" stroke-width="3"/>
+    <text x="150" y="85" text-anchor="middle" font-size="16" fill="#4a9eff" font-weight="bold">CNV</text>
+    <text x="150" y="100" text-anchor="middle" font-size="8" fill="#aaa">Comisión Nacional</text>
+    <text x="150" y="112" text-anchor="middle" font-size="8" fill="#aaa">de Valores</text>
+    <rect x="95" y="120" width="110" height="24" rx="6" fill="#0d2a0d" stroke="#4ade80" stroke-width="2"/>
+    <text x="150" y="136" text-anchor="middle" font-size="10" fill="#4ade80" font-weight="bold">✓ Matrícula #4521</text>
+    <!-- persona pidiendo / checkeando -->
+    <circle cx="150" cy="200" r="22" fill="#ffd166"/>
+    <circle cx="142" cy="194" r="3.5" fill="#333"/>
+    <circle cx="158" cy="194" r="3.5" fill="#333"/>
+    <path d="M142 208 Q150 214 158 208" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- lupita -->
+    <circle cx="185" cy="185" r="16" fill="none" stroke="#f5c518" stroke-width="4"/>
+    <line x1="196" y1="196" x2="208" y2="208" stroke="#f5c518" stroke-width="4" stroke-linecap="round"/>
+    <text x="150" y="248" font-size="10" fill="#4ade80" text-anchor="middle" font-weight="bold">¡CORRECTO! Verificá siempre la matrícula 📋</text>
+  </svg>` },
+
+  // P8: dilema dinero/amor
+  p8_a: { caption: "Todo el dinero, nadie que te quiera 💔", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- montaña de dinero -->
+    <ellipse cx="150" cy="200" rx="100" ry="30" fill="#2a6a2a" opacity="0.5"/>
+    <rect x="70" y="160" width="160" height="45" rx="6" fill="#1a4a1a"/>
+    <!-- billetes -->
+    <rect x="80" y="145" width="50" height="28" rx="4" fill="#4ade80"/>
+    <text x="105" y="163" text-anchor="middle" font-size="12" fill="#fff">$100</text>
+    <rect x="140" y="138" width="50" height="28" rx="4" fill="#4ade80" transform="rotate(10 165 152)"/>
+    <text x="165" y="155" text-anchor="middle" font-size="12" fill="#fff" transform="rotate(10 165 152)">$100</text>
+    <rect x="185" y="145" width="50" height="28" rx="4" fill="#4ade80" transform="rotate(-8 210 159)"/>
+    <text x="210" y="162" text-anchor="middle" font-size="12" fill="#fff" transform="rotate(-8 210 159)">$100</text>
+    <!-- persona sola en el medio -->
+    <circle cx="150" cy="112" r="26" fill="#ffd166"/>
+    <circle cx="141" cy="106" r="4" fill="#333"/>
+    <circle cx="159" cy="106" r="4" fill="#333"/>
+    <path d="M143 124 Q150 118 157 124" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- corazón roto -->
+    <text x="150" y="72" text-anchor="middle" font-size="30">💔</text>
+    <!-- personas alejándose -->
+    <circle cx="40" cy="145" r="14" fill="#888" opacity="0.5"/>
+    <circle cx="260" cy="145" r="14" fill="#888" opacity="0.5"/>
+    <text x="150" y="248" font-size="10" fill="#aaa" text-anchor="middle">Todo el dinero, nadie que te quiera 💔</text>
+  </svg>` },
+
+  p8_b: { caption: "Todos te quieren, cero pesos 🥰", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- persona central feliz -->
+    <circle cx="150" cy="130" r="30" fill="#ffd166"/>
+    <circle cx="140" cy="122" r="5" fill="#333"/>
+    <circle cx="160" cy="122" r="5" fill="#333"/>
+    <path d="M138 142 Q150 152 162 142" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- corazones alrededor -->
+    <text x="68" y="85" font-size="24">❤️</text>
+    <text x="208" y="85" font-size="24">❤️</text>
+    <text x="38" y="150" font-size="20">💛</text>
+    <text x="238" y="150" font-size="20">💛</text>
+    <text x="75" y="200" font-size="18">💕</text>
+    <text x="205" y="200" font-size="18">💕</text>
+    <!-- billetera vacía -->
+    <rect x="110" y="180" width="80" height="40" rx="8" fill="#444"/>
+    <text x="150" y="207" text-anchor="middle" font-size="22">💨</text>
+    <text x="150" y="230" text-anchor="middle" font-size="10" fill="#888">Billetera vacía</text>
+    <text x="150" y="248" font-size="10" fill="#aaa" text-anchor="middle">Todos te quieren, sin un peso 🥰</text>
+  </svg>` },
+
+  p8_c: { caption: "Cero impuestos para siempre 😈", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- formulario impuesto tachado -->
+    <rect x="70" y="60" width="160" height="130" rx="8" fill="#1a1a2e" stroke="#555" stroke-width="2"/>
+    <text x="150" y="82" text-anchor="middle" font-size="10" fill="#aaa" font-weight="bold">FORMULARIO AFIP</text>
+    <line x1="85" y1="95" x2="215" y2="95" stroke="#555" stroke-width="1"/>
+    <text x="90" y="112" font-size="8" fill="#666">Ganancias.....</text><text x="215" y="112" text-anchor="end" font-size="8" fill="#666">$0</text>
+    <text x="90" y="126" font-size="8" fill="#666">IVA..................</text><text x="215" y="126" text-anchor="end" font-size="8" fill="#666">$0</text>
+    <text x="90" y="140" font-size="8" fill="#666">Bienes Pers..</text><text x="215" y="140" text-anchor="end" font-size="8" fill="#666">$0</text>
+    <text x="150" y="168" text-anchor="middle" font-size="20" fill="#4ade80" font-weight="bold">TOTAL: $0</text>
+    <!-- gran tachado rojo -->
+    <line x1="65" y1="55" x2="235" y2="195" stroke="#ef4444" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+    <!-- persona feliz diabólica -->
+    <circle cx="150" cy="220" r="22" fill="#ffd166"/>
+    <circle cx="141" cy="215" r="3.5" fill="#333"/>
+    <circle cx="159" cy="215" r="3.5" fill="#333"/>
+    <path d="M139 226 Q150 234 161 226" stroke="#333" stroke-width="2.5" fill="none"/>
+    <text x="136" y="208" font-size="10">😈</text>
+    <text x="150" y="252" font-size="10" fill="#f5c518" text-anchor="middle">Nunca más pagar impuestos 😈</text>
+  </svg>` },
+
+  p8_d: { caption: "Millonario... en pesos 🇦🇷", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- montaña de billetes -->
+    <rect x="40" y="160" width="220" height="60" rx="8" fill="#4ade80" opacity="0.3"/>
+    <!-- billetes peso argentino -->
+    <rect x="50" y="140" width="75" height="42" rx="4" fill="#4ade80"/>
+    <text x="87" y="156" text-anchor="middle" font-size="9" fill="#0a0a0a" font-weight="bold">$ PESOS</text>
+    <text x="87" y="170" text-anchor="middle" font-size="11" fill="#0a0a0a" font-weight="bold">1.000.000</text>
+    <rect x="115" y="130" width="75" height="42" rx="4" fill="#4ade80" transform="rotate(5 152 151)"/>
+    <text x="152" y="148" text-anchor="middle" font-size="9" fill="#0a0a0a" font-weight="bold" transform="rotate(5 152 151)">$ PESOS</text>
+    <text x="152" y="162" text-anchor="middle" font-size="11" fill="#0a0a0a" font-weight="bold" transform="rotate(5 152 151)">1.000.000</text>
+    <rect x="175" y="140" width="75" height="42" rx="4" fill="#4ade80" transform="rotate(-5 212 161)"/>
+    <text x="212" y="158" text-anchor="middle" font-size="9" fill="#0a0a0a" font-weight="bold" transform="rotate(-5 212 161)">$ PESOS</text>
+    <text x="212" y="172" text-anchor="middle" font-size="11" fill="#0a0a0a" font-weight="bold" transform="rotate(-5 212 161)">1.000.000</text>
+    <!-- persona con corona -->
+    <circle cx="150" cy="72" r="28" fill="#ffd166"/>
+    <circle cx="141" cy="66" r="4" fill="#333"/>
+    <circle cx="159" cy="66" r="4" fill="#333"/>
+    <path d="M141 82 Q150 88 159 82" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- corona -->
+    <polygon points="122,50 135,38 150,48 165,38 178,50 175,55 125,55" fill="#f5c518"/>
+    <!-- tipo de cambio -->
+    <rect x="195" y="55" width="85" height="42" rx="8" fill="#1a0a0a" stroke="#ef4444" stroke-width="2"/>
+    <text x="237" y="72" text-anchor="middle" font-size="9" fill="#ef4444">USD 1 =</text>
+    <text x="237" y="87" text-anchor="middle" font-size="11" fill="#ef4444" font-weight="bold">$ 1.800 😅</text>
+    <text x="150" y="245" font-size="10" fill="#aaa" text-anchor="middle">Millonario... en pesos 🇦🇷</text>
+  </svg>` },
+
+  // P9: fila/fortunas
+  p9_a: { caption: "Sin fila nunca, pero cero peso 🙏", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- VIP sin fila -->
+    <!-- cordón VIP -->
+    <line x1="40" y1="160" x2="260" y2="160" stroke="#f5c518" stroke-width="3"/>
+    <rect x="35" y="148" width="12" height="24" rx="3" fill="#888"/>
+    <rect x="253" y="148" width="12" height="24" rx="3" fill="#888"/>
+    <!-- persona pasando sin fila, feliz -->
+    <circle cx="150" cy="115" r="28" fill="#ffd166"/>
+    <circle cx="141" cy="108" r="4.5" fill="#333"/>
+    <circle cx="159" cy="108" r="4.5" fill="#333"/>
+    <path d="M139 126 Q150 134 161 126" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- gafas de sol VIP -->
+    <rect x="133" y="104" width="14" height="10" rx="4" fill="#111"/>
+    <rect x="153" y="104" width="14" height="10" rx="4" fill="#111"/>
+    <line x1="147" y1="109" x2="153" y2="109" stroke="#111" stroke-width="2"/>
+    <!-- flecha pasando -->
+    <path d="M150 143 L150 163" stroke="#f5c518" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="4,3"/>
+    <!-- billetera vacía -->
+    <rect x="104" y="185" width="92" height="45" rx="10" fill="#333"/>
+    <text x="150" y="215" text-anchor="middle" font-size="22">💨</text>
+    <text x="150" y="230" text-anchor="middle" font-size="9" fill="#888">Billetera vacía</text>
+    <!-- gente en fila atrás mirando con envidia -->
+    <circle cx="40" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <circle cx="65" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <circle cx="90" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <circle cx="210" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <circle cx="235" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <circle cx="260" cy="120" r="12" fill="#888" opacity="0.4"/>
+    <text x="150" y="252" font-size="10" fill="#aaa" text-anchor="middle">Sin fila nunca, pero ganar lo mínimo 🙏</text>
+  </svg>` },
+
+  p9_b: { caption: "Fortuna enorme, filas eternas 😤", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- fila larguísima -->
+    <line x1="20" y1="175" x2="280" y2="175" stroke="#555" stroke-width="2"/>
+    <!-- personas en fila (varias) -->
+    <circle cx="35" cy="155" r="12" fill="#c8a96e"/>
+    <circle cx="65" cy="155" r="12" fill="#ffd166"/>
+    <circle cx="95" cy="155" r="12" fill="#c8a96e"/>
+    <circle cx="125" cy="155" r="12" fill="#ffd166"/>
+    <circle cx="155" cy="155" r="12" fill="#c8a96e"/>
+    <circle cx="185" cy="155" r="12" fill="#ffd166"/>
+    <circle cx="215" cy="155" r="12" fill="#c8a96e"/>
+    <circle cx="245" cy="155" r="12" fill="#ffd166"/>
+    <!-- caras de fastidio en todos -->
+    <text x="35" y="160" text-anchor="middle" font-size="10">😤</text>
+    <text x="65" y="160" text-anchor="middle" font-size="10">😒</text>
+    <text x="95" y="160" text-anchor="middle" font-size="10">😤</text>
+    <text x="125" y="160" text-anchor="middle" font-size="10">🙄</text>
+    <text x="155" y="160" text-anchor="middle" font-size="10">😤</text>
+    <text x="185" y="160" text-anchor="middle" font-size="10">😒</text>
+    <text x="215" y="160" text-anchor="middle" font-size="10">😤</text>
+    <text x="245" y="160" text-anchor="middle" font-size="10">🙄</text>
+    <!-- reloj con mucho tiempo -->
+    <circle cx="150" cy="90" r="45" fill="#1a1a2e" stroke="#f5c518" stroke-width="4"/>
+    <line x1="150" y1="90" x2="150" y2="60" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="150" y1="90" x2="172" y2="90" stroke="#f5c518" stroke-width="3" stroke-linecap="round"/>
+    <text x="150" y="200" text-anchor="middle" font-size="9" fill="#888">Turno estimado: 4 horas</text>
+    <!-- billetera gorda -->
+    <rect x="200" y="55" width="70" height="42" rx="8" fill="#f5c518"/>
+    <text x="235" y="72" text-anchor="middle" font-size="10" fill="#0a0a1a" font-weight="bold">$$$$</text>
+    <text x="235" y="87" text-anchor="middle" font-size="10" fill="#0a0a1a" font-weight="bold">RICO 💰</text>
+    <text x="150" y="248" font-size="10" fill="#aaa" text-anchor="middle">Fortunas, pero fila para todo, siempre 😤</text>
+  </svg>` },
+
+  // P10: CEDEARs
+  p10_a: { caption: '"Me estafaron..." 😱', svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#1a0505" rx="16"/>
+    <circle cx="150" cy="120" r="50" fill="#ffd166"/>
+    <ellipse cx="136" cy="108" rx="7" ry="9" fill="#111"/>
+    <ellipse cx="164" cy="108" rx="7" ry="9" fill="#111"/>
+    <ellipse cx="150" cy="136" rx="12" ry="10" fill="#111"/>
+    <!-- gotas de sudor -->
+    <ellipse cx="110" cy="95" rx="4" ry="7" fill="#38bdf8"/>
+    <ellipse cx="190" cy="95" rx="4" ry="7" fill="#38bdf8"/>
+    <ellipse cx="118" cy="80" rx="3" ry="5" fill="#38bdf8" opacity="0.6"/>
+    <!-- manos en la cabeza -->
+    <path d="M100 130 Q85 110 95 95" stroke="#ffd166" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M200 130 Q215 110 205 95" stroke="#ffd166" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <text x="150" y="200" text-anchor="middle" font-size="36">😱</text>
+    <text x="150" y="238" font-size="12" fill="#ef4444" text-anchor="middle">¡Eso no es una estafa!</text>
+  </svg>` },
+
+  p10_b: { caption: '"Existe y se llama CEDEAR" ✅🍎', svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- Apple logo estilizado -->
+    <text x="150" y="100" text-anchor="middle" font-size="55">🍎</text>
+    <!-- flecha Argentina → Apple -->
+    <rect x="30" y="130" width="80" height="30" rx="8" fill="#74acdf"/>
+    <text x="70" y="150" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">🇦🇷 PESOS</text>
+    <path d="M112 145 L168 145" stroke="#f5c518" stroke-width="3" marker-end="url(#arr)"/>
+    <line x1="112" y1="145" x2="155" y2="145" stroke="#f5c518" stroke-width="3"/>
+    <polygon points="155,140 168,145 155,150" fill="#f5c518"/>
+    <!-- CEDEAR badge -->
+    <rect x="175" y="128" width="90" height="34" rx="8" fill="#1a3a70" stroke="#4a9eff" stroke-width="2"/>
+    <text x="220" y="143" text-anchor="middle" font-size="9" fill="#4a9eff" font-weight="bold">CEDEAR</text>
+    <text x="220" y="156" text-anchor="middle" font-size="9" fill="#fff">Apple 🍎</text>
+    <!-- check grande -->
+    <circle cx="150" cy="210" r="28" fill="#0d2a0d" stroke="#4ade80" stroke-width="3"/>
+    <text x="150" y="220" text-anchor="middle" font-size="28">✅</text>
+    <text x="150" y="252" font-size="10" fill="#4ade80" text-anchor="middle" font-weight="bold">¡CORRECTO! Existe y es legal 🍎</text>
+  </svg>` },
+
+  p10_c: { caption: '"Lo leí en Twitter..." 🤔', svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- pantalla de Twitter/X -->
+    <rect x="60" y="50" width="180" height="140" rx="10" fill="#15202b" stroke="#1d9bf0" stroke-width="2"/>
+    <text x="150" y="78" text-anchor="middle" font-size="18" font-weight="bold" fill="#1d9bf0">𝕏</text>
+    <line x1="70" y1="88" x2="230" y2="88" stroke="#38444d" stroke-width="1"/>
+    <text x="80" y="106" font-size="8" fill="#fff">@inversor_guru</text>
+    <text x="80" y="119" font-size="7.5" fill="#aaa">Los CEDEARs son un fraude</text>
+    <text x="80" y="131" font-size="7.5" fill="#aaa">inventado por el FMI 🔥🔥🔥</text>
+    <text x="80" y="152" font-size="7" fill="#555">💬 4.2k   🔁 8.1k   ❤️ 22k</text>
+    <!-- cara dudosa -->
+    <circle cx="150" cy="220" r="24" fill="#ffd166"/>
+    <circle cx="141" cy="215" r="3.5" fill="#333"/>
+    <circle cx="159" cy="215" r="3.5" fill="#333"/>
+    <path d="M142 228 Q150 224 158 228" stroke="#333" stroke-width="2.5" fill="none"/>
+    <text x="150" y="252" font-size="10" fill="#aaa" text-anchor="middle">Quizás verificar antes de creer 🤔</text>
+  </svg>` },
+
+  p10_d: { caption: '"Shhh, no le cuentes a nadie" 🤫', svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#050510" rx="16"/>
+    <!-- persona haciendo silencio -->
+    <circle cx="150" cy="110" r="40" fill="#ffd166"/>
+    <circle cx="136" cy="103" r="6" fill="#333"/>
+    <circle cx="164" cy="103" r="6" fill="#333"/>
+    <!-- dedo en la boca -->
+    <path d="M135 128 Q150 132 165 128" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- dedo señalando labios -->
+    <line x1="150" y1="132" x2="150" y2="148" stroke="#ffd166" stroke-width="7" stroke-linecap="round"/>
+    <!-- Apple logo oculto -->
+    <text x="150" y="200" text-anchor="middle" font-size="40" opacity="0.3">🍎</text>
+    <!-- tachado -->
+    <text x="90" y="195" font-size="70" fill="#ef4444" opacity="0.4">╲</text>
+    <!-- rayos de luz tipo secreto -->
+    <line x1="60" y1="60" x2="100" y2="90" stroke="#f5c518" stroke-width="1" opacity="0.3"/>
+    <line x1="240" y1="60" x2="200" y2="90" stroke="#f5c518" stroke-width="1" opacity="0.3"/>
+    <text x="150" y="248" font-size="10" fill="#aaa" text-anchor="middle">Shhh... pero en realidad es legal 🤫</text>
+  </svg>` },
+
+  // P11: BYMA
+  p11_a: { caption: "BYMA te abre la cuenta... NO 😅", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- edificio BYMA -->
+    <rect x="80" y="80" width="140" height="130" rx="4" fill="#1a1a2e" stroke="#4a9eff" stroke-width="3"/>
+    <text x="150" y="110" text-anchor="middle" font-size="14" fill="#4a9eff" font-weight="bold">BYMA</text>
+    <text x="150" y="125" text-anchor="middle" font-size="8" fill="#aaa">Bolsa y Mercados</text>
+    <text x="150" y="136" text-anchor="middle" font-size="8" fill="#aaa">Argentinos</text>
+    <!-- puerta cerrada con X -->
+    <rect x="120" y="155" width="60" height="55" rx="4" fill="#1a0505" stroke="#ef4444" stroke-width="3"/>
+    <text x="150" y="190" text-anchor="middle" font-size="28">🚫</text>
+    <!-- persona confundida -->
+    <circle cx="50" cy="175" r="22" fill="#ffd166"/>
+    <circle cx="43" cy="169" r="3.5" fill="#333"/>
+    <circle cx="57" cy="169" r="3.5" fill="#333"/>
+    <path d="M43 182 Q50 178 57 182" stroke="#333" stroke-width="2" fill="none"/>
+    <!-- signo de pregunta -->
+    <text x="50" y="148" text-anchor="middle" font-size="20" fill="#f5c518">?</text>
+    <text x="150" y="252" font-size="10" fill="#ef4444" text-anchor="middle">BYMA no abre cuentas directamente ❌</text>
+  </svg>` },
+
+  p11_b: { caption: "Te mandan a la esquina 🌧️", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- lluvia -->
+    <line x1="60" y1="30" x2="50" y2="60" stroke="#4a9eff" stroke-width="2" opacity="0.6"/>
+    <line x1="100" y1="20" x2="90" y2="50" stroke="#4a9eff" stroke-width="2" opacity="0.5"/>
+    <line x1="140" y1="25" x2="130" y2="55" stroke="#4a9eff" stroke-width="2" opacity="0.6"/>
+    <line x1="180" y1="18" x2="170" y2="48" stroke="#4a9eff" stroke-width="2" opacity="0.5"/>
+    <line x1="220" y1="28" x2="210" y2="58" stroke="#4a9eff" stroke-width="2" opacity="0.6"/>
+    <line x1="260" y1="22" x2="250" y2="52" stroke="#4a9eff" stroke-width="2" opacity="0.4"/>
+    <!-- persona bajo la lluvia con paraguas triste -->
+    <circle cx="150" cy="130" r="28" fill="#ffd166"/>
+    <circle cx="140" cy="123" r="4" fill="#333"/>
+    <circle cx="160" cy="123" r="4" fill="#333"/>
+    <path d="M142 142 Q150 137 158 142" stroke="#333" stroke-width="2.5" fill="none"/>
+    <!-- paraguas -->
+    <path d="M90 105 Q150 65 210 105" fill="#ff6b35" stroke="#e65c20" stroke-width="2"/>
+    <line x1="150" y1="105" x2="150" y2="160" stroke="#e65c20" stroke-width="3"/>
+    <path d="M150 160 Q160 170 155 178" stroke="#e65c20" stroke-width="3" fill="none"/>
+    <!-- cartel de esquina -->
+    <rect x="200" y="160" width="80" height="50" rx="6" fill="#1a1a2e" stroke="#888" stroke-width="2"/>
+    <text x="240" y="180" text-anchor="middle" font-size="9" fill="#aaa">Esperá</text>
+    <text x="240" y="193" text-anchor="middle" font-size="9" fill="#aaa">afuera...</text>
+    <text x="240" y="205" text-anchor="middle" font-size="12">🌧️</text>
+    <text x="150" y="252" font-size="10" fill="#aaa" text-anchor="middle">Te mandan a la esquina a ver si llueve 🌧️</text>
+  </svg>` },
+
+  p11_c: { caption: "¡Tu ALyC te abre la cuenta! ✅", svg: `<svg viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="260" fill="#0a1628" rx="16"/>
+    <!-- edificio ALyC -->
+    <rect x="155" y="85" width="120" height="120" rx="4" fill="#0d2a0d" stroke="#4ade80" stroke-width="3"/>
+    <text x="215" y="112" text-anchor="middle" font-size="12" fill="#4ade80" font-weight="bold">ALyC</text>
+    <text x="215" y="126" text-anchor="middle" font-size="7.5" fill="#aaa">Agente de</text>
+    <text x="215" y="137" text-anchor="middle" font-size="7.5" fill="#aaa">Liquidación y</text>
+    <text x="215" y="148" text-anchor="middle" font-size="7.5" fill="#aaa">Compensación</text>
+    <!-- puerta abierta -->
+    <rect x="188" y="165" width="54" height="40" rx="4" fill="#1a4a1a" stroke="#4ade80" stroke-width="2"/>
+    <text x="215" y="192" text-anchor="middle" font-size="22">✅</text>
+    <!-- persona feliz llegando -->
+    <circle cx="80" cy="155" r="28" fill="#ffd166"/>
+    <circle cx="71" cy="148" r="4.5" fill="#333"/>
+    <circle cx="89" cy="148" r="4.5" fill="#333"/>
+    <path d="M69 166 Q80 173 91 166" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- flecha hacia ALyC -->
+    <line x1="110" y1="165" x2="148" y2="165" stroke="#f5c518" stroke-width="3"/>
+    <polygon points="148,159 160,165 148,171" fill="#f5c518"/>
+    <!-- cuenta comitente badge -->
+    <rect x="25" y="205" width="125" height="32" rx="8" fill="#1a3a1a" stroke="#4ade80" stroke-width="2"/>
+    <text x="87" y="217" text-anchor="middle" font-size="8" fill="#4ade80" font-weight="bold">Cuenta Comitente</text>
+    <text x="87" y="230" text-anchor="middle" font-size="8" fill="#fff">Abierta ✓ 🎉</text>
+    <text x="150" y="252" font-size="9" fill="#4ade80" text-anchor="middle" font-weight="bold">¡CORRECTO! La ALyC es el camino ✅</text>
+  </svg>` }
+};
+
+const PREGUNTAS = [
+  {
+    tipo: 'opinion',
+    texto: 'Si tu billetera fuera una persona, te diría...',
+    opciones: ['Me cuidás bien, crack 💪', '¡Aflojale al delivery! 🛵', 'Estoy cansado, jefe 😩'],
+    svgKeys: ['p1_a','p1_b','p1_c'],
+    correcta: null,
+    feedback: '¡El primer paso para mejorar es saber dónde estamos! El diagnóstico financiero empieza con honestidad 💡'
+  },
+  {
+    tipo: 'opinion',
+    texto: '¿Qué da más miedo?',
+    opciones: ['Un tiburón 🦈', 'Un fantasma 👻', 'El resumen de la tarjeta 💳'],
+    svgKeys: ['p2_a','p2_b','p2_c'],
+    correcta: null,
+    feedback: 'El 90% elige el resumen de tarjeta. ¡El flujo de caja no miente! 💳'
+  },
+  {
+    tipo: 'opinion',
+    texto: 'Si pudieras viajar en el tiempo y darle un consejo a tu yo de 20 años, ¿qué le dirías?',
+    opciones: ['Comprá terrenos, en vez de mirar Florecienta 🏡', 'No crezcas, es una trampa 🚫', 'Ahorrá $50 dólares todos los meses, te lo pido por favor 🙏'],
+    svgKeys: ['p3_a','p3_b','p3_c'],
+    correcta: null,
+    feedback: 'El interés compuesto es la octava maravilla del mundo. $50/mes desde los 20 cambia todo 📈'
+  },
+  {
+    tipo: 'conocimiento',
+    texto: 'Un extraterrestre llega a Argentina. ¿Qué hace primero?',
+    opciones: ['Pregunta cuánto está el dólar oficial 💵', 'Afirma que en la final del Mundial hubo algo raro 🏆', 'Llama a su ALyC para crearse una cuenta comitente 👽'],
+    svgKeys: ['p4_a','p4_b','p4_c'],
+    correcta: 2,
+    feedbackCorrecto: '¡Correcto! La cuenta comitente en la ALyC es el primer paso para invertir en BYMA 👽',
+    feedbackIncorrecto: 'El extraterrestre inteligente llama a su ALyC para abrir su cuenta comitente. ¡Ese es el primer paso! 👽'
+  },
+  {
+    tipo: 'opinion',
+    texto: 'Si el dinero fuera una mascota, ¿cuál sería el tuyo?',
+    opciones: ['Un perro fiel que siempre vuelve 🐕', 'Un gato que hace lo que quiere 🐱', 'Un hámster que corre sin avanzar 🐹', 'Un pez que dura tres días 🐟'],
+    svgKeys: ['p5_a','p5_b','p5_c','p5_d'],
+    correcta: null,
+    feedback: 'La meta es el perro 🐕 — inversiones que trabajan para vos y generan más. Evitemos el pez 🐟'
+  },
+  {
+    tipo: 'opinion',
+    texto: '¿Qué preferís: que todos sepan cuánto ganás o cuánto gastás?',
+    opciones: ['Cuánto gano, con orgullo 💪', 'Cuánto gasto, me la banco 🤷', 'Ninguna, me mudo del país ✈️'],
+    svgKeys: ['p6_a','p6_b','p6_c'],
+    correcta: null,
+    feedback: 'El flujo de caja revela todo. Saber de dónde viene y a dónde va tu plata es la base de la arquitectura financiera 🏗️'
+  },
+  {
+    tipo: 'conocimiento',
+    texto: 'Tu amigo te dice que invierte con un grupo con 60% mensual garantizado, "platita fácil". Tenés que prestarle la plata en mano a él y él se encarga. ¿Qué hacés?',
+    opciones: ['Entro como un toro 🐂', 'Alerta estafa piramidal, salgo corriendo 🚨', 'Le pido la matrícula de la CNV con la que opera el grupo 📋'],
+    svgKeys: ['p7_a','p7_b','p7_c'],
+    correcta: 2,
+    feedbackCorrecto: '¡Perfecto! Siempre pedí la matrícula de la CNV. Un operador legítimo la tiene y la muestra sin problema 📋',
+    feedbackIncorrecto: 'La respuesta correcta es pedir la matrícula de la CNV. Sin matrícula = sin operar legalmente = posible estafa 🚨'
+  },
+  {
+    tipo: 'opinion',
+    texto: '¿Qué preferís?',
+    opciones: ['Tener todo el dinero del mundo pero que nadie te quiera 💔', 'Que todos te quieran pero vivir siempre sin un peso 🥰', 'Ganar lo justo, pero nunca más pagar impuestos 😈', 'Ser millonario, pero solo en pesos argentinos 🇦🇷'],
+    svgKeys: ['p8_a','p8_b','p8_c','p8_d'],
+    correcta: null,
+    feedback: 'Las finanzas personales no son solo números — son calidad de vida, vínculos y objetivos propios 💛'
+  },
+  {
+    tipo: 'opinion',
+    texto: '¿Qué preferís?',
+    opciones: ['Nunca más hacer fila en ningún lado, pero ganar lo mínimo 🙏', 'Ganar fortunas pero hacer fila para todo, toda la vida 😤'],
+    svgKeys: ['p9_a','p9_b'],
+    correcta: null,
+    feedback: 'La planificación financiera es exactamente esto: definir qué intercambios valés la pena para vos 💡'
+  },
+  {
+    tipo: 'conocimiento',
+    texto: 'Querés operar en bolsa. Vas directo a BYMA a abrir tu cuenta. ¿Qué pasa?',
+    opciones: ['Te atienden y listo ✅', 'Te mandan a la esquina a ver si llueve 🌧️', 'Te dicen que vayas a tu ALyC, que es la única que puede abrirte la cuenta comitente 🏢'],
+    svgKeys: ['p11_a','p11_b','p11_c'],
+    correcta: 2,
+    feedbackCorrecto: '¡Correcto! BYMA cruza órdenes, pero la cuenta comitente la abre tu ALyC. ¡Ese es el camino! 🏢',
+    feedbackIncorrecto: 'BYMA es la bolsa — no abre cuentas. Para operar necesitás una ALyC que te abra tu cuenta comitente 🏢'
+  }
+];
+
+let idx = 0, puntaje = 0, respondida = false;
+const MAX_PTS = PREGUNTAS.filter(p => p.tipo === 'conocimiento').length * 10;
+
+function iniciar() {
+  document.getElementById('pantalla-inicio').style.display = 'none';
+  document.getElementById('pantalla-juego').style.display = 'block';
+  mostrarPregunta();
+}
+
+function mostrarPregunta() {
+  respondida = false;
+  const p = PREGUNTAS[idx];
+  const letras = ['a','b','c','d'];
+
+  document.getElementById('txt-progreso').textContent = `Pregunta ${idx+1} de ${PREGUNTAS.length}`;
+  document.getElementById('txt-puntaje').textContent = `${puntaje} pts`;
+  document.getElementById('barra-fill').style.width = `${(idx/PREGUNTAS.length)*100}%`;
+
+  const badge = document.getElementById('badge');
+  if (p.tipo === 'opinion') {
+    badge.className = 'badge badge-opinion';
+    badge.textContent = '💬 Opinión — no hay respuesta incorrecta';
+  } else {
+    badge.className = 'badge badge-conocimiento';
+    badge.textContent = '🧠 Conocimiento';
+  }
+
+  document.getElementById('texto-pregunta').textContent = p.texto;
+
+  const cont = document.getElementById('opciones');
+  cont.innerHTML = '';
+  p.opciones.forEach((op, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opcion';
+    btn.innerHTML = `<span class="letra">${letras[i]}</span>${op}`;
+    btn.onclick = () => responder(i);
+    cont.appendChild(btn);
+  });
+
+  // reset imagen
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('svg-container').style.display = 'none';
+  document.getElementById('imagen-col').classList.remove('activa');
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'none';
+  document.getElementById('btn-siguiente').style.display = 'none';
+
+  document.getElementById('pantalla-juego').style.animation = 'none';
+  void document.getElementById('pantalla-juego').offsetWidth;
+  document.getElementById('pantalla-juego').style.animation = 'slideUp 0.4s ease';
+}
+
+function responder(opcionIdx) {
+  if (respondida) return;
+  respondida = true;
+
+  const p = PREGUNTAS[idx];
+  const opciones = document.querySelectorAll('.opcion');
+  const fb = document.getElementById('feedback');
+
+  opciones.forEach(o => o.classList.add('disabled'));
+
+  // mostrar SVG
+  const svgKey = p.svgKeys[opcionIdx];
+  const svgData = SVGS[svgKey];
+  if (svgData) {
+    document.getElementById('placeholder').style.display = 'none';
+    const cont = document.getElementById('svg-container');
+    cont.innerHTML = `${svgData.svg}<div class="caption-imagen">${svgData.caption}</div>`;
+    cont.style.display = 'block';
+    document.getElementById('imagen-col').classList.add('activa');
+  }
+
+  if (p.tipo === 'opinion') {
+    opciones[opcionIdx].classList.add('seleccionada');
+    fb.className = 'feedback opinion';
+    fb.textContent = '💬 ' + p.feedback;
+  } else {
+    if (opcionIdx === p.correcta) {
+      opciones[opcionIdx].classList.add('correcta');
+      fb.className = 'feedback correcto';
+      fb.textContent = '✅ ' + p.feedbackCorrecto;
+      puntaje += 10;
+      document.getElementById('txt-puntaje').textContent = `${puntaje} pts`;
+    } else {
+      opciones[opcionIdx].classList.add('incorrecta');
+      opciones[p.correcta].classList.add('correcta');
+      fb.className = 'feedback incorrecto';
+      fb.textContent = '❌ ' + p.feedbackIncorrecto;
+    }
+  }
+  fb.style.display = 'block';
+  document.getElementById('btn-siguiente').style.display = 'block';
+}
+
+function siguiente() {
+  idx++;
+  if (idx >= PREGUNTAS.length) mostrarFinal();
+  else mostrarPregunta();
+}
+
+function mostrarFinal() {
+  document.getElementById('pantalla-juego').style.display = 'none';
+  const pct = puntaje / MAX_PTS;
+  let trofeo, titulo, msg;
+  if (pct >= 0.9) { trofeo='🏆'; titulo='¡Crack total!'; msg='Sos de los que escuchan Y aplican. Real Planning te necesita en el equipo 😄'; }
+  else if (pct >= 0.7) { trofeo='🥇'; titulo='¡Muy bien!'; msg='Sabés de finanzas más de lo que creés. Ahora falta ponerlo en práctica 💪'; }
+  else if (pct >= 0.4) { trofeo='🥈'; titulo='Buen intento'; msg='Captaste lo básico. Con práctica, el mercado de capitales te va a parecer fácil 📈'; }
+  else { trofeo='📚'; titulo='¡A repasar!'; msg='Tranquilo, para eso estamos. La educación financiera es un proceso, no una carrera 🚀'; }
+
+  document.getElementById('trofeo-final').textContent = trofeo;
+  document.getElementById('titulo-final').textContent = titulo;
+  document.getElementById('puntaje-grande').textContent = puntaje;
+  document.getElementById('msg-final').textContent = msg;
+  document.getElementById('pantalla-final').style.display = 'block';
+  if (pct >= 0.7) confeti();
+}
+
+function reiniciar() {
+  idx = 0; puntaje = 0; respondida = false;
+  document.getElementById('pantalla-final').style.display = 'none';
+  document.getElementById('pantalla-juego').style.display = 'block';
+  mostrarPregunta();
+}
+
+function confeti() {
+  const colores = ['#f5c518','#ff6b35','#4ade80','#a78bfa','#38bdf8'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confeti-piece';
+    const size = Math.random()*10+6;
+    p.style.cssText = `left:${Math.random()*100}%;top:-20px;width:${size}px;height:${size}px;background:${colores[Math.floor(Math.random()*colores.length)]};border-radius:${Math.random()>0.5?'50%':'0'};animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()*2}s;`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 5000);
+  }
+}
+</script>
+</body>
+</html>
